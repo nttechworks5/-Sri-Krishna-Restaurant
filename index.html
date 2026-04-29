@@ -10,10 +10,14 @@
 <base target="_blank">
 </head>
 <body>
+    <!-- Voice Welcome Audio (Backup) -->
+    <audio id="voice-welcome" preload="auto">
+        <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2teleR0NZKrk7rNsGgxJkNTsvXwkDk+L0O+0dSQPUIjN7LRyJQ1MiMzrsnMiDUyGzOuwdyQMTIfL6q12JgxMhsnprnUjDEuGyOewdCIMTIbH5K1zIgxLhsbkrHEiDEuGxOSrcSIMS4XD5KpuIgxLhcLkqG0iDEuFv+OmbCIMTIW+4qRrIgxMhb3ioGkiDEyFveKfZyIMTIW84p1lIgxMhbzinWMiDEyFvOKaYCIMTIW74pddIgxMhbvillwiDEyFuuKUXCIMTIW54o5bIgxMhbjih1oiDEyFtuKDWCIMTIW14n5XIgxMhbTifFYiDEyFs+J6VCIMTIWu4nVUIgxMha3iclIiDEyFquJuUSIMTIWn4mtPIgxMhaPiaEwiDEyFnOJmSyIMTIWX4mJIIgxMhZXiXEQiDEyFjOJaPyIMTIWL4lg9IgxMhYnhVzoiDEyFh+FVOiIMTIWD4VI4IgxMhX7hTjYiDEyFdeFMNiIMTIW14Uo0IgxMhXHhRzIiDEyFbeFFMiIMTIW14UUuIgxMhW3hRDQiDEyFbeE+MiIMTIW14TwuIgxMhW3hOiyIMTIW14TkqIgxMhW3hNCiIMTIW14TcnIgxMhW3hNiYIgxMhW3hNCQIgxMhW3hMh6IMTIW14TEeIgxMhW3hMRwiDEyFbeEwGiIMTIW14S8XIgxMhW3hLxUiDEyFbeEuEiIMTIW14S0QIgxMhW3hLBAiDEyFbeErDiIMTIW14SoLIgxMhW3hKggiDEyFbeEmBCI" type="audio/wav">
+    </audio>
     <!-- Loading Spinner -->
     <div id="loading-overlay">
         <div class="spinner"></div>
-        <p>Loading Sri Krishna Hotel...</p>
+        <p>Welcome to Sri Krishna Restaurant...</p>
     </div>
 
     <!-- Toast Notification -->
@@ -27,10 +31,7 @@
         <div class="header-top">
             <div class="header-left">
                 <div class="logo">
-                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 32px; height: 32px;">
-                        <path d="M12 2C10.5 2 9.5 3 9.5 4.5V9H8V4.5C8 3 7 2 5.5 2C4 2 3 3 3 4.5V9C3 12.5 5.5 15.5 9 16.2V20C9 21.1 9.9 22 11 22H13C14.1 22 15 21.1 15 20V16.2C18.5 15.5 21 12.5 21 9V4.5C21 3 20 2 18.5 2C17 2 16 3 16 4.5V9H14.5V4.5C14.5 3 13.5 2 12 2Z" fill="#e65100"/>
-                        <path d="M11 11H13V13H11V11Z" fill="#e65100"/>
-                    </svg>
+                    <img src="icon.jpeg" alt="Sri Krishna Restaurant Logo" class="logo-img">
                 </div>
                 <div class="hotel-info">
                     <h1>Sri Krishna Restaurant</h1>
@@ -220,16 +221,34 @@
                     </div>
                 </div>
                 <div id="online-payment-section" style="display: none;">
-                    <div class="upi-buttons">
-                        <button type="button" class="btn-upi" id="btn-pay-now">
-                            <i class="fas fa-qrcode"></i> Pay Now
-                        </button>
-                        <button type="button" class="btn-upi btn-payment-done" id="btn-payment-done" style="display: none;">
-                            <i class="fas fa-check"></i> Payment Done
-                        </button>
+                    <div class="payment-instruction">
+                        <p><i class="fas fa-info-circle"></i> Scan QR or click button to pay via GPay / PhonePe / Paytm</p>
                     </div>
+                    <div class="upi-qr-section">
+                        <div class="upi-qr-code" id="upi-qr-code">
+                            <div class="qr-placeholder">
+                                <i class="fas fa-qrcode"></i>
+                                <span>UPI ID: 9843336980@upi</span>
+                                <span class="qr-amount" id="qr-amount">Amount: ₹0</span>
+                            </div>
+                        </div>
+                        <div class="upi-apps">
+                            <button type="button" class="btn-upi-app gpay" id="btn-gpay">
+                                <i class="fab fa-google-pay"></i> GPay
+                            </button>
+                            <button type="button" class="btn-upi-app phonepe" id="btn-phonepe">
+                                <i class="fas fa-mobile-alt"></i> PhonePe
+                            </button>
+                            <button type="button" class="btn-upi-app paytm" id="btn-paytm">
+                                <i class="fas fa-wallet"></i> Paytm
+                            </button>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-upi btn-payment-done" id="btn-payment-done" style="display: none;">
+                        <i class="fas fa-check"></i> I Have Completed Payment
+                    </button>
                     <div class="payment-status" id="payment-status">
-                        <span class="status-pending">⏳ Click "Pay Now" to make payment</span>
+                        <span class="status-pending">⏳ Click any payment app to pay ₹<span id="pending-amount">0</span></span>
                     </div>
                 </div>
                 <div id="cash-payment-section">
@@ -322,9 +341,7 @@
     <footer class="footer">
         <div class="footer-content">
             <div class="footer-brand">
-                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 40px; height: 40px; margin: 0 auto 10px;">
-                    <path d="M12 2C10.5 2 9.5 3 9.5 4.5V9H8V4.5C8 3 7 2 5.5 2C4 2 3 3 3 4.5V9C3 12.5 5.5 15.5 9 16.2V20C9 21.1 9.9 22 11 22H13C14.1 22 15 21.1 15 20V16.2C18.5 15.5 21 12.5 21 9V4.5C21 3 20 2 18.5 2C17 2 16 3 16 4.5V9H14.5V4.5C14.5 3 13.5 2 12 2Z" fill="#ff9800"/>
-                </svg>
+                <img src="icon.jpeg" alt="Sri Krishna Restaurant" class="footer-logo-img">
                 <h3>Sri Krishna Restaurant</h3>
                 <p>Veg & Non-Veg | Authentic South Indian Cuisine</p>
             </div>
