@@ -470,7 +470,7 @@ function setupEventListeners() {
                 document.getElementById('online-payment-section').style.display = 'block';
                 document.getElementById('cash-payment-section').style.display = 'none';
                 document.getElementById('btn-payment-done').style.display = 'none';
-                document.getElementById('payment-status').innerHTML = '<span class="status-pending">⏳ Click "Pay Now" to make payment</span>';
+                document.getElementById('payment-status').innerHTML = '<span class="status-pending">⏳ Click "Pay Now" to open your UPI app</span>';
                 paymentStatus = 'pending';
             } else {
                 document.getElementById('online-payment-section').style.display = 'none';
@@ -482,13 +482,28 @@ function setupEventListeners() {
 
     // Pay Now button
     document.getElementById('btn-pay-now').addEventListener('click', () => {
-        // Open UPI payment
-        const upiUrl = `upi://pay?pa=${UPI_ID}&pn=Sri%20Krishna%20Hotel&am=${cart.reduce((s, i) => s + i.price * i.quantity, 0)}&cu=INR`;
-        window.open(upiUrl, '_blank');
+        const totalAmount = cart.reduce((s, i) => s + i.price * i.quantity, 0);
+
+        // Build UPI URL with all required params for better compatibility
+        // Note: For Google Pay, pn and tr params help. For personal UPI, mc (merchant code) may cause issues.
+        const upiUrl = `upi://pay?pa=${encodeURIComponent(UPI_ID)}&pn=${encodeURIComponent('Sri Krishna Hotel')}&am=${totalAmount}&cu=INR&tn=${encodeURIComponent('Food Order Payment')}`;
+
+        // Try to open UPI app - use window.location for mobile, fallback to window.open
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+        if (isMobile) {
+            // On mobile, use location.href to trigger app intent
+            window.location.href = upiUrl;
+        } else {
+            // On desktop, show QR code or open in new tab
+            window.open(upiUrl, '_blank');
+        }
 
         // Show Payment Done button after Pay Now is clicked
         document.getElementById('btn-payment-done').style.display = 'flex';
-        document.getElementById('payment-status').innerHTML = '<span class="status-pending">⏳ Complete payment and click "Payment Done"</span>';
+        document.getElementById('payment-status').innerHTML = '<span class="status-pending">⏳ Complete payment in your UPI app, then click "Payment Done"</span>';
+
+        showToast('UPI app opened! Complete payment and return');
     });
 
     // Payment Done button
@@ -582,6 +597,8 @@ function openOrderModal() {
     document.querySelector('input[name="payment-method"][value="cash"]').checked = true;
     document.getElementById('online-payment-section').style.display = 'none';
     document.getElementById('cash-payment-section').style.display = 'block';
+    document.getElementById('btn-payment-done').style.display = 'none';
+    document.getElementById('payment-status').innerHTML = '<span class="status-pending">⏳ Click "Pay Now" to open your UPI app</span>';
     paymentStatus = 'cash';
 }
 
