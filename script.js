@@ -83,10 +83,24 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('loading-overlay').classList.add('hidden');
     }, 1500);
 
-    // Voice welcome
+    // Voice welcome - triggered on first user interaction for browser autoplay policy
+    let voicePlayed = false;
+    function playVoiceWelcome() {
+        if (voicePlayed) return;
+        voicePlayed = true;
+        setTimeout(() => {
+            speakText("Welcome to Sri Krishna Restaurant. Please place your order.");
+        }, 500);
+    }
+
+    // Try to play on page load (may be blocked by browser)
     setTimeout(() => {
-        speakText("Welcome to Sri Krishna Hotel. Please place your order.");
-    }, 2000);
+        speakText("Welcome to Sri Krishna Restaurant. Please place your order.");
+    }, 2500);
+
+    // Also play on first user click/touch (guaranteed to work)
+    document.addEventListener('click', playVoiceWelcome, { once: true });
+    document.addEventListener('touchstart', playVoiceWelcome, { once: true });
 
     // Load cart from localStorage
     loadCart();
@@ -466,11 +480,14 @@ function setupEventListeners() {
     // Payment method
     document.querySelectorAll('input[name="payment-method"]').forEach(radio => {
         radio.addEventListener('change', (e) => {
+            const totalAmount = cart.reduce((s, i) => s + i.price * i.quantity, 0);
             if (e.target.value === 'online') {
                 document.getElementById('online-payment-section').style.display = 'block';
                 document.getElementById('cash-payment-section').style.display = 'none';
                 document.getElementById('btn-payment-done').style.display = 'none';
-                document.getElementById('payment-status').innerHTML = '<span class="status-pending">⏳ Click "Pay Now" to open your UPI app</span>';
+                document.getElementById('qr-amount').textContent = 'Amount: ₹' + totalAmount;
+                document.getElementById('pending-amount').textContent = totalAmount;
+                document.getElementById('payment-status').innerHTML = '<span class="status-pending">⏳ Choose a payment app to pay ₹' + totalAmount + '</span>';
                 paymentStatus = 'pending';
             } else {
                 document.getElementById('online-payment-section').style.display = 'none';
@@ -480,31 +497,72 @@ function setupEventListeners() {
         });
     });
 
-    // Pay Now button
-    document.getElementById('btn-pay-now').addEventListener('click', () => {
+    // Integrated Payment - GPay
+    document.getElementById('btn-gpay').addEventListener('click', () => {
         const totalAmount = cart.reduce((s, i) => s + i.price * i.quantity, 0);
 
-        // Build UPI URL with all required params for better compatibility
-        // Note: For Google Pay, pn and tr params help. For personal UPI, mc (merchant code) may cause issues.
-        const upiUrl = `upi://pay?pa=${encodeURIComponent(UPI_ID)}&pn=${encodeURIComponent('Sri Krishna Hotel')}&am=${totalAmount}&cu=INR&tn=${encodeURIComponent('Food Order Payment')}`;
+        // GPay deep link format
+        const gpayUrl = `tez://upi/pay?pa=${encodeURIComponent(UPI_ID)}&pn=${encodeURIComponent('Sri Krishna Restaurant')}&am=${totalAmount}&cu=INR&tn=${encodeURIComponent('Food Order')}`;
 
-        // Try to open UPI app - use window.location for mobile, fallback to window.open
+        // Also create standard UPI fallback
+        const upiUrl = `upi://pay?pa=${encodeURIComponent(UPI_ID)}&pn=${encodeURIComponent('Sri Krishna Restaurant')}&am=${totalAmount}&cu=INR&tn=${encodeURIComponent('Food Order')}`;
+
+        // Try GPay first, fallback to generic UPI
         const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
         if (isMobile) {
-            // On mobile, use location.href to trigger app intent
-            window.location.href = upiUrl;
+            // Try GPay deep link
+            window.location.href = gpayUrl;
+            // Fallback after 2 seconds if GPay doesn't open
+            setTimeout(() => {
+                window.location.href = upiUrl;
+            }, 2000);
         } else {
-            // On desktop, show QR code or open in new tab
             window.open(upiUrl, '_blank');
         }
 
-        // Show Payment Done button after Pay Now is clicked
-        document.getElementById('btn-payment-done').style.display = 'flex';
-        document.getElementById('payment-status').innerHTML = '<span class="status-pending">⏳ Complete payment in your UPI app, then click "Payment Done"</span>';
-
-        showToast('UPI app opened! Complete payment and return');
+        showPaymentDoneButton(totalAmount);
+        showToast('GPay opened! Complete payment to 98433 36980');
     });
+
+    // PhonePe
+    document.getElementById('btn-phonepe').addEventListener('click', () => {
+        const totalAmount = cart.reduce((s, i) => s + i.price * i.quantity, 0);
+        const upiUrl = `upi://pay?pa=${encodeURIComponent(UPI_ID)}&pn=${encodeURIComponent('Sri Krishna Restaurant')}&am=${totalAmount}&cu=INR&tn=${encodeURIComponent('Food Order')}`;
+
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+        if (isMobile) {
+            window.location.href = upiUrl;
+        } else {
+            window.open(upiUrl, '_blank');
+        }
+
+        showPaymentDoneButton(totalAmount);
+        showToast('PhonePe opened! Complete payment to 98433 36980');
+    });
+
+    // Paytm
+    document.getElementById('btn-paytm').addEventListener('click', () => {
+        const totalAmount = cart.reduce((s, i) => s + i.price * i.quantity, 0);
+        const upiUrl = `upi://pay?pa=${encodeURIComponent(UPI_ID)}&pn=${encodeURIComponent('Sri Krishna Restaurant')}&am=${totalAmount}&cu=INR&tn=${encodeURIComponent('Food Order')}`;
+
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+        if (isMobile) {
+            window.location.href = upiUrl;
+        } else {
+            window.open(upiUrl, '_blank');
+        }
+
+        showPaymentDoneButton(totalAmount);
+        showToast('Paytm opened! Complete payment to 98433 36980');
+    });
+
+    function showPaymentDoneButton(amount) {
+        document.getElementById('btn-payment-done').style.display = 'flex';
+        document.getElementById('payment-status').innerHTML = '<span class="status-pending">⏳ Paid ₹' + amount + ' to 9843336980@upi? Click "I Have Completed Payment"</span>';
+    }
 
     // Payment Done button
     document.getElementById('btn-payment-done').addEventListener('click', () => {
@@ -598,7 +656,6 @@ function openOrderModal() {
     document.getElementById('online-payment-section').style.display = 'none';
     document.getElementById('cash-payment-section').style.display = 'block';
     document.getElementById('btn-payment-done').style.display = 'none';
-    document.getElementById('payment-status').innerHTML = '<span class="status-pending">⏳ Click "Pay Now" to open your UPI app</span>';
     paymentStatus = 'cash';
 }
 
@@ -875,13 +932,17 @@ function generateBillPDF(order) {
 // ===== WhatsApp Functions =====
 function sendWhatsAppKitchen(order) {
     const itemsText = order.items.map(i => `${i.name} x${i.quantity}`).join('%0A');
-    const message = `🔔 *New Order* %0A%0A` +
+    const paymentDetail = order.paymentMethod === 'online' 
+        ? `✅ *Online Paid* - UPI: ${UPI_ID}` 
+        : `💵 *Cash on Delivery*`;
+
+    const message = `🔔 *NEW ORDER - Sri Krishna Restaurant* %0A%0A` +
         `👤 *Customer:* ${order.customerName}%0A` +
         `📱 *Mobile:* ${order.customerMobile}%0A` +
         `🪑 *Table No:* ${order.tableNumber}%0A%0A` +
         `📋 *Items:*%0A${itemsText}%0A%0A` +
         `💰 *Total:* ₹${order.totalAmount}%0A` +
-        `💳 *Payment:* ${order.paymentStatus}%0A` +
+        `💳 *Payment:* ${paymentDetail}%0A` +
         `📝 *Notes:* ${order.notes || 'None'}%0A%0A` +
         `⏰ ${order.date} ${order.time}`;
 
