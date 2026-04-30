@@ -1,5 +1,5 @@
 // ===== Sri Krishna Hotel Ordering System =====
-// Complete JavaScript Logic
+// Complete JavaScript Logic — Fixed: image paths, WhatsApp direct send, bill format
 
 // ===== Menu Data =====
 const menuItems = [
@@ -59,12 +59,17 @@ let currentSlide = 0;
 const HOTEL_NAME = "Sri Krishna Hotel";
 const PHONE_NUMBER = "98433 36980";
 const WHATSAPP_NUMBER = "919843336980";
-const UPI_ID = "9843336980@ibl";   // ✅ Updated to PhonePe UPI ID
+const UPI_ID = "9843336980@ibl";
 const EMAIL = "kumaranglids@gmail.com";
 const PDF_SCRIPT_URL = "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
+
+// ✅ FIX 1: MENU_IMAGE_FALLBACK — local images fail பண்ணா Unsplash food image காட்டும்
 const MENU_IMAGE_FALLBACK = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&fm=webp&q=80";
-const IMAGE_PLACEHOLDER = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 26'%3E%3Crect width='40' height='26' fill='%23f3f4f6'/%3E%3C/svg%3E";
-const QR_IMAGE = "qr.jpeg";        // ✅ PhonePe QR image file
+
+// ✅ FIX 1: Transparent placeholder SVG — grey box instead of broken icon
+const IMAGE_PLACEHOLDER = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 260'%3E%3Crect width='400' height='260' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='14' fill='%23adb5bd'%3ELoading...%3C/text%3E%3C/svg%3E";
+
+const QR_IMAGE = "qr.jpeg";
 
 // ===== DOM Elements =====
 const menuContainer = document.getElementById('menu-container');
@@ -107,11 +112,7 @@ function initializeApp() {
     ];
 
     startupTasks.forEach(([label, task]) => {
-        try {
-            task();
-        } catch (error) {
-            console.error(`Startup task failed: ${label}`, error);
-        }
+        try { task(); } catch (error) { console.error(`Startup task failed: ${label}`, error); }
     });
 
     hideLoadingOverlay();
@@ -120,20 +121,13 @@ function initializeApp() {
 function hideLoadingOverlay() {
     const overlay = document.getElementById('loading-overlay');
     if (!overlay) return;
-
-    const showPage = () => {
-        overlay.classList.add('hidden');
-    };
-
+    const showPage = () => overlay.classList.add('hidden');
     if (typeof window.requestAnimationFrame === 'function') {
         window.requestAnimationFrame(showPage);
     } else {
         showPage();
     }
-
-    setTimeout(() => {
-        overlay.remove();
-    }, 600);
+    setTimeout(() => overlay.remove(), 600);
 }
 
 function runWhenIdle(task, timeout = 1500) {
@@ -141,7 +135,6 @@ function runWhenIdle(task, timeout = 1500) {
         window.requestIdleCallback(task, { timeout });
         return;
     }
-
     setTimeout(task, Math.min(timeout, 800));
 }
 
@@ -161,7 +154,6 @@ function readJsonStorage(key, fallbackValue) {
     try {
         const savedValue = localStorage.getItem(key);
         if (!savedValue) return fallbackValue;
-
         const parsedValue = JSON.parse(savedValue);
         return parsedValue ?? fallbackValue;
     } catch (error) {
@@ -192,7 +184,6 @@ function safeOpenExternal(url) {
 
 function safeScrollIntoView(element) {
     if (!element) return;
-
     try {
         element.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } catch (error) {
@@ -214,7 +205,6 @@ function bindEvent(target, eventName, handler) {
         console.warn(`Event binding skipped: ${target}`);
         return null;
     }
-
     element.addEventListener(eventName, handler);
     return element;
 }
@@ -222,7 +212,6 @@ function bindEvent(target, eventName, handler) {
 // ===== Text to Speech =====
 function speakText(text) {
     if (!('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined') return;
-
     try {
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(text);
@@ -268,11 +257,18 @@ function renderMenu() {
 
     menuContainer.innerHTML = filteredItems.map(item => {
         const qty = cartQuantityMap.get(item.id) || 0;
-
+        // ✅ FIX 1: onerror directly on <img> so broken local images fallback immediately
         return `
             <div class="product-card" data-id="${item.id}">
                 <div class="product-image">
-                    <img src="${IMAGE_PLACEHOLDER}" data-src="${item.image}" data-fallback="${MENU_IMAGE_FALLBACK}" alt="${item.name}" width="400" height="260" loading="lazy" decoding="async">
+                    <img
+                        src="${IMAGE_PLACEHOLDER}"
+                        data-src="${encodeURIComponent(item.image)}"
+                        alt="${item.name}"
+                        width="400" height="260"
+                        loading="lazy" decoding="async"
+                        onerror="this.onerror=null;this.src='${MENU_IMAGE_FALLBACK}';this.classList.add('is-loaded');"
+                    >
                     <span class="product-badge">${item.category}</span>
                 </div>
                 <div class="product-info">
@@ -313,9 +309,7 @@ function hydrateLazyImages() {
                 loadLazyImage(entry.target);
                 observer.unobserve(entry.target);
             });
-        }, {
-            rootMargin: '200px 0px'
-        });
+        }, { rootMargin: '200px 0px' });
     }
 
     lazyImages.forEach(img => lazyImageObserver.observe(img));
@@ -325,18 +319,16 @@ function loadLazyImage(img) {
     const imageSrc = img.dataset.src;
     if (!imageSrc) return;
 
-    const fallbackSrc = img.dataset.fallback;
+    // ✅ FIX 1: Decode the encoded filename before setting src
+    const decodedSrc = decodeURIComponent(imageSrc);
+
     img.addEventListener('load', () => img.classList.add('is-loaded'), { once: true });
     img.addEventListener('error', () => {
-        if (fallbackSrc && img.src !== fallbackSrc) {
-            img.src = fallbackSrc;
-            return;
-        }
-
+        img.src = MENU_IMAGE_FALLBACK;
         img.classList.add('is-loaded');
     }, { once: true });
 
-    img.src = imageSrc;
+    img.src = decodedSrc;
     img.removeAttribute('data-src');
 }
 
@@ -357,25 +349,11 @@ function updateProductCardState(id) {
     const addButtonIcon = addButton ? addButton.querySelector('i') : null;
     const addButtonLabel = addButton ? addButton.querySelector('.btn-add-label') : null;
 
-    if (minusButton) {
-        minusButton.disabled = qty <= 0;
-    }
-
-    if (qtyValue) {
-        qtyValue.textContent = qty;
-    }
-
-    if (addButton) {
-        addButton.classList.toggle('added', qty > 0);
-    }
-
-    if (addButtonIcon) {
-        addButtonIcon.className = `fas ${qty > 0 ? 'fa-check' : 'fa-cart-plus'}`;
-    }
-
-    if (addButtonLabel) {
-        addButtonLabel.textContent = qty > 0 ? 'Added' : 'Add';
-    }
+    if (minusButton) minusButton.disabled = qty <= 0;
+    if (qtyValue) qtyValue.textContent = qty;
+    if (addButton) addButton.classList.toggle('added', qty > 0);
+    if (addButtonIcon) addButtonIcon.className = `fas ${qty > 0 ? 'fa-check' : 'fa-cart-plus'}`;
+    if (addButtonLabel) addButtonLabel.textContent = qty > 0 ? 'Added' : 'Add';
 }
 
 function refreshVisibleProductCards() {
@@ -393,14 +371,7 @@ function addToCart(id) {
     if (existingItem) {
         existingItem.quantity++;
     } else {
-        cart.push({
-            id: item.id,
-            name: item.name,
-            price: item.price,
-            category: item.category,
-            image: item.image,
-            quantity: 1
-        });
+        cart.push({ id: item.id, name: item.name, price: item.price, category: item.category, image: item.image, quantity: 1 });
     }
 
     saveCart();
@@ -452,7 +423,6 @@ function updateCartDisplay() {
 
     cartCount.textContent = totalItems;
     cartTotal.textContent = '₹' + totalAmount;
-
     stickyCart.style.display = totalItems > 0 ? 'block' : 'none';
     updateQrAmount();
 
@@ -465,9 +435,17 @@ function updateCartDisplay() {
         cartItems.style.display = 'block';
         cartDrawerFooter.style.display = 'block';
 
+        // ✅ FIX 1: Cart item images — onerror fallback directly
         cartItems.innerHTML = cart.map(item => `
             <div class="cart-item">
-                <img src="${item.image}" alt="${item.name}" class="cart-item-image" width="80" height="80" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100&fm=webp&q=80'">
+                <img
+                    src="${item.image}"
+                    alt="${item.name}"
+                    class="cart-item-image"
+                    width="80" height="80"
+                    loading="lazy"
+                    onerror="this.onerror=null;this.src='${MENU_IMAGE_FALLBACK}';"
+                >
                 <div class="cart-item-details">
                     <div class="cart-item-name">${item.name}</div>
                     <div class="cart-item-price">₹${item.price} each</div>
@@ -528,11 +506,7 @@ function startHeroSlider() {
     };
 
     preloadHeroBackground(slides[currentSlide]);
-
-    if (heroSliderInterval) {
-        clearInterval(heroSliderInterval);
-    }
-
+    if (heroSliderInterval) clearInterval(heroSliderInterval);
     heroSliderInterval = setInterval(() => {
         const nextSlide = (currentSlide + 1) % slides.length;
         preloadHeroBackground(slides[nextSlide]);
@@ -549,10 +523,8 @@ function startHeroSlider() {
 
 function preloadHeroBackground(slide) {
     if (!slide) return;
-
     const backgroundUrl = slide.dataset.bg;
     if (!backgroundUrl || slide.dataset.loaded === 'true') return;
-
     const image = new Image();
     image.decoding = 'async';
     image.onload = () => {
@@ -562,7 +534,7 @@ function preloadHeroBackground(slide) {
     image.src = backgroundUrl;
 }
 
-// ===== ✅ UPDATED: GPay / PhonePe / UPI Pay Now =====
+// ===== GPay / PhonePe / UPI Pay Now =====
 function payNow() {
     const total = cart.reduce((s, i) => s + i.price * i.quantity, 0);
     const statusEl = document.getElementById('payment-status');
@@ -578,10 +550,7 @@ function payNow() {
     const isIOS = /iPhone|iPad/i.test(navigator.userAgent);
     const isMobile = isAndroid || isIOS;
 
-    if (qrSection) {
-        qrSection.style.display = 'block';
-        updateQrAmount();
-    }
+    if (qrSection) { qrSection.style.display = 'block'; updateQrAmount(); }
     if (paymentDoneBtn) paymentDoneBtn.style.display = 'none';
 
     const pa = encodeURIComponent(UPI_ID);
@@ -592,26 +561,18 @@ function payNow() {
     const gpayIntentUrl = `intent://pay?pa=${pa}&pn=${pn}&am=${am}&cu=INR&tn=${tn}#Intent;scheme=upi;package=com.google.android.apps.nbu.paisa.user;S.browser_fallback_url=${encodeURIComponent(baseUpiUrl)};end`;
 
     if (!isMobile) {
-        statusEl.innerHTML =
-            '<span class="status-pending">📱 Scan the QR or use UPI app to pay. Then click "I Have Paid".</span>';
-        setTimeout(() => {
-            document.getElementById('btn-payment-done').style.display = 'flex';
-        }, 500);
+        statusEl.innerHTML = '<span class="status-pending">📱 Scan the QR or use UPI app to pay. Then click "I Have Paid".</span>';
+        setTimeout(() => { document.getElementById('btn-payment-done').style.display = 'flex'; }, 500);
         return;
     }
 
     statusEl.innerHTML = '<span class="status-pending">🔗 Opening UPI app with amount and UPI details...</span>';
-
-    if (isAndroid) {
-        window.location.href = gpayIntentUrl;
-    } else if (isIOS) {
-        window.location.href = baseUpiUrl;
-    }
+    if (isAndroid) { window.location.href = gpayIntentUrl; }
+    else if (isIOS) { window.location.href = baseUpiUrl; }
 
     setTimeout(() => {
         document.getElementById('btn-payment-done').style.display = 'flex';
-        statusEl.innerHTML =
-            '<span class="status-pending">⏳ Payment completed? Then click "I Have Paid".</span>';
+        statusEl.innerHTML = '<span class="status-pending">⏳ Payment completed? Then click "I Have Paid".</span>';
         showToast('UPI App திறக்கிறது... payment பண்ணி திரும்பவும்');
     }, 1800);
 }
@@ -621,7 +582,6 @@ function setupEventListeners() {
     menuContainer.addEventListener('click', handleMenuContainerClick);
     cartItems.addEventListener('click', handleCartItemsClick);
 
-    // Category buttons
     document.querySelectorAll('.category-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
@@ -632,7 +592,6 @@ function setupEventListeners() {
         });
     });
 
-    // Mobile menu category items
     document.querySelectorAll('.mobile-menu-item[data-category]').forEach(item => {
         item.addEventListener('click', (e) => {
             e.preventDefault();
@@ -648,7 +607,6 @@ function setupEventListeners() {
         });
     });
 
-    // Search
     bindEvent('search-toggle', 'click', () => {
         document.getElementById('search-bar').classList.toggle('active');
         if (document.getElementById('search-bar').classList.contains('active')) {
@@ -666,35 +624,27 @@ function setupEventListeners() {
     bindEvent('search-input', 'input', (e) => {
         const nextValue = e.target.value;
         clearTimeout(searchInputTimer);
-        searchInputTimer = setTimeout(() => {
-            searchQuery = nextValue;
-            renderMenu();
-        }, 120);
+        searchInputTimer = setTimeout(() => { searchQuery = nextValue; renderMenu(); }, 120);
     });
 
-    // Mobile menu
     bindEvent('menu-toggle', 'click', openMobileMenu);
     bindEvent('mobile-menu-close', 'click', closeMobileMenu);
     bindEvent('mobile-menu-overlay', 'click', closeMobileMenu);
 
-    // Cart
     bindEvent('cart-btn', 'click', openCart);
     bindEvent('cart-close', 'click', closeCart);
     bindEvent('cart-overlay', 'click', closeCart);
     bindEvent('btn-continue', 'click', closeCart);
 
-    // Place Order
     bindEvent('btn-place-order', 'click', () => {
         closeCart();
         updateQrAmount();
         openOrderModal();
     });
 
-    // Order Modal close
     bindEvent('order-modal-close', 'click', closeOrderModal);
     bindEvent('order-modal-overlay', 'click', closeOrderModal);
 
-    // Payment method radio
     document.querySelectorAll('input[name="payment-method"]').forEach(radio => {
         radio.addEventListener('change', (e) => {
             if (e.target.value === 'online') {
@@ -716,10 +666,8 @@ function setupEventListeners() {
         });
     });
 
-    // ✅ Pay Now button — now calls updated payNow()
     bindEvent('btn-pay-now', 'click', payNow);
 
-    // "I Have Paid" button
     const paymentDoneBtn = document.getElementById('btn-payment-done');
     if (paymentDoneBtn) {
         paymentDoneBtn.addEventListener('click', () => {
@@ -731,13 +679,9 @@ function setupEventListeners() {
         });
     }
 
-    // Copy UPI ID button
     const copyUpiBtn = document.getElementById('btn-copy-upi');
-    if (copyUpiBtn) {
-        copyUpiBtn.addEventListener('click', copyUpiId);
-    }
+    if (copyUpiBtn) copyUpiBtn.addEventListener('click', copyUpiId);
 
-    // Download bill button
     if (btnDownloadBill) {
         btnDownloadBill.addEventListener('click', async () => {
             if (lastGeneratedBill) {
@@ -752,20 +696,17 @@ function setupEventListeners() {
         });
     }
 
-    // Order form submit
     bindEvent('order-form', 'submit', (e) => {
         e.preventDefault();
         submitOrder();
     });
 
-    // Success modal
     bindEvent('btn-new-order', 'click', () => {
         closeSuccessModal();
         clearCart();
         safeScrollToTop();
     });
 
-    // History modal
     bindEvent('mobile-view-orders', 'click', (e) => {
         e.preventDefault();
         closeMobileMenu();
@@ -780,7 +721,6 @@ function setupEventListeners() {
     bindEvent('history-modal-close', 'click', closeHistoryModal);
     bindEvent('history-modal-overlay', 'click', closeHistoryModal);
 
-    // Contact modal
     bindEvent('mobile-contact', 'click', (e) => {
         e.preventDefault();
         closeMobileMenu();
@@ -795,7 +735,6 @@ function setupEventListeners() {
     bindEvent('contact-modal-close', 'click', closeContactModal);
     bindEvent('contact-modal-overlay', 'click', closeContactModal);
 
-    // Mobile number only digits
     bindEvent('customer-mobile', 'input', (e) => {
         e.target.value = e.target.value.replace(/\D/g, '').slice(0, 10);
     });
@@ -803,43 +742,21 @@ function setupEventListeners() {
 
 function handleMenuContainerClick(event) {
     const plusButton = event.target.closest('.qty-btn.plus');
-    if (plusButton) {
-        addToCart(parseInt(plusButton.dataset.id, 10));
-        return;
-    }
-
+    if (plusButton) { addToCart(parseInt(plusButton.dataset.id, 10)); return; }
     const minusButton = event.target.closest('.qty-btn.minus');
-    if (minusButton) {
-        decreaseQuantity(parseInt(minusButton.dataset.id, 10));
-        return;
-    }
-
+    if (minusButton) { decreaseQuantity(parseInt(minusButton.dataset.id, 10)); return; }
     const addButton = event.target.closest('.btn-add-cart');
-    if (addButton) {
-        addToCart(parseInt(addButton.dataset.id, 10));
-    }
+    if (addButton) addToCart(parseInt(addButton.dataset.id, 10));
 }
 
 function handleCartItemsClick(event) {
     const controlButton = event.target.closest('button[data-action][data-id]');
     if (!controlButton) return;
-
     const id = parseInt(controlButton.dataset.id, 10);
     const { action } = controlButton.dataset;
-
-    if (action === 'increase') {
-        updateCartQuantity(id, 1);
-        return;
-    }
-
-    if (action === 'decrease') {
-        updateCartQuantity(id, -1);
-        return;
-    }
-
-    if (action === 'remove') {
-        removeFromCart(id);
-    }
+    if (action === 'increase') { updateCartQuantity(id, 1); return; }
+    if (action === 'decrease') { updateCartQuantity(id, -1); return; }
+    if (action === 'remove') removeFromCart(id);
 }
 
 // ===== Modal Functions =====
@@ -871,7 +788,6 @@ function openOrderModal() {
     document.getElementById('order-modal').classList.add('open');
     document.getElementById('order-modal-overlay').classList.add('open');
     document.body.style.overflow = 'hidden';
-
     document.getElementById('order-form').reset();
     document.querySelector('input[name="payment-method"][value="cash"]').checked = true;
     document.getElementById('online-payment-section').style.display = 'none';
@@ -943,24 +859,21 @@ function notifyBillCounterFromForm() {
     const tableNumber = document.getElementById('table-number').value.trim() || 'N/A';
     const totalAmount = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
     const itemsList = cart.map(item => `${item.name} x${item.quantity}`);
-    const message = `NEW ORDER RECEIVED\nCustomer Name: ${customerName}\nTable Number: ${tableNumber}\nTotal Amount: ₹${totalAmount}\nItems: ${itemsList.join(', ')}\nPayment completed successfully.`;
-    showAdminNotification(customerName, tableNumber, itemsList, totalAmount, message);
+    showAdminNotification(customerName, tableNumber, itemsList, totalAmount);
     if ('Notification' in window && Notification.permission === 'granted') {
         try {
-        new Notification('NEW ORDER RECEIVED', {
-            body: `Customer: ${customerName}\nTable: ${tableNumber}\nTotal: ₹${totalAmount}`,
-            icon: '',
-        });
-        } catch (error) {
-            console.warn('Notification display failed', error);
-        }
+            new Notification('NEW ORDER RECEIVED', {
+                body: `Customer: ${customerName}\nTable: ${tableNumber}\nTotal: ₹${totalAmount}`,
+                icon: '',
+            });
+        } catch (error) { console.warn('Notification display failed', error); }
     }
 }
 
-function showAdminNotification(customerName, tableNumber, itemsList, totalAmount, message) {
+function showAdminNotification(customerName, tableNumber, itemsList, totalAmount) {
     if (!adminNotificationPanel) return;
     adminNotificationPanel.innerHTML = `
-        <h4>NEW ORDER RECEIVED</h4>
+        <h4>🔔 NEW ORDER RECEIVED</h4>
         <p><strong>Customer:</strong> ${customerName}</p>
         <p><strong>Table:</strong> ${tableNumber}</p>
         <p><strong>Total:</strong> ₹${totalAmount}</p>
@@ -972,23 +885,50 @@ function showAdminNotification(customerName, tableNumber, itemsList, totalAmount
     setTimeout(() => adminNotificationPanel.classList.remove('open'), 8000);
 }
 
-function requestNotificationPermission() {
-    if ('Notification' in window && Notification.permission === 'default') {
-        try {
-            Notification.requestPermission().catch(() => {});
-        } catch (error) {
-            console.warn('Notification permission request failed', error);
-        }
-    }
+// ===== ✅ FIX 3: WhatsApp Bill — CRT format (receipt style) =====
+function buildWhatsAppBill(order) {
+    const divider = '%0A━━━━━━━━━━━━━━━━━━━━';
+    const thin    = '%0A─────────────────────';
+
+    // Item rows — padded like a receipt
+    const itemRows = order.items.map(item => {
+        const namePart = item.name.length > 16
+            ? item.name.substring(0, 14) + '..'
+            : item.name;
+        const qtyPart  = `x${item.quantity}`;
+        const amtPart  = `%E2%82%B9${item.price * item.quantity}`; // ₹ encoded
+        // Pad spaces to align amount to right (~20 chars wide)
+        const spaces   = ' '.repeat(Math.max(1, 20 - namePart.length - qtyPart.length - (item.price * item.quantity).toString().length - 1));
+        return `${encodeURIComponent(namePart + ' ' + qtyPart)}${encodeURIComponent(spaces)}%E2%82%B9${item.price * item.quantity}`;
+    }).join('%0A');
+
+    const msg =
+        `%F0%9F%A7%BE%20*${encodeURIComponent(HOTEL_NAME.toUpperCase())}*` +
+        `%0A%F0%9F%93%9E%20${encodeURIComponent(PHONE_NUMBER)}` +
+        `${divider}` +
+        `%0A%F0%9F%93%85%20*Date:*%20${encodeURIComponent(order.date)}%20%20%20%20%20*Time:*%20${encodeURIComponent(order.time)}` +
+        `%0A%F0%9F%94%96%20*Order ID:*%20${encodeURIComponent(order.id)}` +
+        `${divider}` +
+        `%0A%F0%9F%91%A4%20*Name:*%20%20%20${encodeURIComponent(order.customerName)}` +
+        `%0A%F0%9F%93%B1%20*Mobile:*%20%20${encodeURIComponent(order.customerMobile)}` +
+        `%0A%F0%9F͈%AA%91%20*Table:*%20%20%20${encodeURIComponent(order.tableNumber)}` +
+        `${divider}` +
+        `%0A*ITEM%20%20%20%20%20%20%20%20%20%20%20%20QTY%20%20AMOUNT*` +
+        `${thin}` +
+        `%0A${itemRows}` +
+        `${thin}` +
+        `%0A*%F0%9F%92%B0%20TOTAL%3A%20%20%20%20%20%20%20%20%20%20%E2%82%B9${order.totalAmount}*` +
+        `${divider}` +
+        `%0A%F0%9F%92%B3%20*Payment:*%20${encodeURIComponent(order.paymentStatus)}` +
+        (order.notes ? `%0A%F0%9F%93%9D%20*Notes:*%20${encodeURIComponent(order.notes)}` : '') +
+        `${divider}` +
+        `%0A%F0%9F%99%8F%20*Thank you for visiting ${encodeURIComponent(HOTEL_NAME)}!*` +
+        `%0AOrder prepared with love %F0%9F%AB%B6`;
+
+    return msg;
 }
 
-function sendWhatsAppConfirmation(order) {
-    const message =
-        `Thank you for your order!\nYour payment has been successfully received.\nYour order is being prepared.\nHotel: ${HOTEL_NAME}\nTotal Paid: ₹${order.totalAmount}`;
-    safeOpenExternal(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`);
-}
-
-// ===== Submit Order =====
+// ===== ✅ FIX 2: Submit Order — Single WhatsApp open (kitchen+bill combined) =====
 function submitOrder() {
     const customerName   = document.getElementById('customer-name').value.trim();
     const customerMobile = document.getElementById('customer-mobile').value.trim();
@@ -1036,15 +976,21 @@ function submitOrder() {
     saveOrderToHistory(order);
     lastGeneratedBill = order;
     if (btnDownloadBill) btnDownloadBill.style.display = 'none';
+
+    // Generate PDF bill
     generateBillPDF(order).then(() => {
         if (btnDownloadBill) btnDownloadBill.style.display = 'flex';
     }).catch((error) => {
         console.error(error);
         showToast('Order saved. Bill download can be retried.');
     });
-    sendWhatsAppKitchen(order);
-    sendWhatsAppCounter(order);
-    sendWhatsAppConfirmation(order);
+
+    // ✅ FIX 2: Single WhatsApp open with full CRT bill format
+    // Small delay so modal can close first
+    setTimeout(() => {
+        const billMsg = buildWhatsAppBill(order);
+        safeOpenExternal(`https://wa.me/${WHATSAPP_NUMBER}?text=${billMsg}`);
+    }, 400);
 
     setTimeout(() => speakText("Thank you for your order. Visit again."), 500);
 
@@ -1123,16 +1069,10 @@ async function generateBillPDF(order) {
     doc.line(leftMargin, y, rightLimit, y);
     y += 8;
 
-    doc.text(`Customer: ${order.customerName}`, leftMargin, y);
-    y += 6;
-    doc.text(`Mobile: ${order.customerMobile}`, leftMargin, y);
-    y += 6;
-    doc.text(`Table No: ${order.tableNumber}`, leftMargin, y);
-    y += 6;
-    if (order.notes) {
-        doc.text(`Notes: ${order.notes}`, leftMargin, y);
-        y += 6;
-    }
+    doc.text(`Customer: ${order.customerName}`, leftMargin, y); y += 6;
+    doc.text(`Mobile: ${order.customerMobile}`, leftMargin, y); y += 6;
+    doc.text(`Table No: ${order.tableNumber}`, leftMargin, y); y += 6;
+    if (order.notes) { doc.text(`Notes: ${order.notes}`, leftMargin, y); y += 6; }
     y += 2;
     doc.line(leftMargin, y, rightLimit, y);
     y += 8;
@@ -1151,7 +1091,7 @@ async function generateBillPDF(order) {
         const itemName = item.name.length > 28 ? item.name.substring(0, 25) + '...' : item.name;
         doc.text(itemName, leftMargin, y);
         doc.text(String(item.quantity), 120, y, { align: 'center' });
-        doc.text(`₹${item.price * item.quantity}`, rightLimit, y, { align: 'right' });
+        doc.text(`Rs.${item.price * item.quantity}`, rightLimit, y, { align: 'right' });
         y += 7;
     });
 
@@ -1161,7 +1101,7 @@ async function generateBillPDF(order) {
 
     doc.setFont('helvetica', 'bold');
     doc.text('Total Amount', leftMargin, y);
-    doc.text(`₹${order.totalAmount}`, rightLimit, y, { align: 'right' });
+    doc.text(`Rs.${order.totalAmount}`, rightLimit, y, { align: 'right' });
     y += 10;
     doc.setFont('helvetica', 'normal');
     doc.text(`Payment: ${order.paymentStatus}`, leftMargin, y);
@@ -1178,66 +1118,22 @@ async function generateBillPDF(order) {
 }
 
 function ensureJsPdfLoaded() {
-    if (window.jspdf && window.jspdf.jsPDF) {
-        return Promise.resolve(window.jspdf.jsPDF);
-    }
-
-    if (jspdfLoader) {
-        return jspdfLoader;
-    }
+    if (window.jspdf && window.jspdf.jsPDF) return Promise.resolve(window.jspdf.jsPDF);
+    if (jspdfLoader) return jspdfLoader;
 
     jspdfLoader = new Promise((resolve, reject) => {
         const script = document.createElement('script');
         script.src = PDF_SCRIPT_URL;
         script.async = true;
         script.onload = () => {
-            if (window.jspdf && window.jspdf.jsPDF) {
-                resolve(window.jspdf.jsPDF);
-                return;
-            }
-
+            if (window.jspdf && window.jspdf.jsPDF) { resolve(window.jspdf.jsPDF); return; }
             reject(new Error('Bill library loaded without jsPDF.'));
         };
         script.onerror = () => reject(new Error('Unable to load bill library.'));
         document.head.appendChild(script);
-    }).catch((error) => {
-        jspdfLoader = null;
-        throw error;
-    });
+    }).catch((error) => { jspdfLoader = null; throw error; });
 
     return jspdfLoader;
-}
-
-// ===== WhatsApp =====
-function sendWhatsAppKitchen(order) {
-    const itemsText = order.items.map(i => `${i.name} x${i.quantity}`).join('%0A');
-    const message =
-        `🔔 *New Order* %0A%0A` +
-        `👤 *Customer:* ${order.customerName}%0A` +
-        `📱 *Mobile:* ${order.customerMobile}%0A` +
-        `🪑 *Table No:* ${order.tableNumber}%0A%0A` +
-        `📋 *Items:*%0A${itemsText}%0A%0A` +
-        `💰 *Total:* ₹${order.totalAmount}%0A` +
-        `💳 *Payment:* ${order.paymentStatus}%0A` +
-        `📝 *Notes:* ${order.notes || 'None'}%0A%0A` +
-        `⏰ ${order.date} ${order.time}`;
-    safeOpenExternal(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`);
-}
-
-function sendWhatsAppCounter(order) {
-    const message =
-        `🧾 *Bill Ready*%0A%0A` +
-        `🪑 *Table:* ${order.tableNumber}%0A` +
-        `👤 *Customer:* ${order.customerName}%0A` +
-        `💰 *Total:* ₹${order.totalAmount}%0A` +
-        `💳 *Payment Status:* ${order.paymentStatus}%0A%0A` +
-        `⏰ ${order.date} ${order.time}`;
-    setTimeout(() => safeOpenExternal(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`), 1000);
-}
-
-// ===== Voice =====
-if ('speechSynthesis' in window) {
-    window.speechSynthesis.onvoiceschanged = function() {};
 }
 
 // ===== QR / UPI Helpers =====
@@ -1262,18 +1158,23 @@ function copyUpiId() {
 
 function fallbackCopy(text) {
     try {
-    const ta = document.createElement('textarea');
-    ta.value = text;
-    ta.style.position = 'fixed';
-    ta.style.opacity = '0';
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand('copy');
-    document.body.removeChild(ta);
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
     } catch (error) {
         console.warn('Clipboard copy failed', error);
         showToast('Copy failed. Please copy UPI ID manually.');
         return;
     }
     showToast('UPI ID copied! ✅');
+}
+
+// ===== Voice =====
+if ('speechSynthesis' in window) {
+    window.speechSynthesis.onvoiceschanged = function() {};
 }
