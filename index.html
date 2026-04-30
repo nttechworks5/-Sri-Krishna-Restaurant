@@ -10,14 +10,10 @@
 <base target="_blank">
 </head>
 <body>
-    <!-- Voice Welcome Audio (Backup) -->
-    <audio id="voice-welcome" preload="auto">
-        <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2teleR0NZKrk7rNsGgxJkNTsvXwkDk+L0O+0dSQPUIjN7LRyJQ1MiMzrsnMiDUyGzOuwdyQMTIfL6q12JgxMhsnprnUjDEuGyOewdCIMTIbH5K1zIgxLhsbkrHEiDEuGxOSrcSIMS4XD5KpuIgxLhcLkqG0iDEuFv+OmbCIMTIW+4qRrIgxMhb3ioGkiDEyFveKfZyIMTIW84p1lIgxMhbzinWMiDEyFvOKaYCIMTIW74pddIgxMhbvillwiDEyFuuKUXCIMTIW54o5bIgxMhbjih1oiDEyFtuKDWCIMTIW14n5XIgxMhbTifFYiDEyFs+J6VCIMTIWu4nVUIgxMha3iclIiDEyFquJuUSIMTIWn4mtPIgxMhaPiaEwiDEyFnOJmSyIMTIWX4mJIIgxMhZXiXEQiDEyFjOJaPyIMTIWL4lg9IgxMhYnhVzoiDEyFh+FVOiIMTIWD4VI4IgxMhX7hTjYiDEyFdeFMNiIMTIW14Uo0IgxMhXHhRzIiDEyFbeFFMiIMTIW14UUuIgxMhW3hRDQiDEyFbeE+MiIMTIW14TwuIgxMhW3hOiyIMTIW14TkqIgxMhW3hNCiIMTIW14TcnIgxMhW3hNiYIgxMhW3hNCQIgxMhW3hMh6IMTIW14TEeIgxMhW3hMRwiDEyFbeEwGiIMTIW14S8XIgxMhW3hLxUiDEyFbeEuEiIMTIW14S0QIgxMhW3hLBAiDEyFbeErDiIMTIW14SoLIgxMhW3hKggiDEyFbeEmBCI" type="audio/wav">
-    </audio>
     <!-- Loading Spinner -->
     <div id="loading-overlay">
         <div class="spinner"></div>
-        <p>Welcome to Sri Krishna Restaurant...</p>
+        <p>Loading Sri Krishna Hotel...</p>
     </div>
 
     <!-- Toast Notification -->
@@ -30,8 +26,9 @@
     <header class="header" id="header">
         <div class="header-top">
             <div class="header-left">
+                <!-- ✅ UPDATED: Real logo image instead of SVG icon -->
                 <div class="logo">
-                    <img src="icon.jpeg" alt="Sri Krishna Restaurant Logo" class="logo-img">
+                    <img src="icon.jpeg" alt="Sri Krishna Restaurant Logo" class="header-logo">
                 </div>
                 <div class="hotel-info">
                     <h1>Sri Krishna Restaurant</h1>
@@ -170,7 +167,7 @@
                 </div>
             </div>
             <button class="btn-place-order" id="btn-place-order">
-                <i class="fas fa-check-circle"></i> Place Order
+                <i class="fas fa-receipt"></i> Place Order
             </button>
             <button class="btn-continue" id="btn-continue">
                 <i class="fas fa-arrow-left"></i> Continue Shopping
@@ -178,11 +175,11 @@
         </div>
     </div>
 
-    <!-- Order Form Modal -->
+    <!-- Order Modal -->
     <div class="modal-overlay" id="order-modal-overlay"></div>
-    <div class="modal" id="order-modal">
+    <div class="modal order-modal" id="order-modal">
         <div class="modal-header">
-            <h3><i class="fas fa-receipt"></i> Order Details</h3>
+            <h3><i class="fas fa-receipt"></i> Place Your Order</h3>
             <button class="modal-close" id="order-modal-close"><i class="fas fa-times"></i></button>
         </div>
         <div class="modal-body">
@@ -220,42 +217,31 @@
                         </label>
                     </div>
                 </div>
+
+                <!-- ✅ Online Payment Section -->
                 <div id="online-payment-section" style="display: none;">
-                    <div class="payment-instruction">
-                        <p><i class="fas fa-info-circle"></i> Scan QR or click button to pay via GPay / PhonePe / Paytm</p>
+                    <div class="upi-buttons">
+                        <button type="button" class="btn-upi" id="btn-pay-now">
+                            <i class="fas fa-qrcode"></i> Pay Now via GPay/UPI
+                        </button>
+                        <!-- ✅ "I Have Paid" button (shown after Pay Now clicked) -->
+                        <button type="button" class="btn-upi btn-payment-done" id="btn-payment-done" style="display: none;">
+                            <i class="fas fa-check"></i> I Have Paid
+                        </button>
                     </div>
-                    <div class="upi-qr-section">
-                        <div class="upi-qr-code" id="upi-qr-code">
-                            <div class="qr-placeholder">
-                                <i class="fas fa-qrcode"></i>
-                                <span>UPI ID: 9843336980@upi</span>
-                                <span class="qr-amount" id="qr-amount">Amount: ₹0</span>
-                            </div>
-                        </div>
-                        <div class="upi-apps">
-                            <button type="button" class="btn-upi-app gpay" id="btn-gpay">
-                                <i class="fab fa-google-pay"></i> GPay
-                            </button>
-                            <button type="button" class="btn-upi-app phonepe" id="btn-phonepe">
-                                <i class="fas fa-mobile-alt"></i> PhonePe
-                            </button>
-                            <button type="button" class="btn-upi-app paytm" id="btn-paytm">
-                                <i class="fas fa-wallet"></i> Paytm
-                            </button>
-                        </div>
-                    </div>
-                    <button type="button" class="btn-upi btn-payment-done" id="btn-payment-done" style="display: none;">
-                        <i class="fas fa-check"></i> I Have Completed Payment
-                    </button>
                     <div class="payment-status" id="payment-status">
-                        <span class="status-pending">⏳ Click any payment app to pay ₹<span id="pending-amount">0</span></span>
+                        <span class="status-pending">⏳ Click "Pay Now" to make payment</span>
                     </div>
                 </div>
+
+                <!-- Cash Payment Section -->
                 <div id="cash-payment-section">
                     <div class="payment-status">
                         <span class="status-cash">💵 Cash on Delivery</span>
                     </div>
                 </div>
+
+                <!-- ✅ Submit Order button — shown for Cash immediately, shown for Online only after "I Have Paid" -->
                 <button type="submit" class="btn-submit-order" id="btn-submit-order">
                     <i class="fas fa-paper-plane"></i> Submit Order
                 </button>
@@ -341,7 +327,9 @@
     <footer class="footer">
         <div class="footer-content">
             <div class="footer-brand">
-                <img src="icon.jpeg" alt="Sri Krishna Restaurant" class="footer-logo-img">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 40px; height: 40px; margin: 0 auto 10px;">
+                    <path d="M12 2C10.5 2 9.5 3 9.5 4.5V9H8V4.5C8 3 7 2 5.5 2C4 2 3 3 3 4.5V9C3 12.5 5.5 15.5 9 16.2V20C9 21.1 9.9 22 11 22H13C14.1 22 15 21.1 15 20V16.2C18.5 15.5 21 12.5 21 9V4.5C21 3 20 2 18.5 2C17 2 16 3 16 4.5V9H14.5V4.5C14.5 3 13.5 2 12 2Z" fill="#ff9800"/>
+                </svg>
                 <h3>Sri Krishna Restaurant</h3>
                 <p>Veg & Non-Veg | Authentic South Indian Cuisine</p>
             </div>
