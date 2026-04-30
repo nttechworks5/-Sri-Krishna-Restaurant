@@ -4,47 +4,47 @@
 // ===== Menu Data =====
 const menuItems = [
     // Rice
-    { id: 1, name: "Chicken Rice", price: 90, category: "Rice", image: "https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=400" },
-    { id: 2, name: "Egg Rice", price: 80, category: "Rice", image: "https://images.unsplash.com/photo-1512058564366-18510be2db19?w=400" },
-    { id: 3, name: "Veg Rice", price: 70, category: "Rice", image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400" },
+    { id: 1, name: "Chicken Rice", price: 90, category: "Rice", image: "https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=400&fm=webp&q=80" },
+    { id: 2, name: "Egg Rice", price: 80, category: "Rice", image: "https://images.unsplash.com/photo-1512058564366-18510be2db19?w=400&fm=webp&q=80" },
+    { id: 3, name: "Veg Rice", price: 70, category: "Rice", image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400&fm=webp&q=80" },
 
     // Tiffin (Idly & Dosa)
-    { id: 4, name: "Idly", price: 10, category: "Tiffin", image: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=400" },
-    { id: 5, name: "Vada", price: 10, category: "Tiffin", image: "https://images.unsplash.com/photo-1606491956689-2ea866880c84?w=400" },
-    { id: 6, name: "Dosa", price: 20, category: "Tiffin", image: "https://images.unsplash.com/photo-1668236543090-82eba5ee5976?w=400" },
-    { id: 7, name: "Plain Dosa", price: 50, category: "Tiffin", image: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=400" },
-    { id: 8, name: "Set Dosa", price: 50, category: "Tiffin", image: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=400" },
-    { id: 9, name: "Masala Dosa", price: 70, category: "Tiffin", image: "https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=400" },
-    { id: 10, name: "Poori", price: 40, category: "Tiffin", image: "https://images.unsplash.com/photo-1606491956689-2ea866880c84?w=400" },
+    { id: 4, name: "Idly", price: 10, category: "Tiffin", image: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=400&fm=webp&q=80" },
+    { id: 5, name: "Vada", price: 10, category: "Tiffin", image: "https://images.unsplash.com/photo-1606491956689-2ea866880c84?w=400&fm=webp&q=80" },
+    { id: 6, name: "Dosa", price: 20, category: "Tiffin", image: "https://images.unsplash.com/photo-1668236543090-82eba5ee5976?w=400&fm=webp&q=80" },
+    { id: 7, name: "Plain Dosa", price: 50, category: "Tiffin", image: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=400&fm=webp&q=80" },
+    { id: 8, name: "Set Dosa", price: 50, category: "Tiffin", image: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=400&fm=webp&q=80" },
+    { id: 9, name: "Masala Dosa", price: 70, category: "Tiffin", image: "https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=400&fm=webp&q=80" },
+    { id: 10, name: "Poori", price: 40, category: "Tiffin", image: "https://images.unsplash.com/photo-1606491956689-2ea866880c84?w=400&fm=webp&q=80" },
 
     // Biryani
-    { id: 11, name: "Chicken Biryani", price: 90, category: "Biryani", image: "https://images.unsplash.com/photo-1633945274405-b6c8069047b0?w=400" },
-    { id: 12, name: "Egg Biryani", price: 80, category: "Biryani", image: "https://images.unsplash.com/photo-1563379926898-05f4575a45d8?w=400" },
-    { id: 13, name: "Veg Biryani", price: 70, category: "Biryani", image: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=400" },
+    { id: 11, name: "Chicken Biryani", price: 90, category: "Biryani", image: "https://images.unsplash.com/photo-1633945274405-b6c8069047b0?w=400&fm=webp&q=80" },
+    { id: 12, name: "Egg Biryani", price: 80, category: "Biryani", image: "https://images.unsplash.com/photo-1563379926898-05f4575a45d8?w=400&fm=webp&q=80" },
+    { id: 13, name: "Veg Biryani", price: 70, category: "Biryani", image: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=400&fm=webp&q=80" },
 
     // Meals
-    { id: 14, name: "Veg Meals", price: 80, category: "Meals", image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400" },
-    { id: 15, name: "Non Veg Meals", price: 120, category: "Meals", image: "https://images.unsplash.com/photo-1600891964092-4316c288032e?w=400" },
-    { id: 16, name: "Fish Meals", price: 140, category: "Meals", image: "https://images.unsplash.com/photo-1512058564366-18510be2db19?w=400" },
+    { id: 14, name: "Veg Meals", price: 80, category: "Meals", image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400&fm=webp&q=80" },
+    { id: 15, name: "Non Veg Meals", price: 120, category: "Meals", image: "https://images.unsplash.com/photo-1600891964092-4316c288032e?w=400&fm=webp&q=80" },
+    { id: 16, name: "Fish Meals", price: 140, category: "Meals", image: "https://images.unsplash.com/photo-1512058564366-18510be2db19?w=400&fm=webp&q=80" },
 
     // Bread Items
-    { id: 17, name: "Bread", price: 20, category: "Bread Items", image: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400" },
-    { id: 18, name: "Veg Sandwich", price: 80, category: "Bread Items", image: "https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=400" },
-    { id: 19, name: "Chicken Sandwich", price: 120, category: "Bread Items", image: "https://images.unsplash.com/photo-1606757389647-67b360512219?w=400" },
+    { id: 17, name: "Bread", price: 20, category: "Bread Items", image: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400&fm=webp&q=80" },
+    { id: 18, name: "Veg Sandwich", price: 80, category: "Bread Items", image: "https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=400&fm=webp&q=80" },
+    { id: 19, name: "Chicken Sandwich", price: 120, category: "Bread Items", image: "https://images.unsplash.com/photo-1606757389647-67b360512219?w=400&fm=webp&q=80" },
 
     // Egg Items
-    { id: 20, name: "Omelette", price: 20, category: "Egg Items", image: "https://images.unsplash.com/photo-1510693206972-df098062cb71?w=400" },
-    { id: 21, name: "Half Boil", price: 20, category: "Egg Items", image: "https://images.unsplash.com/photo-1482049016688-2d3e1b311543?w=400" },
-    { id: 22, name: "Boiled Egg", price: 20, category: "Egg Items", image: "https://images.unsplash.com/photo-1482049016688-2d3e1b311543?w=400" },
+    { id: 20, name: "Omelette", price: 20, category: "Egg Items", image: "https://images.unsplash.com/photo-1510693206972-df098062cb71?w=400&fm=webp&q=80" },
+    { id: 21, name: "Half Boil", price: 20, category: "Egg Items", image: "https://images.unsplash.com/photo-1482049016688-2d3e1b311543?w=400&fm=webp&q=80" },
+    { id: 22, name: "Boiled Egg", price: 20, category: "Egg Items", image: "https://images.unsplash.com/photo-1482049016688-2d3e1b311543?w=400&fm=webp&q=80" },
 
     // Chicken
-    { id: 23, name: "Chicken 100g", price: 40, category: "Chicken", image: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=400" },
-    { id: 24, name: "Chicken 1kg", price: 400, category: "Chicken", image: "https://images.unsplash.com/photo-1598103442097-8b74394b95c6?w=400" },
+    { id: 23, name: "Chicken 100g", price: 40, category: "Chicken", image: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=400&fm=webp&q=80" },
+    { id: 24, name: "Chicken 1kg", price: 400, category: "Chicken", image: "https://images.unsplash.com/photo-1598103442097-8b74394b95c6?w=400&fm=webp&q=80" },
 
     // Noodles
-    { id: 25, name: "Chicken Noodles", price: 90, category: "Noodles", image: "https://images.unsplash.com/photo-1552611052-33e04de081de?w=400" },
-    { id: 26, name: "Veg Noodles", price: 60, category: "Noodles", image: "https://images.unsplash.com/photo-1612929633738-8fe44f7ec841?w=400" },
-    { id: 27, name: "Egg Noodles", price: 80, category: "Noodles", image: "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=400" }
+    { id: 25, name: "Chicken Noodles", price: 90, category: "Noodles", image: "https://images.unsplash.com/photo-1552611052-33e04de081de?w=400&fm=webp&q=80" },
+    { id: 26, name: "Veg Noodles", price: 60, category: "Noodles", image: "https://images.unsplash.com/photo-1612929633738-8fe44f7ec841?w=400&fm=webp&q=80" },
+    { id: 27, name: "Egg Noodles", price: 80, category: "Noodles", image: "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=400&fm=webp&q=80" }
 ];
 
 // ===== State =====
@@ -96,6 +96,7 @@ document.addEventListener('DOMContentLoaded', function() {
     setupEventListeners();
     startHeroSlider();
     updateCartDisplay();
+    updateQrAmount();
     requestNotificationPermission();
 });
 
@@ -147,7 +148,7 @@ function renderMenu() {
         return `
             <div class="product-card" data-id="${item.id}">
                 <div class="product-image">
-                    <img src="${item.image}" alt="${item.name}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400'">
+                    <img src="${item.image}" alt="${item.name}" width="400" height="260" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&fm=webp&q=80'">
                     <span class="product-badge">${item.category}</span>
                 </div>
                 <div class="product-info">
@@ -274,7 +275,7 @@ function updateCartDisplay() {
 
         cartItems.innerHTML = cart.map(item => `
             <div class="cart-item">
-                <img src="${item.image}" alt="${item.name}" class="cart-item-image" onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100'">
+                <img src="${item.image}" alt="${item.name}" class="cart-item-image" width="80" height="80" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100&fm=webp&q=80'">
                 <div class="cart-item-details">
                     <div class="cart-item-name">${item.name}</div>
                     <div class="cart-item-price">₹${item.price} each</div>
@@ -349,13 +350,23 @@ function startHeroSlider() {
 function payNow() {
     const total = cart.reduce((s, i) => s + i.price * i.quantity, 0);
     const statusEl = document.getElementById('payment-status');
+    const qrSection = document.getElementById('qr-payment-section');
+    const paymentDoneBtn = document.getElementById('btn-payment-done');
+
+    if (total <= 0) {
+        showToast('Please add items to cart before making payment');
+        return;
+    }
 
     const isAndroid = /Android/i.test(navigator.userAgent);
     const isIOS = /iPhone|iPad/i.test(navigator.userAgent);
     const isMobile = isAndroid || isIOS;
 
-    document.getElementById('qr-payment-section').style.display = 'block';
-    document.getElementById('btn-payment-done').style.display = 'none';
+    if (qrSection) {
+        qrSection.style.display = 'block';
+        updateQrAmount();
+    }
+    if (paymentDoneBtn) paymentDoneBtn.style.display = 'none';
 
     const pa = encodeURIComponent(UPI_ID);
     const pn = encodeURIComponent(HOTEL_NAME);
@@ -485,13 +496,22 @@ function setupEventListeners() {
     document.getElementById('btn-pay-now').addEventListener('click', payNow);
 
     // "I Have Paid" button
-    document.getElementById('btn-payment-done').addEventListener('click', () => {
-        paymentStatus = 'paid';
-        updatePaymentStatus();
-        btnSubmitOrder.disabled = false;
-        showToast('✅ Payment confirmed!');
-        notifyBillCounterFromForm();
-    });
+    const paymentDoneBtn = document.getElementById('btn-payment-done');
+    if (paymentDoneBtn) {
+        paymentDoneBtn.addEventListener('click', () => {
+            paymentStatus = 'paid';
+            updatePaymentStatus();
+            btnSubmitOrder.disabled = false;
+            showToast('✅ Payment confirmed!');
+            notifyBillCounterFromForm();
+        });
+    }
+
+    // Copy UPI ID button
+    const copyUpiBtn = document.getElementById('btn-copy-upi');
+    if (copyUpiBtn) {
+        copyUpiBtn.addEventListener('click', copyUpiId);
+    }
 
     // Download bill button
     if (btnDownloadBill) {
@@ -654,7 +674,7 @@ function notifyBillCounterFromForm() {
     const itemsList = cart.map(item => `${item.name} x${item.quantity}`);
     const message = `NEW ORDER RECEIVED\nCustomer Name: ${customerName}\nTable Number: ${tableNumber}\nTotal Amount: ₹${totalAmount}\nItems: ${itemsList.join(', ')}\nPayment completed successfully.`;
     showAdminNotification(customerName, tableNumber, itemsList, totalAmount, message);
-    if (Notification && Notification.permission === 'granted') {
+    if ('Notification' in window && Notification.permission === 'granted') {
         new Notification('NEW ORDER RECEIVED', {
             body: `Customer: ${customerName}\nTable: ${tableNumber}\nTotal: ₹${totalAmount}`,
             icon: '',
@@ -899,3 +919,45 @@ function sendWhatsAppCounter(order) {
 
 // ===== Voice =====
 window.speechSynthesis.onvoiceschanged = function() {};
+
+// ===== QR / UPI Helpers =====
+function updateQrAmount() {
+    const total = (typeof cart !== 'undefined')
+        ? cart.reduce((s, i) => s + i.price * i.quantity, 0)
+        : 0;
+    const el = document.getElementById('qr-display-amount');
+    if (el) el.textContent = total;
+}
+
+function copyUpiId() {
+    const upi = UPI_ID;
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(upi).then(() => {
+            showToast('UPI ID copied! ✅');
+        }).catch(() => fallbackCopy(upi));
+    } else {
+        fallbackCopy(upi);
+    }
+}
+
+function fallbackCopy(text) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('UPI ID copied! ✅');
+}
+
+// Attach QR amount refresh for place order button
+document.addEventListener('DOMContentLoaded', function() {
+    const cartBtn2 = document.getElementById('btn-place-order');
+    if (cartBtn2) {
+        cartBtn2.addEventListener('click', function() {
+            setTimeout(updateQrAmount, 100);
+        });
+    }
+});
