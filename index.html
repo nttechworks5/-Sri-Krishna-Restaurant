@@ -221,7 +221,7 @@
                 <div id="online-payment-section" style="display: none;">
                     <div class="upi-buttons">
                         <button type="button" class="btn-upi" id="btn-pay-now">
-                            <i class="fas fa-qrcode"></i> Pay via UPI / GPay / PhonePe
+                            <i class="fas fa-qrcode"></i> Pay with GPay / UPI
                         </button>
                         <!-- "I Have Paid" button (shown after Pay Now clicked) -->
                         <button type="button" class="btn-upi btn-payment-done" id="btn-payment-done" style="display: none;">
@@ -288,11 +288,17 @@
             <h3>Order Placed Successfully!</h3>
             <p>Thank you for your order. Your bill has been downloaded.</p>
             <p class="success-note">A confirmation has been sent via WhatsApp.</p>
+            <button class="btn-download-bill" id="btn-download-bill" style="display: none;">
+                <i class="fas fa-download"></i> Download Bill
+            </button>
             <button class="btn-new-order" id="btn-new-order">
                 <i class="fas fa-plus"></i> Place New Order
             </button>
         </div>
     </div>
+
+    <!-- Admin Notification Panel -->
+    <div id="admin-notification-panel" class="admin-notification-panel" aria-live="polite"></div>
 
     <!-- Order History Modal -->
     <div class="modal-overlay" id="history-modal-overlay"></div>
