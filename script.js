@@ -78,51 +78,33 @@ const toastMessage = document.getElementById('toast-message');
 
 // ===== Initialize =====
 document.addEventListener('DOMContentLoaded', function() {
-    // Hide loading after 1.5s
     setTimeout(() => {
         document.getElementById('loading-overlay').classList.add('hidden');
     }, 1500);
 
-    // Voice welcome
     setTimeout(() => {
         speakText("Welcome to Sri Krishna Hotel. Please place your order.");
     }, 2000);
 
-    // Load cart from localStorage
     loadCart();
-
-    // Render menu
     renderMenu();
-
-    // Setup event listeners
     setupEventListeners();
-
-    // Start hero slider
     startHeroSlider();
-
-    // Update cart display
     updateCartDisplay();
 });
 
 // ===== Text to Speech =====
 function speakText(text) {
     if ('speechSynthesis' in window) {
-        // Cancel any ongoing speech
         window.speechSynthesis.cancel();
-
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = 'en-IN';
         utterance.rate = 0.9;
         utterance.pitch = 1;
         utterance.volume = 1;
-
-        // Try to get an Indian English voice
         const voices = window.speechSynthesis.getVoices();
         const indianVoice = voices.find(v => v.lang.includes('en-IN') || v.lang.includes('en-GB'));
-        if (indianVoice) {
-            utterance.voice = indianVoice;
-        }
-
+        if (indianVoice) utterance.voice = indianVoice;
         window.speechSynthesis.speak(utterance);
     }
 }
@@ -131,14 +113,12 @@ function speakText(text) {
 function renderMenu() {
     let filteredItems = menuItems;
 
-    // Filter by category
     if (currentCategory !== 'all') {
         filteredItems = filteredItems.filter(item => item.category === currentCategory);
     }
 
-    // Filter by search
     if (searchQuery) {
-        filteredItems = filteredItems.filter(item => 
+        filteredItems = filteredItems.filter(item =>
             item.name.toLowerCase().includes(searchQuery.toLowerCase())
         );
     }
@@ -183,34 +163,28 @@ function renderMenu() {
         `;
     }).join('');
 
-    // Attach event listeners to new elements
     attachProductEvents();
 }
 
 function attachProductEvents() {
-    // Quantity buttons
     document.querySelectorAll('.qty-btn.plus').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.stopPropagation();
-            const id = parseInt(btn.dataset.id);
-            addToCart(id);
+            addToCart(parseInt(btn.dataset.id));
         });
     });
 
     document.querySelectorAll('.qty-btn.minus').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.stopPropagation();
-            const id = parseInt(btn.dataset.id);
-            decreaseQuantity(id);
+            decreaseQuantity(parseInt(btn.dataset.id));
         });
     });
 
-    // Add to cart button
     document.querySelectorAll('.btn-add-cart').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.stopPropagation();
-            const id = parseInt(btn.dataset.id);
-            addToCart(id);
+            addToCart(parseInt(btn.dataset.id));
         });
     });
 }
@@ -239,10 +213,9 @@ function addToCart(id) {
     renderMenu();
     showToast(`${item.name} added to cart!`);
 
-    // Animate cart button
     const cartBtn = document.getElementById('cart-btn');
     cartBtn.style.animation = 'none';
-    cartBtn.offsetHeight; // trigger reflow
+    cartBtn.offsetHeight;
     cartBtn.style.animation = 'cartBounce 0.5s ease';
 }
 
@@ -289,15 +262,9 @@ function updateCartDisplay() {
     cartCount.textContent = totalItems;
     cartTotal.textContent = '₹' + totalAmount;
 
-    // Update sticky cart visibility
     const stickyCart = document.getElementById('sticky-cart');
-    if (totalItems > 0) {
-        stickyCart.style.display = 'block';
-    } else {
-        stickyCart.style.display = 'none';
-    }
+    stickyCart.style.display = totalItems > 0 ? 'block' : 'none';
 
-    // Render cart items
     if (cart.length === 0) {
         emptyCart.style.display = 'flex';
         cartItems.style.display = 'none';
@@ -356,9 +323,7 @@ function clearCart() {
 function showToast(message) {
     toastMessage.textContent = message;
     toast.classList.add('show');
-    setTimeout(() => {
-        toast.classList.remove('show');
-    }, 2500);
+    setTimeout(() => toast.classList.remove('show'), 2500);
 }
 
 // ===== Hero Slider =====
@@ -369,14 +334,11 @@ function startHeroSlider() {
     setInterval(() => {
         slides[currentSlide].classList.remove('active');
         dots[currentSlide].classList.remove('active');
-
         currentSlide = (currentSlide + 1) % slides.length;
-
         slides[currentSlide].classList.add('active');
         dots[currentSlide].classList.add('active');
     }, 4000);
 
-    // Click on dots
     dots.forEach((dot, index) => {
         dot.addEventListener('click', () => {
             slides[currentSlide].classList.remove('active');
@@ -388,6 +350,38 @@ function startHeroSlider() {
     });
 }
 
+// ===== GPay / UPI Pay Now =====
+function payNow() {
+    const total = cart.reduce((s, i) => s + i.price * i.quantity, 0);
+
+    // Desktop fallback — UPI deep-links only work on Android mobile
+    const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
+    if (!isMobile) {
+        document.getElementById('payment-status').innerHTML =
+            '<span class="status-pending">⚠️ Please open this page on your mobile to pay via GPay</span>';
+        return;
+    }
+
+    // Build UPI deep-link with dynamic cart total
+    const upiLink =
+        `upi://pay?pa=${encodeURIComponent(UPI_ID)}` +
+        `&pn=${encodeURIComponent(HOTEL_NAME)}` +
+        `&am=${total}` +
+        `&cu=INR` +
+        `&tn=${encodeURIComponent('Food Order - Sri Krishna Hotel')}`;
+
+    // Direct navigation — most reliable method on Android Chrome / Samsung Browser
+    window.location.href = upiLink;
+
+    // After 2s user returns from GPay app — show "I Have Paid" button
+    setTimeout(() => {
+        document.getElementById('btn-payment-done').style.display = 'flex';
+        document.getElementById('payment-status').innerHTML =
+            '<span class="status-pending">⏳ GPay-ல் payment முடித்த பிறகு "I Have Paid" click செய்யுங்கள்</span>';
+        showToast('GPay app திறக்கிறது... payment முடித்து திரும்பவும்');
+    }, 2000);
+}
+
 // ===== Event Listeners =====
 function setupEventListeners() {
     // Category buttons
@@ -397,8 +391,6 @@ function setupEventListeners() {
             btn.classList.add('active');
             currentCategory = btn.dataset.category;
             renderMenu();
-
-            // Scroll to menu
             document.getElementById('menu-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
         });
     });
@@ -409,12 +401,10 @@ function setupEventListeners() {
             e.preventDefault();
             const category = item.dataset.category;
             currentCategory = category;
-
             document.querySelectorAll('.category-btn').forEach(b => {
                 b.classList.remove('active');
                 if (b.dataset.category === category) b.classList.add('active');
             });
-
             renderMenu();
             closeMobileMenu();
             document.getElementById('menu-section').scrollIntoView({ behavior: 'smooth' });
@@ -436,13 +426,12 @@ function setupEventListeners() {
         renderMenu();
     });
 
-    // Search input
     document.getElementById('search-input').addEventListener('input', (e) => {
         searchQuery = e.target.value;
         renderMenu();
     });
 
-    // Mobile menu toggle
+    // Mobile menu
     document.getElementById('menu-toggle').addEventListener('click', openMobileMenu);
     document.getElementById('mobile-menu-close').addEventListener('click', closeMobileMenu);
     document.getElementById('mobile-menu-overlay').addEventListener('click', closeMobileMenu);
@@ -463,61 +452,33 @@ function setupEventListeners() {
     document.getElementById('order-modal-close').addEventListener('click', closeOrderModal);
     document.getElementById('order-modal-overlay').addEventListener('click', closeOrderModal);
 
-    // ✅ Payment method radio — controls Submit Order visibility
+    // Payment method radio
     document.querySelectorAll('input[name="payment-method"]').forEach(radio => {
         radio.addEventListener('change', (e) => {
             if (e.target.value === 'online') {
                 document.getElementById('online-payment-section').style.display = 'block';
                 document.getElementById('cash-payment-section').style.display = 'none';
                 document.getElementById('btn-payment-done').style.display = 'none';
-                document.getElementById('payment-status').innerHTML = '<span class="status-pending">⏳ Click "Pay Now" to open your UPI app</span>';
+                document.getElementById('payment-status').innerHTML =
+                    '<span class="status-pending">⏳ Click "Pay Now" to open your UPI app</span>';
                 paymentStatus = 'pending';
-                // ✅ Hide Submit Order until payment confirmed
+                // Hide Submit Order until payment confirmed
                 document.getElementById('btn-submit-order').style.display = 'none';
             } else {
                 document.getElementById('online-payment-section').style.display = 'none';
                 document.getElementById('cash-payment-section').style.display = 'block';
                 paymentStatus = 'cash';
-                // ✅ Cash: show Submit Order immediately
+                // Cash: show Submit Order immediately
                 document.getElementById('btn-submit-order').style.display = 'flex';
             }
         });
     });
 
-    // ✅ Pay Now button — opens GPay/UPI with dynamic amount (Android compatible)
-    document.getElementById('btn-pay-now').addEventListener('click', () => {
-        const totalAmount = cart.reduce((s, i) => s + i.price * i.quantity, 0);
-
-        // ✅ Full UPI deep-link with dynamic amount pre-filled
-        const upiUrl = `upi://pay?pa=${encodeURIComponent(UPI_ID)}&pn=${encodeURIComponent('Sri Krishna Hotel')}&am=${totalAmount}&cu=INR&tn=${encodeURIComponent('Food Order Payment')}`;
-
-        // ✅ Best method for Android: create a hidden <a> tag and click it
-        // This works in Chrome, Samsung Browser, Firefox on Android
-        const a = document.createElement('a');
-        a.href = upiUrl;
-        a.style.display = 'none';
-        document.body.appendChild(a);
-        a.click();
-
-        // Cleanup after short delay
-        setTimeout(() => {
-            document.body.removeChild(a);
-        }, 1000);
-
-        // ✅ Show "I Have Paid" button after Pay Now is clicked
-        setTimeout(() => {
-            document.getElementById('btn-payment-done').style.display = 'flex';
-            document.getElementById('payment-status').innerHTML = '<span class="status-pending">⏳ GPay-ல் payment முடித்த பிறகு "I Have Paid" click செய்யுங்கள்</span>';
-            showToast('GPay app திறக்கிறது... payment முடித்து திரும்பவும்');
-        }, 300);
-    });
-
-    // ✅ "I Have Paid" button — confirms payment and reveals Submit Order
+    // "I Have Paid" button — confirms payment and reveals Submit Order
     document.getElementById('btn-payment-done').addEventListener('click', () => {
         paymentStatus = 'paid';
         updatePaymentStatus();
         showToast('✅ Payment confirmed!');
-        // ✅ Now reveal Submit Order button
         document.getElementById('btn-submit-order').style.display = 'flex';
     });
 
@@ -600,16 +561,14 @@ function openOrderModal() {
     document.getElementById('order-modal-overlay').classList.add('open');
     document.body.style.overflow = 'hidden';
 
-    // Reset form
     document.getElementById('order-form').reset();
     document.querySelector('input[name="payment-method"][value="cash"]').checked = true;
     document.getElementById('online-payment-section').style.display = 'none';
     document.getElementById('cash-payment-section').style.display = 'block';
     document.getElementById('btn-payment-done').style.display = 'none';
-    document.getElementById('payment-status').innerHTML = '<span class="status-pending">⏳ Click "Pay Now" to open your UPI app</span>';
+    document.getElementById('payment-status').innerHTML =
+        '<span class="status-pending">⏳ Click "Pay Now" to open your UPI app</span>';
     paymentStatus = 'cash';
-
-    // ✅ Default is Cash — show Submit Order immediately
     document.getElementById('btn-submit-order').style.display = 'flex';
 }
 
@@ -683,7 +642,6 @@ function submitOrder() {
         return;
     }
 
-    // ✅ Block submission if online payment not confirmed
     if (paymentMethod === 'online' && paymentStatus !== 'paid') {
         showToast('Please complete payment first and click "I Have Paid"');
         return;
@@ -694,7 +652,6 @@ function submitOrder() {
     const dateStr = now.toLocaleDateString('en-IN');
     const timeStr = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
 
-    // ✅ Payment status clearly set: "💵 Cash" or "✅ Paid (Online)"
     const order = {
         id: 'ORD' + Date.now(),
         customerName,
@@ -710,24 +667,15 @@ function submitOrder() {
         timestamp: now.getTime()
     };
 
-    // Save to localStorage
     saveOrderToHistory(order);
-
-    // Download bill PDF
     generateBillPDF(order);
-
-    // Send WhatsApp to Kitchen
     sendWhatsAppKitchen(order);
-
-    // Send WhatsApp to Counter
     sendWhatsAppCounter(order);
 
-    // Voice thank you
     setTimeout(() => {
         speakText("Thank you for your order. Visit again.");
     }, 500);
 
-    // Close order modal and show success
     closeOrderModal();
     openSuccessModal();
 }
@@ -736,7 +684,6 @@ function submitOrder() {
 function saveOrderToHistory(order) {
     let history = JSON.parse(localStorage.getItem('sriKrishnaOrders') || '[]');
     history.unshift(order);
-    // Keep only last 50 orders
     if (history.length > 50) history = history.slice(0, 50);
     localStorage.setItem('sriKrishnaOrders', JSON.stringify(history));
 }
@@ -782,7 +729,6 @@ function generateBillPDF(order) {
     let y = 10;
     const centerX = 40;
 
-    // Header
     doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
     doc.text('SRI KRISHNA HOTEL', centerX, y, { align: 'center' });
@@ -797,7 +743,6 @@ function generateBillPDF(order) {
     doc.text('--------------------------------', centerX, y, { align: 'center' });
     y += 6;
 
-    // Date & Time
     doc.setFontSize(9);
     doc.text(`Date: ${order.date}`, 5, y);
     doc.text(`Time: ${order.time}`, 55, y);
@@ -807,7 +752,6 @@ function generateBillPDF(order) {
     doc.text('--------------------------------', centerX, y, { align: 'center' });
     y += 6;
 
-    // Customer details
     doc.setFontSize(9);
     doc.text(`Customer: ${order.customerName}`, 5, y);
     y += 5;
@@ -822,7 +766,6 @@ function generateBillPDF(order) {
     doc.text('--------------------------------', centerX, y, { align: 'center' });
     y += 6;
 
-    // Items header
     doc.setFontSize(9);
     doc.setFont('helvetica', 'bold');
     doc.text('Item', 5, y);
@@ -833,7 +776,6 @@ function generateBillPDF(order) {
     doc.text('--------------------------------', centerX, y, { align: 'center' });
     y += 6;
 
-    // Items
     doc.setFontSize(9);
     order.items.forEach(item => {
         const itemTotal = item.price * item.quantity;
@@ -847,7 +789,6 @@ function generateBillPDF(order) {
     doc.text('--------------------------------', centerX, y, { align: 'center' });
     y += 6;
 
-    // Total
     doc.setFontSize(11);
     doc.setFont('helvetica', 'bold');
     doc.text('TOTAL AMOUNT', 5, y);
@@ -859,7 +800,6 @@ function generateBillPDF(order) {
     doc.text('--------------------------------', centerX, y, { align: 'center' });
     y += 6;
 
-    // ✅ Payment Status in bill — "💵 Cash" or "✅ Paid (Online)"
     doc.setFontSize(10);
     doc.setFont('helvetica', 'bold');
     doc.text(`Payment: ${order.paymentStatus}`, centerX, y, { align: 'center' });
@@ -870,7 +810,6 @@ function generateBillPDF(order) {
     doc.text('--------------------------------', centerX, y, { align: 'center' });
     y += 8;
 
-    // Footer
     doc.setFontSize(10);
     doc.setFont('helvetica', 'bold');
     doc.text('THANK YOU', centerX, y, { align: 'center' });
@@ -879,14 +818,14 @@ function generateBillPDF(order) {
     doc.setFont('helvetica', 'normal');
     doc.text('Visit Again!', centerX, y, { align: 'center' });
 
-    // Save PDF
     doc.save(`SriKrishna_Bill_${order.id}.pdf`);
 }
 
 // ===== WhatsApp Functions =====
 function sendWhatsAppKitchen(order) {
     const itemsText = order.items.map(i => `${i.name} x${i.quantity}`).join('%0A');
-    const message = `🔔 *New Order* %0A%0A` +
+    const message =
+        `🔔 *New Order* %0A%0A` +
         `👤 *Customer:* ${order.customerName}%0A` +
         `📱 *Mobile:* ${order.customerMobile}%0A` +
         `🪑 *Table No:* ${order.tableNumber}%0A%0A` +
@@ -896,27 +835,24 @@ function sendWhatsAppKitchen(order) {
         `📝 *Notes:* ${order.notes || 'None'}%0A%0A` +
         `⏰ ${order.date} ${order.time}`;
 
-    const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${message}`;
-    window.open(whatsappUrl, '_blank');
+    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, '_blank');
 }
 
 function sendWhatsAppCounter(order) {
-    const message = `🧾 *Bill Ready*%0A%0A` +
+    const message =
+        `🧾 *Bill Ready*%0A%0A` +
         `🪑 *Table:* ${order.tableNumber}%0A` +
         `👤 *Customer:* ${order.customerName}%0A` +
         `💰 *Total:* ₹${order.totalAmount}%0A` +
         `💳 *Payment Status:* ${order.paymentStatus}%0A%0A` +
         `⏰ ${order.date} ${order.time}`;
 
-    const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${message}`;
-
-    // Open after a small delay to avoid popup blocking
     setTimeout(() => {
-        window.open(whatsappUrl, '_blank');
+        window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, '_blank');
     }, 1000);
 }
 
-// ===== Voice on load (ensure voices are loaded) =====
+// ===== Voice on load =====
 window.speechSynthesis.onvoiceschanged = function() {
-    // Voices are now loaded
+    // Voices loaded
 };
