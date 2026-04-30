@@ -362,7 +362,7 @@ function payNow() {
     const tn = encodeURIComponent('Food Order - Sri Krishna Hotel');
     const am = encodeURIComponent(total.toFixed(2));
     const baseUpiUrl = `upi://pay?pa=${pa}&pn=${pn}&am=${am}&cu=INR&tn=${tn}`;
-    const gpayUrl = `tez://upi/pay?pa=${pa}&pn=${pn}&am=${am}&cu=INR&tn=${tn}`;
+    const gpayIntentUrl = `intent://pay?pa=${pa}&pn=${pn}&am=${am}&cu=INR&tn=${tn}#Intent;scheme=upi;package=com.google.android.apps.nbu.paisa.user;S.browser_fallback_url=${encodeURIComponent(baseUpiUrl)};end`;
 
     if (!isMobile) {
         statusEl.innerHTML =
@@ -376,10 +376,7 @@ function payNow() {
     statusEl.innerHTML = '<span class="status-pending">🔗 Opening UPI app with amount and UPI details...</span>';
 
     if (isAndroid) {
-        window.location.href = gpayUrl;
-        setTimeout(() => {
-            window.location.href = baseUpiUrl;
-        }, 1200);
+        window.location.href = gpayIntentUrl;
     } else if (isIOS) {
         window.location.href = baseUpiUrl;
     }
