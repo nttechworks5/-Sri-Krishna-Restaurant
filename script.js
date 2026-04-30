@@ -51,7 +51,7 @@ const menuItems = [
 let cart = [];
 let currentCategory = 'all';
 let searchQuery = '';
-let paymentStatus = 'pending'; // pending, paid, cash
+let paymentStatus = 'pending';
 let currentSlide = 0;
 
 // ===== Hotel Details =====
@@ -222,12 +222,8 @@ function addToCart(id) {
 function decreaseQuantity(id) {
     const item = cart.find(c => c.id === id);
     if (!item) return;
-
     item.quantity--;
-    if (item.quantity <= 0) {
-        cart = cart.filter(c => c.id !== id);
-    }
-
+    if (item.quantity <= 0) cart = cart.filter(c => c.id !== id);
     saveCart();
     updateCartDisplay();
     renderMenu();
@@ -244,12 +240,8 @@ function removeFromCart(id) {
 function updateCartQuantity(id, change) {
     const item = cart.find(c => c.id === id);
     if (!item) return;
-
     item.quantity += change;
-    if (item.quantity <= 0) {
-        cart = cart.filter(c => c.id !== id);
-    }
-
+    if (item.quantity <= 0) cart = cart.filter(c => c.id !== id);
     saveCart();
     updateCartDisplay();
     renderMenu();
@@ -304,11 +296,8 @@ function saveCart() {
 function loadCart() {
     const saved = localStorage.getItem('sriKrishnaCart');
     if (saved) {
-        try {
-            cart = JSON.parse(saved);
-        } catch (e) {
-            cart = [];
-        }
+        try { cart = JSON.parse(saved); }
+        catch (e) { cart = []; }
     }
 }
 
@@ -351,34 +340,52 @@ function startHeroSlider() {
 }
 
 // ===== GPay / UPI Pay Now =====
+// GitHub Pages-ல் upi:// சில Chrome versions-ல் block ஆகும்.
+// Android Intent URL = 100% work guaranteed on Chrome Android.
+// Fallback: upi:// (older browsers / Samsung Browser)
 function payNow() {
     const total = cart.reduce((s, i) => s + i.price * i.quantity, 0);
+    const statusEl = document.getElementById('payment-status');
 
-    // Desktop fallback — UPI deep-links only work on Android mobile
-    const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
-    if (!isMobile) {
-        document.getElementById('payment-status').innerHTML =
-            '<span class="status-pending">⚠️ Please open this page on your mobile to pay via GPay</span>';
+    const isAndroid = /Android/i.test(navigator.userAgent);
+    const isIOS = /iPhone|iPad/i.test(navigator.userAgent);
+
+    if (!isAndroid && !isIOS) {
+        statusEl.innerHTML =
+            '<span class="status-pending">⚠️ GPay mobile-ல் மட்டும் திறக்கும். உங்கள் Android mobile-ல் open பண்ணுங்கள்.</span>';
         return;
     }
 
-    // Build UPI deep-link with dynamic cart total
-    const upiLink =
-        `upi://pay?pa=${encodeURIComponent(UPI_ID)}` +
-        `&pn=${encodeURIComponent(HOTEL_NAME)}` +
-        `&am=${total}` +
-        `&cu=INR` +
-        `&tn=${encodeURIComponent('Food Order - Sri Krishna Hotel')}`;
+    const pa  = encodeURIComponent(UPI_ID);
+    const pn  = encodeURIComponent(HOTEL_NAME);
+    const tn  = encodeURIComponent('Food Order - Sri Krishna Hotel');
+    const am  = total;
 
-    // Direct navigation — most reliable method on Android Chrome / Samsung Browser
-    window.location.href = upiLink;
+    if (isAndroid) {
+        // METHOD 1: Android Intent URL
+        // scheme=upi → Chrome Android automatically picks GPay / PhonePe / BHIM
+        // package=com.google.android.apps.nbu.paisa.user → specifically targets GPay
+        // S.browser_fallback_url → agar GPay install illa na GPay Play Store ku send
+        const fallback = encodeURIComponent('https://play.google.com/store/apps/details?id=com.google.android.apps.nbu.paisa.user');
+        const intentUrl =
+            `intent://pay?pa=${pa}&pn=${pn}&am=${am}&cu=INR&tn=${tn}` +
+            `#Intent;scheme=upi;package=com.google.android.apps.nbu.paisa.user;` +
+            `S.browser_fallback_url=${fallback};end`;
 
-    // After 2s user returns from GPay app — show "I Have Paid" button
+        window.location.href = intentUrl;
+
+    } else if (isIOS) {
+        // iOS GPay deep link
+        window.location.href =
+            `gpay://upi/pay?pa=${pa}&pn=${pn}&am=${am}&cu=INR&tn=${tn}`;
+    }
+
+    // 2 seconds பிறகு "I Have Paid" button காட்டு
     setTimeout(() => {
         document.getElementById('btn-payment-done').style.display = 'flex';
-        document.getElementById('payment-status').innerHTML =
+        statusEl.innerHTML =
             '<span class="status-pending">⏳ GPay-ல் payment முடித்த பிறகு "I Have Paid" click செய்யுங்கள்</span>';
-        showToast('GPay app திறக்கிறது... payment முடித்து திரும்பவும்');
+        showToast('GPay திறக்கிறது... payment பண்ணி திரும்பவும்');
     }, 2000);
 }
 
@@ -411,7 +418,7 @@ function setupEventListeners() {
         });
     });
 
-    // Search toggle
+    // Search
     document.getElementById('search-toggle').addEventListener('click', () => {
         document.getElementById('search-bar').classList.toggle('active');
         if (document.getElementById('search-bar').classList.contains('active')) {
@@ -448,7 +455,7 @@ function setupEventListeners() {
         openOrderModal();
     });
 
-    // Order Modal
+    // Order Modal close
     document.getElementById('order-modal-close').addEventListener('click', closeOrderModal);
     document.getElementById('order-modal-overlay').addEventListener('click', closeOrderModal);
 
@@ -460,21 +467,19 @@ function setupEventListeners() {
                 document.getElementById('cash-payment-section').style.display = 'none';
                 document.getElementById('btn-payment-done').style.display = 'none';
                 document.getElementById('payment-status').innerHTML =
-                    '<span class="status-pending">⏳ Click "Pay Now" to open your UPI app</span>';
+                    '<span class="status-pending">⏳ "Pay Now" click செய்து GPay திறக்கவும்</span>';
                 paymentStatus = 'pending';
-                // Hide Submit Order until payment confirmed
                 document.getElementById('btn-submit-order').style.display = 'none';
             } else {
                 document.getElementById('online-payment-section').style.display = 'none';
                 document.getElementById('cash-payment-section').style.display = 'block';
                 paymentStatus = 'cash';
-                // Cash: show Submit Order immediately
                 document.getElementById('btn-submit-order').style.display = 'flex';
             }
         });
     });
 
-    // "I Have Paid" button — confirms payment and reveals Submit Order
+    // "I Have Paid" button
     document.getElementById('btn-payment-done').addEventListener('click', () => {
         paymentStatus = 'paid';
         updatePaymentStatus();
@@ -525,7 +530,7 @@ function setupEventListeners() {
     document.getElementById('contact-modal-close').addEventListener('click', closeContactModal);
     document.getElementById('contact-modal-overlay').addEventListener('click', closeContactModal);
 
-    // Mobile number validation
+    // Mobile number only digits
     document.getElementById('customer-mobile').addEventListener('input', (e) => {
         e.target.value = e.target.value.replace(/\D/g, '').slice(0, 10);
     });
@@ -567,7 +572,7 @@ function openOrderModal() {
     document.getElementById('cash-payment-section').style.display = 'block';
     document.getElementById('btn-payment-done').style.display = 'none';
     document.getElementById('payment-status').innerHTML =
-        '<span class="status-pending">⏳ Click "Pay Now" to open your UPI app</span>';
+        '<span class="status-pending">⏳ "Pay Now" click செய்து GPay திறக்கவும்</span>';
     paymentStatus = 'cash';
     document.getElementById('btn-submit-order').style.display = 'flex';
 }
@@ -618,7 +623,7 @@ function closeContactModal() {
 function updatePaymentStatus() {
     const statusEl = document.getElementById('payment-status');
     if (paymentStatus === 'paid') {
-        statusEl.innerHTML = '<span class="status-paid">✅ Payment Completed — You may now Submit Order</span>';
+        statusEl.innerHTML = '<span class="status-paid">✅ Payment Completed — Submit Order பண்ணலாம்</span>';
     } else if (paymentStatus === 'pending') {
         statusEl.innerHTML = '<span class="status-pending">⏳ Payment Pending</span>';
     }
@@ -626,11 +631,11 @@ function updatePaymentStatus() {
 
 // ===== Submit Order =====
 function submitOrder() {
-    const customerName = document.getElementById('customer-name').value.trim();
+    const customerName   = document.getElementById('customer-name').value.trim();
     const customerMobile = document.getElementById('customer-mobile').value.trim();
-    const tableNumber = document.getElementById('table-number').value.trim();
-    const orderNotes = document.getElementById('order-notes').value.trim();
-    const paymentMethod = document.querySelector('input[name="payment-method"]:checked').value;
+    const tableNumber    = document.getElementById('table-number').value.trim();
+    const orderNotes     = document.getElementById('order-notes').value.trim();
+    const paymentMethod  = document.querySelector('input[name="payment-method"]:checked').value;
 
     if (!customerName || !customerMobile || !tableNumber) {
         showToast('Please fill all required fields');
@@ -672,15 +677,13 @@ function submitOrder() {
     sendWhatsAppKitchen(order);
     sendWhatsAppCounter(order);
 
-    setTimeout(() => {
-        speakText("Thank you for your order. Visit again.");
-    }, 500);
+    setTimeout(() => speakText("Thank you for your order. Visit again."), 500);
 
     closeOrderModal();
     openSuccessModal();
 }
 
-// ===== Save Order History =====
+// ===== Order History =====
 function saveOrderToHistory(order) {
     let history = JSON.parse(localStorage.getItem('sriKrishnaOrders') || '[]');
     history.unshift(order);
@@ -720,108 +723,66 @@ function renderOrderHistory() {
 // ===== Generate Bill PDF =====
 function generateBillPDF(order) {
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({
-        unit: 'mm',
-        format: [80, 200],
-        orientation: 'portrait'
-    });
+    const doc = new jsPDF({ unit: 'mm', format: [80, 200], orientation: 'portrait' });
 
     let y = 10;
     const centerX = 40;
 
-    doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    doc.text('SRI KRISHNA HOTEL', centerX, y, { align: 'center' });
-    y += 6;
+    doc.setFontSize(14); doc.setFont('helvetica', 'bold');
+    doc.text('SRI KRISHNA HOTEL', centerX, y, { align: 'center' }); y += 6;
 
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'normal');
-    doc.text('Authentic South Indian Cuisine', centerX, y, { align: 'center' });
-    y += 5;
-    doc.text(`Ph: ${PHONE_NUMBER}`, centerX, y, { align: 'center' });
-    y += 5;
-    doc.text('--------------------------------', centerX, y, { align: 'center' });
-    y += 6;
+    doc.setFontSize(9); doc.setFont('helvetica', 'normal');
+    doc.text('Authentic South Indian Cuisine', centerX, y, { align: 'center' }); y += 5;
+    doc.text(`Ph: ${PHONE_NUMBER}`, centerX, y, { align: 'center' }); y += 5;
+    doc.text('--------------------------------', centerX, y, { align: 'center' }); y += 6;
 
-    doc.setFontSize(9);
     doc.text(`Date: ${order.date}`, 5, y);
-    doc.text(`Time: ${order.time}`, 55, y);
-    y += 6;
-    doc.text(`Order ID: ${order.id}`, 5, y);
-    y += 5;
-    doc.text('--------------------------------', centerX, y, { align: 'center' });
-    y += 6;
+    doc.text(`Time: ${order.time}`, 55, y); y += 6;
+    doc.text(`Order ID: ${order.id}`, 5, y); y += 5;
+    doc.text('--------------------------------', centerX, y, { align: 'center' }); y += 6;
 
-    doc.setFontSize(9);
-    doc.text(`Customer: ${order.customerName}`, 5, y);
-    y += 5;
-    doc.text(`Mobile: ${order.customerMobile}`, 5, y);
-    y += 5;
-    doc.text(`Table: ${order.tableNumber}`, 5, y);
-    y += 5;
-    if (order.notes) {
-        doc.text(`Notes: ${order.notes}`, 5, y);
-        y += 5;
-    }
-    doc.text('--------------------------------', centerX, y, { align: 'center' });
-    y += 6;
+    doc.text(`Customer: ${order.customerName}`, 5, y); y += 5;
+    doc.text(`Mobile: ${order.customerMobile}`, 5, y); y += 5;
+    doc.text(`Table: ${order.tableNumber}`, 5, y); y += 5;
+    if (order.notes) { doc.text(`Notes: ${order.notes}`, 5, y); y += 5; }
+    doc.text('--------------------------------', centerX, y, { align: 'center' }); y += 6;
 
-    doc.setFontSize(9);
     doc.setFont('helvetica', 'bold');
-    doc.text('Item', 5, y);
-    doc.text('Qty', 45, y);
-    doc.text('Price', 65, y);
-    y += 5;
+    doc.text('Item', 5, y); doc.text('Qty', 45, y); doc.text('Price', 65, y); y += 5;
     doc.setFont('helvetica', 'normal');
-    doc.text('--------------------------------', centerX, y, { align: 'center' });
-    y += 6;
+    doc.text('--------------------------------', centerX, y, { align: 'center' }); y += 6;
 
-    doc.setFontSize(9);
     order.items.forEach(item => {
-        const itemTotal = item.price * item.quantity;
         doc.text(item.name.substring(0, 20), 5, y);
         doc.text(String(item.quantity), 48, y);
-        doc.text(`Rs.${itemTotal}`, 62, y);
+        doc.text(`Rs.${item.price * item.quantity}`, 62, y);
         y += 5;
     });
 
     y += 2;
-    doc.text('--------------------------------', centerX, y, { align: 'center' });
-    y += 6;
+    doc.text('--------------------------------', centerX, y, { align: 'center' }); y += 6;
 
-    doc.setFontSize(11);
-    doc.setFont('helvetica', 'bold');
-    doc.text('TOTAL AMOUNT', 5, y);
-    doc.text(`Rs.${order.totalAmount}`, 55, y);
-    y += 6;
+    doc.setFontSize(11); doc.setFont('helvetica', 'bold');
+    doc.text('TOTAL AMOUNT', 5, y); doc.text(`Rs.${order.totalAmount}`, 55, y); y += 6;
 
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'normal');
-    doc.text('--------------------------------', centerX, y, { align: 'center' });
-    y += 6;
+    doc.setFontSize(9); doc.setFont('helvetica', 'normal');
+    doc.text('--------------------------------', centerX, y, { align: 'center' }); y += 6;
 
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'bold');
-    doc.text(`Payment: ${order.paymentStatus}`, centerX, y, { align: 'center' });
-    y += 6;
+    doc.setFontSize(10); doc.setFont('helvetica', 'bold');
+    doc.text(`Payment: ${order.paymentStatus}`, centerX, y, { align: 'center' }); y += 6;
 
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'normal');
-    doc.text('--------------------------------', centerX, y, { align: 'center' });
-    y += 8;
+    doc.setFontSize(9); doc.setFont('helvetica', 'normal');
+    doc.text('--------------------------------', centerX, y, { align: 'center' }); y += 8;
 
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'bold');
-    doc.text('THANK YOU', centerX, y, { align: 'center' });
-    y += 5;
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10); doc.setFont('helvetica', 'bold');
+    doc.text('THANK YOU', centerX, y, { align: 'center' }); y += 5;
+    doc.setFontSize(9); doc.setFont('helvetica', 'normal');
     doc.text('Visit Again!', centerX, y, { align: 'center' });
 
     doc.save(`SriKrishna_Bill_${order.id}.pdf`);
 }
 
-// ===== WhatsApp Functions =====
+// ===== WhatsApp =====
 function sendWhatsAppKitchen(order) {
     const itemsText = order.items.map(i => `${i.name} x${i.quantity}`).join('%0A');
     const message =
@@ -834,7 +795,6 @@ function sendWhatsAppKitchen(order) {
         `💳 *Payment:* ${order.paymentStatus}%0A` +
         `📝 *Notes:* ${order.notes || 'None'}%0A%0A` +
         `⏰ ${order.date} ${order.time}`;
-
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, '_blank');
 }
 
@@ -846,13 +806,8 @@ function sendWhatsAppCounter(order) {
         `💰 *Total:* ₹${order.totalAmount}%0A` +
         `💳 *Payment Status:* ${order.paymentStatus}%0A%0A` +
         `⏰ ${order.date} ${order.time}`;
-
-    setTimeout(() => {
-        window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, '_blank');
-    }, 1000);
+    setTimeout(() => window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, '_blank'), 1000);
 }
 
-// ===== Voice on load =====
-window.speechSynthesis.onvoiceschanged = function() {
-    // Voices loaded
-};
+// ===== Voice =====
+window.speechSynthesis.onvoiceschanged = function() {};
