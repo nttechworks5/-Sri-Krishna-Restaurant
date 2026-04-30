@@ -76,6 +76,10 @@ const cartSubtotal = document.getElementById('cart-subtotal');
 const cartGrandTotal = document.getElementById('cart-grand-total');
 const toast = document.getElementById('toast');
 const toastMessage = document.getElementById('toast-message');
+const btnSubmitOrder = document.getElementById('btn-submit-order');
+const btnDownloadBill = document.getElementById('btn-download-bill');
+const adminNotificationPanel = document.getElementById('admin-notification-panel');
+let lastGeneratedBill = null;
 
 // ===== Initialize =====
 document.addEventListener('DOMContentLoaded', function() {
@@ -92,6 +96,7 @@ document.addEventListener('DOMContentLoaded', function() {
     setupEventListeners();
     startHeroSlider();
     updateCartDisplay();
+    requestNotificationPermission();
 });
 
 // ===== Text to Speech =====
@@ -349,54 +354,42 @@ function payNow() {
     const isIOS = /iPhone|iPad/i.test(navigator.userAgent);
     const isMobile = isAndroid || isIOS;
 
-    // ✅ Show QR section always (desktop + mobile)
     document.getElementById('qr-payment-section').style.display = 'block';
+    document.getElementById('btn-payment-done').style.display = 'none';
+
+    const pa = encodeURIComponent(UPI_ID);
+    const pn = encodeURIComponent(HOTEL_NAME);
+    const tn = encodeURIComponent('Food Order - Sri Krishna Hotel');
+    const am = encodeURIComponent(total.toFixed(2));
+    const baseUpiUrl = `upi://pay?pa=${pa}&pn=${pn}&am=${am}&cu=INR&tn=${tn}`;
+    const gpayUrl = `tez://upi/pay?pa=${pa}&pn=${pn}&am=${am}&cu=INR&tn=${tn}`;
 
     if (!isMobile) {
-        // Desktop: show QR only
         statusEl.innerHTML =
-            '<span class="status-pending">📱 Mobile இல்லாவிட்டால் QR Code Scan செய்து Pay பண்ணுங்கள்</span>';
-        // Still show "I Have Paid" button
+            '<span class="status-pending">📱 Scan the QR or use UPI app to pay. Then click "I Have Paid".</span>';
         setTimeout(() => {
             document.getElementById('btn-payment-done').style.display = 'flex';
-            statusEl.innerHTML =
-                '<span class="status-pending">⏳ QR Scan செய்து Pay பண்ணிய பிறகு "I Have Paid" click செய்யுங்கள்</span>';
         }, 500);
         return;
     }
 
-    const pa  = encodeURIComponent(UPI_ID);
-    const pn  = encodeURIComponent(HOTEL_NAME);
-    const tn  = encodeURIComponent('Food Order - Sri Krishna Hotel');
-    const am  = total;
+    statusEl.innerHTML = '<span class="status-pending">🔗 Opening UPI app with amount and UPI details...</span>';
 
     if (isAndroid) {
-        // ✅ Try PhonePe first, fallback to generic UPI intent
-        const phonepeUrl =
-            `intent://pay?pa=${pa}&pn=${pn}&am=${am}&cu=INR&tn=${tn}` +
-            `#Intent;scheme=upi;package=com.phonepe.app;` +
-            `S.browser_fallback_url=${encodeURIComponent('upi://pay?pa=' + pa + '&pn=' + pn + '&am=' + am + '&cu=INR&tn=' + tn)};end`;
-
-        // ✅ Generic UPI intent (opens app chooser: GPay, PhonePe, BHIM, Paytm etc.)
-        const genericUpiUrl =
-            `upi://pay?pa=${pa}&pn=${pn}&am=${am}&cu=INR&tn=${tn}`;
-
-        // Try generic UPI first (works on all Android UPI apps)
-        window.location.href = genericUpiUrl;
-
+        window.location.href = gpayUrl;
+        setTimeout(() => {
+            window.location.href = baseUpiUrl;
+        }, 1200);
     } else if (isIOS) {
-        // iOS PhonePe deep link
-        window.location.href =
-            `phonepe://pay?pa=${pa}&pn=${pn}&am=${am}&cu=INR&tn=${tn}`;
+        window.location.href = baseUpiUrl;
     }
 
-    // 2 seconds பிறகு "I Have Paid" button காட்டு
     setTimeout(() => {
         document.getElementById('btn-payment-done').style.display = 'flex';
         statusEl.innerHTML =
-            '<span class="status-pending">⏳ Payment முடித்த பிறகு "I Have Paid" click செய்யுங்கள்</span>';
+            '<span class="status-pending">⏳ Payment completed? Then click "I Have Paid".</span>';
         showToast('UPI App திறக்கிறது... payment பண்ணி திரும்பவும்');
-    }, 2000);
+    }, 1800);
 }
 
 // ===== Event Listeners =====
@@ -480,13 +473,13 @@ function setupEventListeners() {
                 document.getElementById('payment-status').innerHTML =
                     '<span class="status-pending">⏳ "Pay Now" click செய்து UPI App திறக்கவும்</span>';
                 paymentStatus = 'pending';
-                document.getElementById('btn-submit-order').style.display = 'none';
+                btnSubmitOrder.disabled = true;
             } else {
                 document.getElementById('online-payment-section').style.display = 'none';
                 document.getElementById('cash-payment-section').style.display = 'block';
                 document.getElementById('qr-payment-section').style.display = 'none';
                 paymentStatus = 'cash';
-                document.getElementById('btn-submit-order').style.display = 'flex';
+                btnSubmitOrder.disabled = false;
             }
         });
     });
@@ -498,9 +491,20 @@ function setupEventListeners() {
     document.getElementById('btn-payment-done').addEventListener('click', () => {
         paymentStatus = 'paid';
         updatePaymentStatus();
+        btnSubmitOrder.disabled = false;
         showToast('✅ Payment confirmed!');
-        document.getElementById('btn-submit-order').style.display = 'flex';
+        notifyBillCounterFromForm();
     });
+
+    // Download bill button
+    if (btnDownloadBill) {
+        btnDownloadBill.addEventListener('click', () => {
+            if (lastGeneratedBill) {
+                generateBillPDF(lastGeneratedBill);
+                showToast('Bill download started');
+            }
+        });
+    }
 
     // Order form submit
     document.getElementById('order-form').addEventListener('submit', (e) => {
@@ -590,7 +594,8 @@ function openOrderModal() {
     document.getElementById('payment-status').innerHTML =
         '<span class="status-pending">⏳ "Pay Now" click செய்து UPI App திறக்கவும்</span>';
     paymentStatus = 'cash';
-    document.getElementById('btn-submit-order').style.display = 'flex';
+    btnSubmitOrder.disabled = false;
+    if (btnDownloadBill) btnDownloadBill.style.display = 'none';
 }
 
 function closeOrderModal() {
@@ -645,6 +650,48 @@ function updatePaymentStatus() {
     }
 }
 
+function notifyBillCounterFromForm() {
+    const customerName = document.getElementById('customer-name').value.trim() || 'Guest';
+    const tableNumber = document.getElementById('table-number').value.trim() || 'N/A';
+    const totalAmount = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const itemsList = cart.map(item => `${item.name} x${item.quantity}`);
+    const message = `NEW ORDER RECEIVED\nCustomer Name: ${customerName}\nTable Number: ${tableNumber}\nTotal Amount: ₹${totalAmount}\nItems: ${itemsList.join(', ')}\nPayment completed successfully.`;
+    showAdminNotification(customerName, tableNumber, itemsList, totalAmount, message);
+    if (Notification && Notification.permission === 'granted') {
+        new Notification('NEW ORDER RECEIVED', {
+            body: `Customer: ${customerName}\nTable: ${tableNumber}\nTotal: ₹${totalAmount}`,
+            icon: '',
+        });
+    }
+}
+
+function showAdminNotification(customerName, tableNumber, itemsList, totalAmount, message) {
+    if (!adminNotificationPanel) return;
+    adminNotificationPanel.innerHTML = `
+        <h4>NEW ORDER RECEIVED</h4>
+        <p><strong>Customer:</strong> ${customerName}</p>
+        <p><strong>Table:</strong> ${tableNumber}</p>
+        <p><strong>Total:</strong> ₹${totalAmount}</p>
+        <p><strong>Items:</strong> ${itemsList.join(', ')}</p>
+        <small>Payment completed successfully.</small>
+    `;
+    adminNotificationPanel.classList.add('open');
+    speakText('New order received. Check bill counter.');
+    setTimeout(() => adminNotificationPanel.classList.remove('open'), 8000);
+}
+
+function requestNotificationPermission() {
+    if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission().catch(() => {});
+    }
+}
+
+function sendWhatsAppConfirmation(order) {
+    const message =
+        `Thank you for your order!\nYour payment has been successfully received.\nYour order is being prepared.\nHotel: ${HOTEL_NAME}\nTotal Paid: ₹${order.totalAmount}`;
+    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, '_blank');
+}
+
 // ===== Submit Order =====
 function submitOrder() {
     const customerName   = document.getElementById('customer-name').value.trim();
@@ -664,6 +711,7 @@ function submitOrder() {
     }
 
     if (paymentMethod === 'online' && paymentStatus !== 'paid') {
+        alert('Please complete payment before submitting your order.');
         showToast('Please complete payment first and click "I Have Paid"');
         return;
     }
@@ -689,9 +737,12 @@ function submitOrder() {
     };
 
     saveOrderToHistory(order);
+    lastGeneratedBill = order;
     generateBillPDF(order);
+    if (btnDownloadBill) btnDownloadBill.style.display = 'flex';
     sendWhatsAppKitchen(order);
     sendWhatsAppCounter(order);
+    sendWhatsAppConfirmation(order);
 
     setTimeout(() => speakText("Thank you for your order. Visit again."), 500);
 
@@ -739,61 +790,85 @@ function renderOrderHistory() {
 // ===== Generate Bill PDF =====
 function generateBillPDF(order) {
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({ unit: 'mm', format: [80, 200], orientation: 'portrait' });
+    const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+    const leftMargin = 18;
+    const rightLimit = 192;
+    let y = 18;
 
-    let y = 10;
-    const centerX = 40;
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.text(HOTEL_NAME.toUpperCase(), 105, y, { align: 'center' });
+    y += 8;
 
-    doc.setFontSize(14); doc.setFont('helvetica', 'bold');
-    doc.text('SRI KRISHNA HOTEL', centerX, y, { align: 'center' }); y += 6;
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Authentic South Indian Cuisine', 105, y, { align: 'center' });
+    y += 6;
+    doc.text(`Phone: ${PHONE_NUMBER}`, 105, y, { align: 'center' });
+    y += 8;
+    doc.setLineWidth(0.5);
+    doc.line(leftMargin, y, rightLimit, y);
+    y += 8;
 
-    doc.setFontSize(9); doc.setFont('helvetica', 'normal');
-    doc.text('Authentic South Indian Cuisine', centerX, y, { align: 'center' }); y += 5;
-    doc.text(`Ph: ${PHONE_NUMBER}`, centerX, y, { align: 'center' }); y += 5;
-    doc.text('--------------------------------', centerX, y, { align: 'center' }); y += 6;
+    doc.setFontSize(10);
+    doc.text(`Date: ${order.date}`, leftMargin, y);
+    doc.text(`Time: ${order.time}`, rightLimit, y, { align: 'right' });
+    y += 7;
+    doc.text(`Order ID: ${order.id}`, leftMargin, y);
+    y += 8;
+    doc.line(leftMargin, y, rightLimit, y);
+    y += 8;
 
-    doc.text(`Date: ${order.date}`, 5, y);
-    doc.text(`Time: ${order.time}`, 55, y); y += 6;
-    doc.text(`Order ID: ${order.id}`, 5, y); y += 5;
-    doc.text('--------------------------------', centerX, y, { align: 'center' }); y += 6;
-
-    doc.text(`Customer: ${order.customerName}`, 5, y); y += 5;
-    doc.text(`Mobile: ${order.customerMobile}`, 5, y); y += 5;
-    doc.text(`Table: ${order.tableNumber}`, 5, y); y += 5;
-    if (order.notes) { doc.text(`Notes: ${order.notes}`, 5, y); y += 5; }
-    doc.text('--------------------------------', centerX, y, { align: 'center' }); y += 6;
+    doc.text(`Customer: ${order.customerName}`, leftMargin, y);
+    y += 6;
+    doc.text(`Mobile: ${order.customerMobile}`, leftMargin, y);
+    y += 6;
+    doc.text(`Table No: ${order.tableNumber}`, leftMargin, y);
+    y += 6;
+    if (order.notes) {
+        doc.text(`Notes: ${order.notes}`, leftMargin, y);
+        y += 6;
+    }
+    y += 2;
+    doc.line(leftMargin, y, rightLimit, y);
+    y += 8;
 
     doc.setFont('helvetica', 'bold');
-    doc.text('Item', 5, y); doc.text('Qty', 45, y); doc.text('Price', 65, y); y += 5;
+    doc.text('Item', leftMargin, y);
+    doc.text('Qty', 120, y, { align: 'center' });
+    doc.text('Amount', rightLimit, y, { align: 'right' });
+    y += 6;
+    doc.setLineWidth(0.3);
+    doc.line(leftMargin, y, rightLimit, y);
+    y += 8;
     doc.setFont('helvetica', 'normal');
-    doc.text('--------------------------------', centerX, y, { align: 'center' }); y += 6;
 
     order.items.forEach(item => {
-        doc.text(item.name.substring(0, 20), 5, y);
-        doc.text(String(item.quantity), 48, y);
-        doc.text(`Rs.${item.price * item.quantity}`, 62, y);
-        y += 5;
+        const itemName = item.name.length > 28 ? item.name.substring(0, 25) + '...' : item.name;
+        doc.text(itemName, leftMargin, y);
+        doc.text(String(item.quantity), 120, y, { align: 'center' });
+        doc.text(`₹${item.price * item.quantity}`, rightLimit, y, { align: 'right' });
+        y += 7;
     });
 
-    y += 2;
-    doc.text('--------------------------------', centerX, y, { align: 'center' }); y += 6;
+    y += 4;
+    doc.line(leftMargin, y, rightLimit, y);
+    y += 8;
 
-    doc.setFontSize(11); doc.setFont('helvetica', 'bold');
-    doc.text('TOTAL AMOUNT', 5, y); doc.text(`Rs.${order.totalAmount}`, 55, y); y += 6;
+    doc.setFont('helvetica', 'bold');
+    doc.text('Total Amount', leftMargin, y);
+    doc.text(`₹${order.totalAmount}`, rightLimit, y, { align: 'right' });
+    y += 10;
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Payment: ${order.paymentStatus}`, leftMargin, y);
+    y += 10;
 
-    doc.setFontSize(9); doc.setFont('helvetica', 'normal');
-    doc.text('--------------------------------', centerX, y, { align: 'center' }); y += 6;
-
-    doc.setFontSize(10); doc.setFont('helvetica', 'bold');
-    doc.text(`Payment: ${order.paymentStatus}`, centerX, y, { align: 'center' }); y += 6;
-
-    doc.setFontSize(9); doc.setFont('helvetica', 'normal');
-    doc.text('--------------------------------', centerX, y, { align: 'center' }); y += 8;
-
-    doc.setFontSize(10); doc.setFont('helvetica', 'bold');
-    doc.text('THANK YOU', centerX, y, { align: 'center' }); y += 5;
-    doc.setFontSize(9); doc.setFont('helvetica', 'normal');
-    doc.text('Visit Again!', centerX, y, { align: 'center' });
+    doc.setLineWidth(0.5);
+    doc.line(leftMargin, y, rightLimit, y);
+    y += 10;
+    doc.text('Thank you for choosing Sri Krishna Hotel!', 105, y, { align: 'center' });
+    y += 7;
+    doc.text('Order prepared with care and served fresh.', 105, y, { align: 'center' });
 
     doc.save(`SriKrishna_Bill_${order.id}.pdf`);
 }
