@@ -4,7 +4,7 @@
 // ===== Menu Data =====
 const menuItems = [
     // Rice
-    { id: 1, name: "Chicken Rice", price: 90, category: "Rice", image: "chickenrice.jpg" },
+    { id: 1, name: "Chicken Rice", price: 90, category: "Rice", image: "img/chickenrice.jpg" },
     { id: 2, name: "Egg Rice", price: 80, category: "Rice", image: "eggrice.jpg" },
     { id: 3, name: "Veg Rice", price: 70, category: "Rice", image: "vegrice.jpg" },
 
