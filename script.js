@@ -58,8 +58,9 @@ let currentSlide = 0;
 const HOTEL_NAME = "Sri Krishna Hotel";
 const PHONE_NUMBER = "98433 36980";
 const WHATSAPP_NUMBER = "919843336980";
-const UPI_ID = "9843336980@upi";
+const UPI_ID = "9843336980@ibl";   // ✅ Updated to PhonePe UPI ID
 const EMAIL = "kumaranglids@gmail.com";
+const QR_IMAGE = "qr.jpeg";        // ✅ PhonePe QR image file
 
 // ===== DOM Elements =====
 const menuContainer = document.getElementById('menu-container');
@@ -339,20 +340,28 @@ function startHeroSlider() {
     });
 }
 
-// ===== GPay / UPI Pay Now =====
-// GitHub Pages-ல் upi:// சில Chrome versions-ல் block ஆகும்.
-// Android Intent URL = 100% work guaranteed on Chrome Android.
-// Fallback: upi:// (older browsers / Samsung Browser)
+// ===== ✅ UPDATED: GPay / PhonePe / UPI Pay Now =====
 function payNow() {
     const total = cart.reduce((s, i) => s + i.price * i.quantity, 0);
     const statusEl = document.getElementById('payment-status');
 
     const isAndroid = /Android/i.test(navigator.userAgent);
     const isIOS = /iPhone|iPad/i.test(navigator.userAgent);
+    const isMobile = isAndroid || isIOS;
 
-    if (!isAndroid && !isIOS) {
+    // ✅ Show QR section always (desktop + mobile)
+    document.getElementById('qr-payment-section').style.display = 'block';
+
+    if (!isMobile) {
+        // Desktop: show QR only
         statusEl.innerHTML =
-            '<span class="status-pending">⚠️ GPay mobile-ல் மட்டும் திறக்கும். உங்கள் Android mobile-ல் open பண்ணுங்கள்.</span>';
+            '<span class="status-pending">📱 Mobile இல்லாவிட்டால் QR Code Scan செய்து Pay பண்ணுங்கள்</span>';
+        // Still show "I Have Paid" button
+        setTimeout(() => {
+            document.getElementById('btn-payment-done').style.display = 'flex';
+            statusEl.innerHTML =
+                '<span class="status-pending">⏳ QR Scan செய்து Pay பண்ணிய பிறகு "I Have Paid" click செய்யுங்கள்</span>';
+        }, 500);
         return;
     }
 
@@ -362,30 +371,31 @@ function payNow() {
     const am  = total;
 
     if (isAndroid) {
-        // METHOD 1: Android Intent URL
-        // scheme=upi → Chrome Android automatically picks GPay / PhonePe / BHIM
-        // package=com.google.android.apps.nbu.paisa.user → specifically targets GPay
-        // S.browser_fallback_url → agar GPay install illa na GPay Play Store ku send
-        const fallback = encodeURIComponent('https://play.google.com/store/apps/details?id=com.google.android.apps.nbu.paisa.user');
-        const intentUrl =
+        // ✅ Try PhonePe first, fallback to generic UPI intent
+        const phonepeUrl =
             `intent://pay?pa=${pa}&pn=${pn}&am=${am}&cu=INR&tn=${tn}` +
-            `#Intent;scheme=upi;package=com.google.android.apps.nbu.paisa.user;` +
-            `S.browser_fallback_url=${fallback};end`;
+            `#Intent;scheme=upi;package=com.phonepe.app;` +
+            `S.browser_fallback_url=${encodeURIComponent('upi://pay?pa=' + pa + '&pn=' + pn + '&am=' + am + '&cu=INR&tn=' + tn)};end`;
 
-        window.location.href = intentUrl;
+        // ✅ Generic UPI intent (opens app chooser: GPay, PhonePe, BHIM, Paytm etc.)
+        const genericUpiUrl =
+            `upi://pay?pa=${pa}&pn=${pn}&am=${am}&cu=INR&tn=${tn}`;
+
+        // Try generic UPI first (works on all Android UPI apps)
+        window.location.href = genericUpiUrl;
 
     } else if (isIOS) {
-        // iOS GPay deep link
+        // iOS PhonePe deep link
         window.location.href =
-            `gpay://upi/pay?pa=${pa}&pn=${pn}&am=${am}&cu=INR&tn=${tn}`;
+            `phonepe://pay?pa=${pa}&pn=${pn}&am=${am}&cu=INR&tn=${tn}`;
     }
 
     // 2 seconds பிறகு "I Have Paid" button காட்டு
     setTimeout(() => {
         document.getElementById('btn-payment-done').style.display = 'flex';
         statusEl.innerHTML =
-            '<span class="status-pending">⏳ GPay-ல் payment முடித்த பிறகு "I Have Paid" click செய்யுங்கள்</span>';
-        showToast('GPay திறக்கிறது... payment பண்ணி திரும்பவும்');
+            '<span class="status-pending">⏳ Payment முடித்த பிறகு "I Have Paid" click செய்யுங்கள்</span>';
+        showToast('UPI App திறக்கிறது... payment பண்ணி திரும்பவும்');
     }, 2000);
 }
 
@@ -466,18 +476,23 @@ function setupEventListeners() {
                 document.getElementById('online-payment-section').style.display = 'block';
                 document.getElementById('cash-payment-section').style.display = 'none';
                 document.getElementById('btn-payment-done').style.display = 'none';
+                document.getElementById('qr-payment-section').style.display = 'none';
                 document.getElementById('payment-status').innerHTML =
-                    '<span class="status-pending">⏳ "Pay Now" click செய்து GPay திறக்கவும்</span>';
+                    '<span class="status-pending">⏳ "Pay Now" click செய்து UPI App திறக்கவும்</span>';
                 paymentStatus = 'pending';
                 document.getElementById('btn-submit-order').style.display = 'none';
             } else {
                 document.getElementById('online-payment-section').style.display = 'none';
                 document.getElementById('cash-payment-section').style.display = 'block';
+                document.getElementById('qr-payment-section').style.display = 'none';
                 paymentStatus = 'cash';
                 document.getElementById('btn-submit-order').style.display = 'flex';
             }
         });
     });
+
+    // ✅ Pay Now button — now calls updated payNow()
+    document.getElementById('btn-pay-now').addEventListener('click', payNow);
 
     // "I Have Paid" button
     document.getElementById('btn-payment-done').addEventListener('click', () => {
@@ -571,8 +586,9 @@ function openOrderModal() {
     document.getElementById('online-payment-section').style.display = 'none';
     document.getElementById('cash-payment-section').style.display = 'block';
     document.getElementById('btn-payment-done').style.display = 'none';
+    document.getElementById('qr-payment-section').style.display = 'none';
     document.getElementById('payment-status').innerHTML =
-        '<span class="status-pending">⏳ "Pay Now" click செய்து GPay திறக்கவும்</span>';
+        '<span class="status-pending">⏳ "Pay Now" click செய்து UPI App திறக்கவும்</span>';
     paymentStatus = 'cash';
     document.getElementById('btn-submit-order').style.display = 'flex';
 }
