@@ -4,47 +4,47 @@
 // ===== Menu Data =====
 const menuItems = [
     // Rice
-    { id: 1, name: "Chicken Rice", price: 90, category: "Rice", image: "https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=400&fm=webp&q=80" },
-    { id: 2, name: "Egg Rice", price: 80, category: "Rice", image: "https://images.unsplash.com/photo-1512058564366-18510be2db19?w=400&fm=webp&q=80" },
-    { id: 3, name: "Veg Rice", price: 70, category: "Rice", image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400&fm=webp&q=80" },
+    { id: 1, name: "Chicken Rice", price: 90, category: "Rice", image: "chickenrice.jpg" },
+    { id: 2, name: "Egg Rice", price: 80, category: "Rice", image: "eggrice.jpg" },
+    { id: 3, name: "Veg Rice", price: 70, category: "Rice", image: "vegrice.jpg" },
 
     // Tiffin (Idly & Dosa)
-    { id: 4, name: "Idly", price: 10, category: "Tiffin", image: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=400&fm=webp&q=80" },
-    { id: 5, name: "Vada", price: 10, category: "Tiffin", image: "https://images.unsplash.com/photo-1606491956689-2ea866880c84?w=400&fm=webp&q=80" },
-    { id: 6, name: "Dosa", price: 20, category: "Tiffin", image: "https://images.unsplash.com/photo-1668236543090-82eba5ee5976?w=400&fm=webp&q=80" },
-    { id: 7, name: "Plain Dosa", price: 50, category: "Tiffin", image: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=400&fm=webp&q=80" },
-    { id: 8, name: "Set Dosa", price: 50, category: "Tiffin", image: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=400&fm=webp&q=80" },
-    { id: 9, name: "Masala Dosa", price: 70, category: "Tiffin", image: "https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=400&fm=webp&q=80" },
-    { id: 10, name: "Poori", price: 40, category: "Tiffin", image: "https://images.unsplash.com/photo-1606491956689-2ea866880c84?w=400&fm=webp&q=80" },
+    { id: 4, name: "Idly", price: 10, category: "Tiffin", image: "idly .jpeg" },
+    { id: 5, name: "Vada", price: 10, category: "Tiffin", image: "vada.jpg" },
+    { id: 6, name: "Dosa", price: 20, category: "Tiffin", image: "dosa.jpg" },
+    { id: 7, name: "Plain Dosa", price: 50, category: "Tiffin", image: "plain dosa .jpeg" },
+    { id: 8, name: "Set Dosa", price: 50, category: "Tiffin", image: "set dosa.jpg" },
+    { id: 9, name: "Masala Dosa", price: 70, category: "Tiffin", image: "masal dosa.jpg" },
+    { id: 10, name: "Poori", price: 40, category: "Tiffin", image: "poori.jpg" },
 
     // Biryani
-    { id: 11, name: "Chicken Biryani", price: 90, category: "Biryani", image: "https://images.unsplash.com/photo-1633945274405-b6c8069047b0?w=400&fm=webp&q=80" },
-    { id: 12, name: "Egg Biryani", price: 80, category: "Biryani", image: "https://images.unsplash.com/photo-1563379926898-05f4575a45d8?w=400&fm=webp&q=80" },
-    { id: 13, name: "Veg Biryani", price: 70, category: "Biryani", image: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=400&fm=webp&q=80" },
+    { id: 11, name: "Chicken Biryani", price: 90, category: "Biryani", image: "chicken-biryani.jpg" },
+    { id: 12, name: "Egg Biryani", price: 80, category: "Biryani", image: "eggbiryani.jpg" },
+    { id: 13, name: "Veg Biryani", price: 70, category: "Biryani", image: "vegbiryani.jpg" },
 
     // Meals
-    { id: 14, name: "Veg Meals", price: 80, category: "Meals", image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400&fm=webp&q=80" },
-    { id: 15, name: "Non Veg Meals", price: 120, category: "Meals", image: "https://images.unsplash.com/photo-1600891964092-4316c288032e?w=400&fm=webp&q=80" },
-    { id: 16, name: "Fish Meals", price: 140, category: "Meals", image: "https://images.unsplash.com/photo-1512058564366-18510be2db19?w=400&fm=webp&q=80" },
+    { id: 14, name: "Veg Meals", price: 80, category: "Meals", image: "veg meals.jpg" },
+    { id: 15, name: "Non Veg Meals", price: 120, category: "Meals", image: "non veg meals.jpg" },
+    { id: 16, name: "Fish Meals", price: 140, category: "Meals", image: "fish meals.jpg" },
 
     // Bread Items
-    { id: 17, name: "Bread", price: 20, category: "Bread Items", image: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400&fm=webp&q=80" },
-    { id: 18, name: "Veg Sandwich", price: 80, category: "Bread Items", image: "https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=400&fm=webp&q=80" },
-    { id: 19, name: "Chicken Sandwich", price: 120, category: "Bread Items", image: "https://images.unsplash.com/photo-1606757389647-67b360512219?w=400&fm=webp&q=80" },
+    { id: 17, name: "Bread", price: 20, category: "Bread Items", image: "bread.jpeg" },
+    { id: 18, name: "Veg Sandwich", price: 80, category: "Bread Items", image: "Veg sandwich .jpg" },
+    { id: 19, name: "Chicken Sandwich", price: 120, category: "Bread Items", image: "chicken sandwich .jpg" },
 
     // Egg Items
-    { id: 20, name: "Omelette", price: 20, category: "Egg Items", image: "https://images.unsplash.com/photo-1510693206972-df098062cb71?w=400&fm=webp&q=80" },
-    { id: 21, name: "Half Boil", price: 20, category: "Egg Items", image: "https://images.unsplash.com/photo-1482049016688-2d3e1b311543?w=400&fm=webp&q=80" },
-    { id: 22, name: "Boiled Egg", price: 20, category: "Egg Items", image: "https://images.unsplash.com/photo-1482049016688-2d3e1b311543?w=400&fm=webp&q=80" },
+    { id: 20, name: "Omelette", price: 20, category: "Egg Items", image: "Omelette .jpg" },
+    { id: 21, name: "Half Boil", price: 20, category: "Egg Items", image: "half boil.jpeg" },
+    { id: 22, name: "Boiled Egg", price: 20, category: "Egg Items", image: "Boiled egg.jpg" },
 
     // Chicken
-    { id: 23, name: "Chicken 100g", price: 40, category: "Chicken", image: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=400&fm=webp&q=80" },
-    { id: 24, name: "Chicken 1kg", price: 400, category: "Chicken", image: "https://images.unsplash.com/photo-1598103442097-8b74394b95c6?w=400&fm=webp&q=80" },
+    { id: 23, name: "Chicken 100g", price: 40, category: "Chicken", image: "chicken 100g.jpg" },
+    { id: 24, name: "Chicken 1kg", price: 400, category: "Chicken", image: "chicken 1kg.jpg" },
 
     // Noodles
-    { id: 25, name: "Chicken Noodles", price: 90, category: "Noodles", image: "https://images.unsplash.com/photo-1552611052-33e04de081de?w=400&fm=webp&q=80" },
-    { id: 26, name: "Veg Noodles", price: 60, category: "Noodles", image: "https://images.unsplash.com/photo-1612929633738-8fe44f7ec841?w=400&fm=webp&q=80" },
-    { id: 27, name: "Egg Noodles", price: 80, category: "Noodles", image: "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=400&fm=webp&q=80" }
+    { id: 25, name: "Chicken Noodles", price: 90, category: "Noodles", image: "chickennoodles.jpg" },
+    { id: 26, name: "Veg Noodles", price: 60, category: "Noodles", image: "veg noodles.jpg" },
+    { id: 27, name: "Egg Noodles", price: 80, category: "Noodles", image: "eggnoodles.jpg" }
 ];
 const menuItemsById = new Map(menuItems.map(item => [item.id, item]));
 
