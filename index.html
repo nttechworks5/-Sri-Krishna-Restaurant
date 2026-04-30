@@ -26,7 +26,6 @@
     <header class="header" id="header">
         <div class="header-top">
             <div class="header-left">
-                <!-- ✅ UPDATED: Real logo image instead of SVG icon -->
                 <div class="logo">
                     <img src="icon.jpeg" alt="Sri Krishna Restaurant Logo" class="header-logo">
                 </div>
@@ -222,15 +221,45 @@
                 <div id="online-payment-section" style="display: none;">
                     <div class="upi-buttons">
                         <button type="button" class="btn-upi" id="btn-pay-now">
-                            <i class="fas fa-qrcode"></i> Pay Now via GPay/UPI
+                            <i class="fas fa-qrcode"></i> Pay via UPI / GPay / PhonePe
                         </button>
-                        <!-- ✅ "I Have Paid" button (shown after Pay Now clicked) -->
+                        <!-- "I Have Paid" button (shown after Pay Now clicked) -->
                         <button type="button" class="btn-upi btn-payment-done" id="btn-payment-done" style="display: none;">
                             <i class="fas fa-check"></i> I Have Paid
                         </button>
                     </div>
+
+                    <!-- ✅ NEW: PhonePe QR Code Section -->
+                    <div id="qr-payment-section" style="display: none;">
+                        <div class="qr-container">
+                            <div class="qr-header">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/PhonePe_Logo.png/200px-PhonePe_Logo.png"
+                                     alt="PhonePe"
+                                     class="qr-brand-logo"
+                                     onerror="this.style.display='none'">
+                                <div class="qr-title-block">
+                                    <span class="qr-title">Scan & Pay</span>
+                                    <span class="qr-subtitle">Any UPI App • GPay • PhonePe • Paytm</span>
+                                </div>
+                            </div>
+                            <div class="qr-image-wrap">
+                                <img src="qr.jpeg" alt="PhonePe QR Code - Scan & Pay" class="qr-image">
+                                <div class="qr-amount-badge" id="qr-amount-badge">₹<span id="qr-display-amount">0</span></div>
+                            </div>
+                            <div class="qr-upi-id">
+                                <i class="fas fa-at"></i>
+                                <span>UPI ID: <strong>9843336980@ibl</strong></span>
+                                <button type="button" class="btn-copy-upi" onclick="copyUpiId()" title="Copy UPI ID">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                            <p class="qr-note">📸 Screenshot QR → Open any UPI app → Scan from Gallery</p>
+                        </div>
+                    </div>
+                    <!-- END QR Section -->
+
                     <div class="payment-status" id="payment-status">
-                        <span class="status-pending">⏳ Click "Pay Now" to make payment</span>
+                        <span class="status-pending">⏳ "Pay Now" click செய்து UPI App திறக்கவும்</span>
                     </div>
                 </div>
 
@@ -241,7 +270,7 @@
                     </div>
                 </div>
 
-                <!-- ✅ Submit Order button — shown for Cash immediately, shown for Online only after "I Have Paid" -->
+                <!-- Submit Order button -->
                 <button type="submit" class="btn-submit-order" id="btn-submit-order">
                     <i class="fas fa-paper-plane"></i> Submit Order
                 </button>
@@ -345,5 +374,59 @@
     </footer>
 
     <script src="script.js"></script>
+
+    <!-- ✅ Inline script for QR amount display + UPI copy -->
+    <script>
+        // Update QR amount badge when modal opens
+        const origOpenOrderModal = window.openOrderModal;
+        document.addEventListener('DOMContentLoaded', function() {
+            // Patch openOrderModal to refresh QR amount
+            const cartBtn2 = document.getElementById('btn-place-order');
+            if (cartBtn2) {
+                cartBtn2.addEventListener('click', function() {
+                    setTimeout(updateQrAmount, 100);
+                });
+            }
+        });
+
+        function updateQrAmount() {
+            const total = (typeof cart !== 'undefined')
+                ? cart.reduce((s, i) => s + i.price * i.quantity, 0)
+                : 0;
+            const el = document.getElementById('qr-display-amount');
+            if (el) el.textContent = total;
+        }
+
+        function copyUpiId() {
+            const upi = '9843336980@ibl';
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(upi).then(() => {
+                    showToast('UPI ID copied! ✅');
+                }).catch(() => fallbackCopy(upi));
+            } else {
+                fallbackCopy(upi);
+            }
+        }
+
+        function fallbackCopy(text) {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            showToast('UPI ID copied! ✅');
+        }
+
+        // Also update amount when Pay Now is clicked
+        document.addEventListener('DOMContentLoaded', function() {
+            const payNowBtn = document.getElementById('btn-pay-now');
+            if (payNowBtn) {
+                payNowBtn.addEventListener('click', updateQrAmount, true);
+            }
+        });
+    </script>
 </body>
 </html>
