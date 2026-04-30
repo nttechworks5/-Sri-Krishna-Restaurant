@@ -1345,7 +1345,8 @@ img {
 }
 
 /* ===== Submit Order Button ===== */
-.btn-submit-order {
+.btn-submit-order,
+.btn-download-bill {
     width: 100%;
     padding: 16px;
     background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
@@ -1360,6 +1361,57 @@ img {
     transition: var(--transition);
     box-shadow: 0 6px 20px rgba(230, 81, 0, 0.3);
     margin-top: 10px;
+}
+
+.btn-download-bill {
+    background: linear-gradient(135deg, var(--secondary) 0%, #1b5e20 100%);
+}
+
+.btn-download-bill:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(27, 94, 32, 0.35);
+}
+
+.admin-notification-panel {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    left: auto;
+    max-width: 320px;
+    background: linear-gradient(135deg, rgba(95,37,159,0.98), rgba(63,13,110,0.98));
+    color: white;
+    padding: 18px 20px;
+    border-radius: 22px;
+    box-shadow: 0 18px 50px rgba(0,0,0,0.3);
+    font-size: 0.95rem;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px);
+    transition: all 0.35s ease;
+    z-index: 11000;
+}
+
+.admin-notification-panel.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.admin-notification-panel h4 {
+    margin-bottom: 8px;
+    font-size: 1rem;
+}
+
+.admin-notification-panel p {
+    margin-bottom: 6px;
+    line-height: 1.4;
+}
+
+.admin-notification-panel small {
+    display: block;
+    margin-top: 8px;
+    opacity: 0.8;
+    font-size: 0.82rem;
 }
 
 .btn-submit-order:hover {
@@ -1550,6 +1602,14 @@ img {
         min-width: 44px;
         min-height: 44px;
         border-radius: 10px;
+    }
+
+    .admin-notification-panel {
+        left: 12px;
+        right: 12px;
+        bottom: 16px;
+        max-width: none;
+        border-radius: 18px;
     }
 
     .hotel-info h1 { font-size: 1rem; }
