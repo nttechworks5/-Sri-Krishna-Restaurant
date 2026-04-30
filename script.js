@@ -255,18 +255,27 @@ function renderMenu() {
         return;
     }
 
-    menuContainer.innerHTML = filteredItems.map(item => {
+    menuContainer.innerHTML = filteredItems.map((item, index) => {
         const qty = cartQuantityMap.get(item.id) || 0;
-        // ✅ FIX 1: onerror directly on <img> so broken local images fallback immediately
+        // First 4 cards — eager load (visible on screen immediately)
+        // Rest — lazy load with placeholder swap
+        const isEager = index < 4;
+        const imgSrc  = isEager ? item.image : IMAGE_PLACEHOLDER;
+        const dataSrc = isEager ? '' : `data-src="${encodeURIComponent(item.image)}"`;
+        const loading  = isEager ? 'eager' : 'lazy';
+        const decoded  = isEager ? 'async' : 'async';
+        const eagerClass = isEager ? 'is-loaded' : '';
+
         return `
             <div class="product-card" data-id="${item.id}">
                 <div class="product-image">
                     <img
-                        src="${IMAGE_PLACEHOLDER}"
-                        data-src="${encodeURIComponent(item.image)}"
+                        src="${imgSrc}"
+                        ${dataSrc}
                         alt="${item.name}"
                         width="400" height="260"
-                        loading="lazy" decoding="async"
+                        loading="${loading}" decoding="${decoded}"
+                        class="${eagerClass}"
                         onerror="this.onerror=null;this.src='${MENU_IMAGE_FALLBACK}';this.classList.add('is-loaded');"
                     >
                     <span class="product-badge">${item.category}</span>
