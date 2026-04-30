@@ -484,27 +484,32 @@ function setupEventListeners() {
         });
     });
 
-    // ✅ Pay Now button — opens GPay/UPI with dynamic amount
+    // ✅ Pay Now button — opens GPay/UPI with dynamic amount (Android compatible)
     document.getElementById('btn-pay-now').addEventListener('click', () => {
         const totalAmount = cart.reduce((s, i) => s + i.price * i.quantity, 0);
 
         // ✅ Full UPI deep-link with dynamic amount pre-filled
         const upiUrl = `upi://pay?pa=${encodeURIComponent(UPI_ID)}&pn=${encodeURIComponent('Sri Krishna Hotel')}&am=${totalAmount}&cu=INR&tn=${encodeURIComponent('Food Order Payment')}`;
 
-        // ✅ On mobile: use location.href to trigger GPay/UPI app intent
-        // ✅ On desktop: open in new tab (for testing)
-        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        if (isMobile) {
-            window.location.href = upiUrl;
-        } else {
-            window.open(upiUrl, '_blank');
-        }
+        // ✅ Best method for Android: create a hidden <a> tag and click it
+        // This works in Chrome, Samsung Browser, Firefox on Android
+        const a = document.createElement('a');
+        a.href = upiUrl;
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+
+        // Cleanup after short delay
+        setTimeout(() => {
+            document.body.removeChild(a);
+        }, 1000);
 
         // ✅ Show "I Have Paid" button after Pay Now is clicked
-        document.getElementById('btn-payment-done').style.display = 'flex';
-        document.getElementById('payment-status').innerHTML = '<span class="status-pending">⏳ Complete payment in GPay/UPI app, then click "I Have Paid"</span>';
-
-        showToast('GPay/UPI app opened! Complete payment and return here');
+        setTimeout(() => {
+            document.getElementById('btn-payment-done').style.display = 'flex';
+            document.getElementById('payment-status').innerHTML = '<span class="status-pending">⏳ GPay-ல் payment முடித்த பிறகு "I Have Paid" click செய்யுங்கள்</span>';
+            showToast('GPay app திறக்கிறது... payment முடித்து திரும்பவும்');
+        }, 300);
     });
 
     // ✅ "I Have Paid" button — confirms payment and reveals Submit Order
