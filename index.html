@@ -23,6 +23,7 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <base target="_self">
+<base target="_blank">
 </head>
 <body>
     <!-- Loading Spinner -->
@@ -99,7 +100,7 @@
     </section>
     <section class="hero-banner" id="hero-banner">
         <div class="hero-slider">
-            <div class="hero-slide active" style="background-image: url('https://images.unsplash.com/photo-1563379926898-05f4575a45d8?w=1200&fm=webp&q=80');">
+            <div class="hero-slide active" data-bg="https://images.unsplash.com/photo-1563379926898-05f4575a45d8?w=1200&fm=webp&q=80">
                 <div class="hero-overlay"></div>
                 <div class="hero-content">
                     <h2>Delicious South Indian Cuisine</h2>
@@ -239,20 +240,8 @@
 
                 <!-- Online Payment Section -->
                 <div id="online-payment-section" style="display: none;">
-                    <div class="upi-buttons">
-                        <!-- FIXED: GPay logo added -->
-                        <button type="button" class="btn-upi" id="btn-pay-now" aria-label="Pay with GPay or UPI">
-                            <img src="https://img.icons8.com/color/48/google-pay.png"
-                                 alt="GPay"
-                                 width="22" height="22"
-                                 style="border-radius:4px;vertical-align:middle;object-fit:contain;flex-shrink:0;"
-                                 onerror="this.style.display='none'">
-                            Pay with GPay / UPI
-                        </button>
-                        <!-- "I Have Paid" button (shown after Pay Now clicked) -->
-                        <button type="button" class="btn-upi btn-payment-done" id="btn-payment-done" style="display: none;" aria-label="Confirm payment completed">
-                            <i class="fas fa-check" aria-hidden="true"></i> I Have Paid
-                        </button>
+                    <div class="upi-app-grid" id="upi-app-grid">
+                        <!-- UPI app buttons will be rendered by JS -->
                     </div>
 
                     <!-- PhonePe QR Code Section -->
@@ -284,7 +273,7 @@
                     </div>
 
                     <div class="payment-status" id="payment-status">
-                        <span class="status-pending">⏳ "Pay Now" click செய்து UPI App திறக்கவும்</span>
+                        <span class="status-pending">⏳ UPI App-ஐ தேர்வு செய்து Pay செய்யுங்கள்</span>
                     </div>
                 </div>
 
