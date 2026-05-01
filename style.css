@@ -14,7 +14,7 @@
     --shadow-lg: 0 8px 30px rgba(0,0,0,0.12);
     --radius: 16px;
     --radius-sm: 10px;
-    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     --header-height: 70px;
     --phonepe: #5f259f;
 }
@@ -29,6 +29,8 @@
 html {
     scroll-behavior: smooth;
     font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 body {
@@ -40,21 +42,32 @@ body {
     padding-bottom: 100px;
 }
 
-a {
-    text-decoration: none;
-    color: inherit;
-}
+a { text-decoration: none; color: inherit; }
 
 button {
     border: none;
     background: none;
     cursor: pointer;
     font-family: inherit;
+    -webkit-tap-highlight-color: transparent;
 }
 
 img {
     max-width: 100%;
     display: block;
+    height: auto;
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
 }
 
 /* ===== Loading Overlay ===== */
@@ -67,21 +80,22 @@ img {
     align-items: center;
     justify-content: center;
     z-index: 9999;
-    transition: opacity 0.5s ease, visibility 0.5s ease;
+    transition: opacity 0.4s ease, visibility 0.4s ease;
 }
 
 #loading-overlay.hidden {
     opacity: 0;
     visibility: hidden;
+    pointer-events: none;
 }
 
 .spinner {
-    width: 50px;
-    height: 50px;
-    border: 4px solid #f3f3f3;
-    border-top: 4px solid var(--primary);
+    width: 48px;
+    height: 48px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid var(--primary);
     border-radius: 50%;
-    animation: spin 1s linear infinite;
+    animation: spin 0.8s linear infinite;
     margin-bottom: 16px;
 }
 
@@ -95,7 +109,7 @@ img {
     position: fixed;
     top: 90px;
     left: 50%;
-    transform: translateX(-50%) translateY(-100px);
+    transform: translateX(-50%) translateY(-20px);
     background: var(--secondary);
     color: white;
     padding: 12px 24px;
@@ -107,8 +121,9 @@ img {
     box-shadow: var(--shadow-lg);
     z-index: 10000;
     opacity: 0;
-    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    transition: opacity 0.3s ease, transform 0.3s ease;
     white-space: nowrap;
+    pointer-events: none;
 }
 
 .toast.show {
@@ -225,11 +240,16 @@ img {
     align-items: center;
     justify-content: center;
     transition: var(--transition);
+    touch-action: manipulation;
 }
 
 .search-toggle:hover, .menu-toggle:hover {
     background: rgba(255,255,255,0.25);
     transform: scale(1.05);
+}
+
+.search-toggle:active, .menu-toggle:active {
+    transform: scale(0.95);
 }
 
 /* ===== Search Bar ===== */
@@ -269,6 +289,7 @@ img {
     justify-content: center;
     border-radius: 50%;
     transition: var(--transition);
+    touch-action: manipulation;
 }
 
 .search-container button:hover { background: #f0f0f0; color: var(--text); }
@@ -287,6 +308,7 @@ img {
     transition: right 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     flex-direction: column;
+    will-change: transform;
 }
 
 .mobile-menu.open { right: 0; }
@@ -313,6 +335,7 @@ img {
     justify-content: center;
     border-radius: 50%;
     background: rgba(255,255,255,0.15);
+    touch-action: manipulation;
 }
 
 .mobile-menu-content { flex: 1; overflow-y: auto; padding: 10px 0; }
@@ -326,6 +349,7 @@ img {
     font-weight: 500;
     transition: var(--transition);
     border-left: 3px solid transparent;
+    touch-action: manipulation;
 }
 
 .mobile-menu-item i {
@@ -351,12 +375,12 @@ img {
     z-index: 10000;
     opacity: 0;
     visibility: hidden;
-    transition: all 0.3s ease;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
 .mobile-menu-overlay.open { opacity: 1; visibility: visible; }
 
-/* ===== Hero Banner — FIXED: Properly below navbar ===== */
+/* ===== Hero Banner ===== */
 .hero-banner {
     position: relative;
     width: 100%;
@@ -364,8 +388,6 @@ img {
     overflow: hidden;
     display: block;
     background: #1a1a1a;
-    /* NO z-index here — let it be in normal flow */
-    /* NO position: relative stacking context issues */
 }
 
 .hero-slider {
@@ -411,18 +433,18 @@ img {
     font-weight: 700;
     margin-bottom: 8px;
     text-shadow: 0 2px 10px rgba(0,0,0,0.3);
-    animation: fadeInUp 0.8s ease;
+    animation: fadeInUp 0.6s ease;
 }
 
 .hero-content p {
     font-size: 0.95rem;
     opacity: 0.9;
     text-shadow: 0 1px 5px rgba(0,0,0,0.3);
-    animation: fadeInUp 0.8s ease 0.2s both;
+    animation: fadeInUp 0.6s ease 0.15s both;
 }
 
 @keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(20px); }
+    from { opacity: 0; transform: translateY(15px); }
     to   { opacity: 1; transform: translateY(0); }
 }
 
@@ -443,6 +465,7 @@ img {
     background: rgba(255,255,255,0.4);
     cursor: pointer;
     transition: var(--transition);
+    touch-action: manipulation;
 }
 
 .hero-dot.active {
@@ -485,6 +508,7 @@ img {
     border: 2px solid var(--border);
     transition: var(--transition);
     white-space: nowrap;
+    touch-action: manipulation;
 }
 
 .category-btn:hover {
@@ -492,6 +516,10 @@ img {
     color: var(--primary);
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(230, 81, 0, 0.15);
+}
+
+.category-btn:active {
+    transform: translateY(0) scale(0.97);
 }
 
 .category-btn.active {
@@ -520,38 +548,49 @@ img {
     border-radius: var(--radius);
     overflow: hidden;
     box-shadow: var(--shadow);
-    transition: var(--transition);
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
     display: flex;
     flex-direction: column;
     border: 1px solid var(--border);
+    opacity: 0;
+    transform: translateY(20px);
+    animation: cardFadeIn 0.4s ease forwards;
+}
+
+@keyframes cardFadeIn {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .product-card:hover {
-    transform: translateY(-6px);
+    transform: translateY(-4px);
     box-shadow: var(--shadow-lg);
     border-color: var(--primary-light);
 }
 
-/* ===== Product Image ===== */
+/* ===== Product Image - FAST LOADING ===== */
 .product-image {
     position: relative;
     width: 100%;
     aspect-ratio: 16 / 9;
     overflow: hidden;
-    background: #f0f0f0;
+    background: #e8e8e8;
     flex-shrink: 0;
 }
 
+/* Skeleton shimmer loading */
 .product-image::before {
     content: '';
     position: absolute;
     inset: 0;
     background: linear-gradient(90deg,
-        #f0f0f0 25%,
-        #e4e4e4 50%,
-        #f0f0f0 75%);
+        #e8e8e8 25%,
+        #d0d0d0 50%,
+        #e8e8e8 75%);
     background-size: 200% 100%;
-    animation: shimmer 1.2s infinite;
+    animation: shimmer 1.5s infinite;
     z-index: 0;
 }
 
@@ -577,11 +616,13 @@ img {
     z-index: 1;
 }
 
-.product-image img.is-loaded { opacity: 1; }
+.product-image img.is-loaded {
+    opacity: 1;
+}
 
 .product-card:hover .product-image img {
-    transform: scale(1.06);
-    transition: opacity 0.3s ease, transform 0.5s ease;
+    transform: scale(1.04);
+    transition: opacity 0.3s ease, transform 0.4s ease;
 }
 
 .product-badge {
@@ -620,7 +661,7 @@ img {
     margin-bottom: 14px;
 }
 
-.product-price::before { content: "₹"; font-size: 1rem; }
+.product-price::before { content: "Rs."; font-size: 1rem; }
 
 .product-actions {
     margin-top: auto;
@@ -648,10 +689,15 @@ img {
     color: var(--text);
     transition: var(--transition);
     font-weight: 700;
+    touch-action: manipulation;
 }
 
 .qty-btn:hover        { background: var(--primary); color: white; }
 .qty-btn.minus:hover  { background: #dc3545; }
+
+.qty-btn:active {
+    transform: scale(0.9);
+}
 
 .qty-value {
     width: 40px;
@@ -675,6 +721,7 @@ img {
     gap: 6px;
     transition: var(--transition);
     box-shadow: 0 4px 12px rgba(230, 81, 0, 0.25);
+    touch-action: manipulation;
 }
 
 .btn-add-cart:hover  { transform: scale(1.03); box-shadow: 0 6px 20px rgba(230, 81, 0, 0.35); }
@@ -706,12 +753,16 @@ img {
     font-size: 1rem;
     box-shadow: 0 6px 25px rgba(230, 81, 0, 0.4);
     transition: var(--transition);
-    animation: cartBounce 0.5s ease;
+    touch-action: manipulation;
 }
 
 .cart-btn:hover {
     transform: translateX(-50%) scale(1.05);
     box-shadow: 0 8px 30px rgba(230, 81, 0, 0.5);
+}
+
+.cart-btn:active {
+    transform: translateX(-50%) scale(0.97);
 }
 
 .cart-btn i { font-size: 1.2rem; }
@@ -732,7 +783,7 @@ img {
 
 @keyframes cartBounce {
     0%, 100% { transform: translateX(-50%) scale(1); }
-    50%       { transform: translateX(-50%) scale(1.1); }
+    50%       { transform: translateX(-50%) scale(1.08); }
 }
 
 /* ===== Cart Drawer ===== */
@@ -743,7 +794,7 @@ img {
     z-index: 1001;
     opacity: 0;
     visibility: hidden;
-    transition: all 0.3s ease;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
 .cart-overlay.open { opacity: 1; visibility: visible; }
@@ -759,8 +810,9 @@ img {
     z-index: 1002;
     display: flex;
     flex-direction: column;
-    transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: right 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: -10px 0 40px rgba(0,0,0,0.15);
+    will-change: transform;
 }
 
 .cart-drawer.open { right: 0; }
@@ -793,9 +845,11 @@ img {
     border-radius: 50%;
     background: rgba(255,255,255,0.15);
     transition: var(--transition);
+    touch-action: manipulation;
 }
 
 .cart-close:hover { background: rgba(255,255,255,0.3); transform: rotate(90deg); }
+.cart-close:active { transform: scale(0.9); }
 
 .cart-drawer-body { flex: 1; overflow-y: auto; padding: 16px; }
 
@@ -823,6 +877,12 @@ img {
     margin-bottom: 10px;
     border: 1px solid var(--border);
     transition: var(--transition);
+    animation: slideInRight 0.3s ease;
+}
+
+@keyframes slideInRight {
+    from { opacity: 0; transform: translateX(20px); }
+    to   { opacity: 1; transform: translateX(0); }
 }
 
 .cart-item:hover { border-color: var(--primary-light); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
@@ -861,9 +921,11 @@ img {
     justify-content: center;
     font-size: 0.8rem;
     transition: var(--transition);
+    touch-action: manipulation;
 }
 
 .cart-item-qty button:hover { background: var(--primary); color: white; border-color: var(--primary); }
+.cart-item-qty button:active { transform: scale(0.85); }
 .cart-item-qty span          { font-weight: 700; min-width: 20px; text-align: center; }
 
 .cart-item-remove {
@@ -876,9 +938,11 @@ img {
     justify-content: center;
     border-radius: 50%;
     transition: var(--transition);
+    touch-action: manipulation;
 }
 
 .cart-item-remove:hover { background: #ffebee; transform: scale(1.1); }
+.cart-item-remove:active { transform: scale(0.9); }
 
 .cart-drawer-footer {
     padding: 20px;
@@ -920,9 +984,11 @@ img {
     margin-bottom: 10px;
     transition: var(--transition);
     box-shadow: 0 4px 15px rgba(46, 125, 50, 0.3);
+    touch-action: manipulation;
 }
 
 .btn-place-order:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(46, 125, 50, 0.4); }
+.btn-place-order:active { transform: translateY(0) scale(0.98); }
 
 .btn-continue {
     width: 100%;
@@ -938,9 +1004,11 @@ img {
     gap: 8px;
     border: 2px solid var(--border);
     transition: var(--transition);
+    touch-action: manipulation;
 }
 
 .btn-continue:hover { border-color: var(--primary); color: var(--primary); }
+.btn-continue:active { transform: scale(0.98); }
 
 /* ===== Modal ===== */
 .modal-overlay {
@@ -950,7 +1018,7 @@ img {
     z-index: 2000;
     opacity: 0;
     visibility: hidden;
-    transition: all 0.3s ease;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
     backdrop-filter: blur(4px);
 }
 
@@ -960,7 +1028,7 @@ img {
     position: fixed;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%) scale(0.9);
+    transform: translate(-50%, -50%) scale(0.95);
     width: 90%;
     max-width: 500px;
     max-height: 90vh;
@@ -971,9 +1039,10 @@ img {
     flex-direction: column;
     opacity: 0;
     visibility: hidden;
-    transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
     box-shadow: var(--shadow-lg);
     overflow: hidden;
+    will-change: transform, opacity;
 }
 
 .modal.open {
@@ -1005,9 +1074,11 @@ img {
     border-radius: 50%;
     background: rgba(255,255,255,0.15);
     transition: var(--transition);
+    touch-action: manipulation;
 }
 
 .modal-close:hover { background: rgba(255,255,255,0.3); transform: rotate(90deg); }
+.modal-close:active { transform: scale(0.9); }
 
 .modal-body { padding: 24px; overflow-y: auto; flex: 1; }
 
@@ -1067,6 +1138,7 @@ img {
     cursor: pointer;
     transition: var(--transition);
     background: #fafafa;
+    touch-action: manipulation;
 }
 
 .payment-option:hover { border-color: var(--primary-light); }
@@ -1100,7 +1172,7 @@ img {
 .payment-option:has(input:checked)                          { border-color: var(--primary); background: #fff3e0; }
 .payment-option i                                           { font-size: 1.3rem; color: var(--primary); }
 
-/* ===== UPI App Grid - NEW ===== */
+/* ===== UPI App Grid ===== */
 .upi-app-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -1120,12 +1192,17 @@ img {
     cursor: pointer;
     transition: var(--transition);
     position: relative;
+    touch-action: manipulation;
 }
 
 .upi-app-btn:hover {
     border-color: var(--primary-light);
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.upi-app-btn:active {
+    transform: translateY(0) scale(0.95);
 }
 
 .upi-app-btn.selected {
@@ -1282,9 +1359,11 @@ img {
     transition: var(--transition);
     cursor: pointer;
     flex-shrink: 0;
+    touch-action: manipulation;
 }
 
 .btn-copy-upi:hover { background: var(--phonepe); color: white; transform: scale(1.1); }
+.btn-copy-upi:active { transform: scale(0.9); }
 
 .qr-note {
     font-size: 0.8rem;
@@ -1294,6 +1373,39 @@ img {
     padding: 8px 12px;
     border: 1px dashed #c9b0e0;
     line-height: 1.4;
+}
+
+/* ===== Payment Status ===== */
+.payment-status {
+    padding: 12px;
+    border-radius: 12px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.status-pending {
+    color: #e65100;
+    background: #fff3e0;
+    display: block;
+    padding: 10px;
+    border-radius: 10px;
+}
+
+.status-paid {
+    color: #2e7d32;
+    background: #e8f5e9;
+    display: block;
+    padding: 10px;
+    border-radius: 10px;
+}
+
+.status-cash {
+    color: #1565c0;
+    background: #e3f2fd;
+    display: block;
+    padding: 10px;
+    border-radius: 10px;
 }
 
 /* ===== Submit / Download Buttons ===== */
@@ -1313,6 +1425,7 @@ img {
     transition: var(--transition);
     box-shadow: 0 6px 20px rgba(230, 81, 0, 0.3);
     margin-top: 10px;
+    touch-action: manipulation;
 }
 
 .btn-download-bill {
@@ -1329,10 +1442,16 @@ img {
     box-shadow: 0 8px 25px rgba(230, 81, 0, 0.4);
 }
 
+.btn-submit-order:active,
+.btn-download-bill:active {
+    transform: translateY(0) scale(0.98);
+}
+
 .btn-submit-order:disabled {
-    opacity: 0.6;
+    opacity: 0.5;
     cursor: not-allowed;
     transform: none;
+    box-shadow: none;
 }
 
 /* ===== Admin Notification Panel ===== */
@@ -1404,9 +1523,11 @@ img {
     gap: 8px;
     transition: var(--transition);
     box-shadow: 0 4px 15px rgba(230, 81, 0, 0.3);
+    touch-action: manipulation;
 }
 
 .btn-new-order:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(230, 81, 0, 0.4); }
+.btn-new-order:active { transform: scale(0.97); }
 
 /* ===== Order History ===== */
 .empty-history { text-align: center; padding: 40px 20px; color: var(--text-light); }
@@ -1418,6 +1539,12 @@ img {
     border-radius: var(--radius-sm);
     margin-bottom: 10px;
     border: 1px solid var(--border);
+    transition: var(--transition);
+}
+
+.history-item:hover {
+    border-color: var(--primary-light);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
 .history-item-header {
@@ -1444,6 +1571,7 @@ img {
     border-radius: var(--radius-sm);
     border: 1px solid var(--border);
     transition: var(--transition);
+    touch-action: manipulation;
 }
 
 .contact-item:hover { border-color: var(--primary-light); background: #fff3e0; }
@@ -1493,6 +1621,7 @@ img {
     opacity: 0.8;
     transition: var(--transition);
     font-weight: 500;
+    touch-action: manipulation;
 }
 
 .footer-links a:hover { opacity: 1; color: var(--primary-light); }
@@ -1536,7 +1665,6 @@ img {
     .hotel-info h1,
     .hotel-title { font-size: 1rem; }
 
-    /* FIXED: Hero fits properly on mobile */
     .hero-banner    { height: 200px; }
     .hero-content   { bottom: 25px; }
     .hero-content h2{ font-size: 1.15rem; }
@@ -1578,7 +1706,6 @@ img {
 @media (min-width: 481px) and (max-width: 768px) {
     .logo { width: 50px; height: 50px; min-width: 50px; min-height: 50px; }
     .menu-container { grid-template-columns: repeat(2, 1fr); }
-    /* FIXED: Hero height for tablet */
     .hero-banner    { height: 240px; }
     .product-image  { aspect-ratio: 4 / 3; }
     .qr-image       { max-width: 200px; }
@@ -1587,7 +1714,6 @@ img {
 /* Small desktop */
 @media (min-width: 769px) and (max-width: 1024px) {
     .menu-container { grid-template-columns: repeat(3, 1fr); }
-    /* FIXED: Hero height for small desktop */
     .hero-banner    { height: 280px; }
 }
 
@@ -1606,7 +1732,6 @@ img {
     }
 
     .menu-container  { grid-template-columns: repeat(5, 1fr); }
-    /* FIXED: Hero height for large desktop */
     .hero-banner     { height: 360px; }
     .hero-content h2 { font-size: 2rem; }
 }
