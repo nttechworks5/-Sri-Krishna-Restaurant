@@ -356,22 +356,33 @@ img {
 
 .mobile-menu-overlay.open { opacity: 1; visibility: visible; }
 
-/* ===== Hero Banner ===== */
+/* ===== Hero Banner — FIXED ===== */
 .hero-banner {
     position: relative;
+    width: 100%;
     height: 280px;
     overflow: hidden;
+    display: block;
+    background: #1a1a1a;
 }
 
-.hero-slider { position: relative; width: 100%; height: 100%; }
+.hero-slider {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
 
 .hero-slide {
     position: absolute;
     inset: 0;
+    width: 100%;
+    height: 100%;
     background-size: cover;
-    background-position: center;
+    background-position: center center;
+    background-repeat: no-repeat;
     opacity: 0;
     transition: opacity 0.8s ease;
+    will-change: opacity;
 }
 
 .hero-slide.active { opacity: 1; }
@@ -420,6 +431,7 @@ img {
     transform: translateX(-50%);
     display: flex;
     gap: 8px;
+    z-index: 5;
 }
 
 .hero-dot {
@@ -510,7 +522,6 @@ img {
     display: flex;
     flex-direction: column;
     border: 1px solid var(--border);
-    /* content-visibility removed — causes mobile paint delay */
 }
 
 .product-card:hover {
@@ -519,7 +530,7 @@ img {
     border-color: var(--primary-light);
 }
 
-/* ===== Product Image — aspect ratio box ===== */
+/* ===== Product Image ===== */
 .product-image {
     position: relative;
     width: 100%;
@@ -529,7 +540,6 @@ img {
     flex-shrink: 0;
 }
 
-/* Shimmer skeleton while image loads */
 .product-image::before {
     content: '';
     position: absolute;
@@ -543,7 +553,6 @@ img {
     z-index: 0;
 }
 
-/* Hide shimmer once image appears */
 .product-image:has(img.is-loaded)::before {
     display: none;
 }
@@ -1480,8 +1489,11 @@ img {
     .hotel-info h1,
     .hotel-title { font-size: 1rem; }
 
-    .hero-banner    { height: 220px; }
-    .hero-content h2{ font-size: 1.4rem; }
+    /* FIXED: Hero fits properly on mobile */
+    .hero-banner    { height: 180px; }
+    .hero-content   { bottom: 28px; }
+    .hero-content h2{ font-size: 1.2rem; }
+    .hero-content p { font-size: 0.82rem; }
 
     .menu-container {
         grid-template-columns: 1fr;
@@ -1489,12 +1501,10 @@ img {
         padding: 0 4px;
     }
 
-    /* Wider, shorter image — food looks great on mobile */
-    .product-image { aspect-ratio: 16 / 7; }
-
-    .product-info  { padding: 12px 14px 14px; }
-    .product-name  { font-size: 1rem; }
-    .product-price { font-size: 1.15rem; margin-bottom: 10px; }
+    .product-image  { aspect-ratio: 16 / 7; }
+    .product-info   { padding: 12px 14px 14px; }
+    .product-name   { font-size: 1rem; }
+    .product-price  { font-size: 1.15rem; margin-bottom: 10px; }
 
     .cart-btn { padding: 12px 20px; font-size: 0.9rem; }
 
@@ -1518,7 +1528,8 @@ img {
 @media (min-width: 481px) and (max-width: 768px) {
     .logo { width: 50px; height: 50px; min-width: 50px; min-height: 50px; }
     .menu-container { grid-template-columns: repeat(2, 1fr); }
-    .hero-banner    { height: 250px; }
+    /* FIXED: Hero height for tablet */
+    .hero-banner    { height: 230px; }
     .product-image  { aspect-ratio: 4 / 3; }
     .qr-image       { max-width: 200px; }
 }
@@ -1526,6 +1537,8 @@ img {
 /* Small desktop */
 @media (min-width: 769px) and (max-width: 1024px) {
     .menu-container { grid-template-columns: repeat(3, 1fr); }
+    /* FIXED: Hero height for small desktop */
+    .hero-banner    { height: 300px; }
 }
 
 /* Desktop */
@@ -1542,6 +1555,7 @@ img {
     }
 
     .menu-container  { grid-template-columns: repeat(5, 1fr); }
-    .hero-banner     { height: 350px; }
+    /* FIXED: Hero height for large desktop */
+    .hero-banner     { height: 380px; }
     .hero-content h2 { font-size: 2.2rem; }
 }
