@@ -1,908 +1,1737 @@
-// ===== Sri Krishna Hotel Ordering System =====
-// Fixed: Payment flow, UPI icons, hero slider positioning, performance
-
-// ===== Menu Data =====
-const menuItems = [
-    { id: 1,  name: "Chicken Rice",       price: 90,  category: "Rice",        image: "chickenrice.jpg" },
-    { id: 2,  name: "Egg Rice",           price: 80,  category: "Rice",        image: "eggrice.jpg" },
-    { id: 3,  name: "Veg Rice",           price: 70,  category: "Rice",        image: "vegrice.jpg" },
-    { id: 4,  name: "Idly",              price: 10,  category: "Tiffin",      image: "idly .jpeg" },
-    { id: 5,  name: "Vada",              price: 10,  category: "Tiffin",      image: "vada.jpg" },
-    { id: 6,  name: "Dosa",              price: 20,  category: "Tiffin",      image: "dosa.jpg" },
-    { id: 7,  name: "Plain Dosa",        price: 50,  category: "Tiffin",      image: "plain dosa .jpeg" },
-    { id: 8,  name: "Set Dosa",          price: 50,  category: "Tiffin",      image: "set dosa.jpg" },
-    { id: 9,  name: "Masala Dosa",       price: 70,  category: "Tiffin",      image: "masal dosa.jpg" },
-    { id: 10, name: "Poori",             price: 40,  category: "Tiffin",      image: "poori.jpg" },
-    { id: 11, name: "Chicken Biryani",   price: 90,  category: "Biryani",     image: "chicken-biryani.jpg" },
-    { id: 12, name: "Egg Biryani",       price: 80,  category: "Biryani",     image: "eggbiryani.jpg" },
-    { id: 13, name: "Veg Biryani",       price: 70,  category: "Biryani",     image: "vegbiryani.jpg" },
-    { id: 14, name: "Veg Meals",         price: 80,  category: "Meals",       image: "veg meals.jpg" },
-    { id: 15, name: "Non Veg Meals",     price: 120, category: "Meals",       image: "non veg meals.jpg" },
-    { id: 16, name: "Fish Meals",        price: 140, category: "Meals",       image: "fish meals.jpg" },
-    { id: 17, name: "Bread",             price: 20,  category: "Bread Items", image: "bread.jpeg" },
-    { id: 18, name: "Veg Sandwich",      price: 80,  category: "Bread Items", image: "Veg sandwich .jpg" },
-    { id: 19, name: "Chicken Sandwich",  price: 120, category: "Bread Items", image: "chicken sandwich .jpg" },
-    { id: 20, name: "Omelette",          price: 20,  category: "Egg Items",   image: "Omelette .jpg" },
-    { id: 21, name: "Half Boil",         price: 20,  category: "Egg Items",   image: "half boil.jpeg" },
-    { id: 22, name: "Boiled Egg",        price: 20,  category: "Egg Items",   image: "Boiled egg.jpg" },
-    { id: 23, name: "Chicken 100g",      price: 40,  category: "Chicken",     image: "chicken 100g.jpg" },
-    { id: 24, name: "Chicken 1kg",       price: 400, category: "Chicken",     image: "chicken 40g.jpg" },
-    { id: 25, name: "Chicken Noodles",   price: 90,  category: "Noodles",     image: "chickennoodles.jpg" },
-    { id: 26, name: "Veg Noodles",       price: 60,  category: "Noodles",     image: "veg noodles.jpg" },
-    { id: 27, name: "Egg Noodles",       price: 80,  category: "Noodles",     image: "eggnoodles.jpg" }
-];
-const menuItemsById = new Map(menuItems.map(item => [item.id, item]));
-
-// ===== State =====
-let cart = [];
-let currentCategory = 'all';
-let searchQuery = '';
-let paymentStatus = 'pending';
-let currentSlide = 0;
-let selectedUpiApp = null;
-
-// ===== Hotel Details =====
-const HOTEL_NAME       = "Sri Krishna Hotel";
-const PHONE_NUMBER     = "98433 36980";
-const WHATSAPP_NUMBER  = "919843336980";
-const UPI_ID           = "9843336980@ibl";
-const EMAIL            = "kumaranglids@gmail.com";
-const PDF_SCRIPT_URL   = "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
-
-const MENU_IMAGE_FALLBACK = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&fm=webp&q=80";
-
-// ===== UPI Apps — with icons =====
-const UPI_APPS = [
-    {
-        id: 'gpay',
-        name: 'GPay',
-        icon: 'https://img.icons8.com/color/96/google-pay.png',
-        color: '#4285F4',
-        pkg: 'com.google.android.apps.nbu.paisa.user',
-        iosScheme: 'tez'
-    },
-    {
-        id: 'phonepe',
-        name: 'PhonePe',
-        icon: 'https://img.icons8.com/color/96/phone-pe.png',
-        color: '#5f259f',
-        pkg: 'com.phonepe.app',
-        iosScheme: 'phonepe'
-    },
-    {
-        id: 'paytm',
-        name: 'Paytm',
-        icon: 'https://img.icons8.com/color/96/paytm.png',
-        color: '#00b9f1',
-        pkg: 'net.one97.paytm',
-        iosScheme: 'paytmmp'
-    },
-    {
-        id: 'bhim',
-        name: 'BHIM',
-        icon: 'https://img.icons8.com/color/96/bhim.png',
-        color: '#00a651',
-        pkg: 'in.org.npci.upiapp',
-        iosScheme: 'upi'
-    },
-    {
-        id: 'amazonpay',
-        name: 'Amazon',
-        icon: 'https://img.icons8.com/color/96/amazon.png',
-        color: '#FF9900',
-        pkg: 'in.amazon.mShop.android.shopping',
-        iosScheme: 'amznmobile'
-    },
-    {
-        id: 'other',
-        name: 'Other UPI',
-        icon: null,
-        color: '#607d8b',
-        pkg: null,
-        iosScheme: 'upi'
-    }
-];
-
-// ===== DOM Elements =====
-const menuContainer      = document.getElementById('menu-container');
-const cartCount          = document.getElementById('cart-count');
-const cartTotal          = document.getElementById('cart-total');
-const cartItems          = document.getElementById('cart-items');
-const cartDrawer         = document.getElementById('cart-drawer');
-const cartOverlay        = document.getElementById('cart-overlay');
-const cartDrawerBody     = document.getElementById('cart-drawer-body');
-const cartDrawerFooter   = document.getElementById('cart-drawer-footer');
-const emptyCart          = document.getElementById('empty-cart');
-const cartSubtotal       = document.getElementById('cart-subtotal');
-const cartGrandTotal     = document.getElementById('cart-grand-total');
-const stickyCart         = document.getElementById('sticky-cart');
-const cartBtn            = document.getElementById('cart-btn');
-const toast              = document.getElementById('toast');
-const toastMessage       = document.getElementById('toast-message');
-const btnSubmitOrder     = document.getElementById('btn-submit-order');
-const btnDownloadBill    = document.getElementById('btn-download-bill');
-const adminNotificationPanel = document.getElementById('admin-notification-panel');
-
-let lastGeneratedBill = null;
-let heroSliderInterval = null;
-let searchInputTimer   = null;
-let jspdfLoader        = null;
-
-// ===== Initialize =====
-document.addEventListener('DOMContentLoaded', initializeApp);
-
-function initializeApp() {
-    [
-        ['load cart',           loadCart],
-        ['setup events',        setupEventListeners],
-        ['render menu',         renderMenu],
-        ['update cart',         updateCartDisplay],
-        ['update qr amount',    updateQrAmount],
-        ['render upi apps',     renderUpiAppGrid],
-        ['hero slider',         startHeroSlider],
-        ['welcome voice',       scheduleWelcomeVoice]
-    ].forEach(([label, fn]) => {
-        try { fn(); } catch (e) { console.error('Init failed:', label, e); }
-    });
-    hideLoadingOverlay();
+/* ===== CSS Variables ===== */
+:root {
+    --primary: #e65100;
+    --primary-dark: #bf360c;
+    --primary-light: #ff9800;
+    --secondary: #2e7d32;
+    --accent: #ffc107;
+    --bg: #f8f9fa;
+    --card-bg: #ffffff;
+    --text: #212529;
+    --text-light: #6c757d;
+    --border: #dee2e6;
+    --shadow: 0 2px 12px rgba(0,0,0,0.08);
+    --shadow-lg: 0 8px 30px rgba(0,0,0,0.12);
+    --radius: 16px;
+    --radius-sm: 10px;
+    --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    --header-height: 70px;
+    --phonepe: #5f259f;
 }
 
-function hideLoadingOverlay() {
-    const overlay = document.getElementById('loading-overlay');
-    if (!overlay) return;
-    requestAnimationFrame(() => overlay.classList.add('hidden'));
-    setTimeout(() => overlay.remove(), 600);
+/* ===== Reset & Base ===== */
+*, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-function scheduleWelcomeVoice() {
-    setTimeout(() => speakText('Welcome to Sri Krishna Hotel. Please place your order.'), 900);
+html {
+    scroll-behavior: smooth;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
-// ===== Storage =====
-function readJsonStorage(key, fallback) {
-    try {
-        const v = localStorage.getItem(key);
-        return v ? (JSON.parse(v) ?? fallback) : fallback;
-    } catch { return fallback; }
-}
-function writeJsonStorage(key, value) {
-    try { localStorage.setItem(key, JSON.stringify(value)); return true; } catch { return false; }
+body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    overflow-x: hidden;
+    padding-bottom: 100px;
 }
 
-// ===== Helpers =====
-function safeOpen(url) {
-    try { window.open(url, '_blank', 'noopener,noreferrer'); } catch (e) { console.warn(e); }
-}
-function safeScrollIntoView(el) {
-    if (!el) return;
-    try { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch { el.scrollIntoView(); }
-}
-function safeScrollToTop() {
-    try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch { window.scrollTo(0, 0); }
-}
-function bindEvent(id, event, handler) {
-    const el = typeof id === 'string' ? document.getElementById(id) : id;
-    if (!el) return null;
-    el.addEventListener(event, handler);
-    return el;
+a { text-decoration: none; color: inherit; }
+
+button {
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-family: inherit;
+    -webkit-tap-highlight-color: transparent;
 }
 
-// ===== TTS =====
-function speakText(text) {
-    if (!('speechSynthesis' in window)) return;
-    try {
-        window.speechSynthesis.cancel();
-        const u = new SpeechSynthesisUtterance(text);
-        u.lang = 'en-IN'; u.rate = 0.9; u.pitch = 1; u.volume = 1;
-        const voices = window.speechSynthesis.getVoices();
-        const v = voices.find(v => v.lang.includes('en-IN') || v.lang.includes('en-GB'));
-        if (v) u.voice = v;
-        window.speechSynthesis.speak(u);
-    } catch (e) { console.warn('TTS failed', e); }
+img {
+    max-width: 100%;
+    display: block;
+    height: auto;
 }
 
-// ===== Render Menu — Optimized =====
-function renderMenu() {
-    let items = menuItems;
-    const q = searchQuery.trim().toLowerCase();
-    const qtyMap = new Map(cart.map(c => [c.id, c.quantity]));
-
-    if (currentCategory !== 'all') items = items.filter(i => i.category === currentCategory);
-    if (q) items = items.filter(i => i.name.toLowerCase().includes(q));
-
-    if (!items.length) {
-        menuContainer.innerHTML = `
-            <div class="empty-cart" style="grid-column:1/-1;padding:60px">
-                <i class="fas fa-search" style="font-size:3rem"></i>
-                <p>No items found</p>
-                <span>Try a different search or category</span>
-            </div>`;
-        return;
-    }
-
-    const fragment = document.createDocumentFragment();
-
-    items.forEach((item, idx) => {
-        const qty = qtyMap.get(item.id) || 0;
-        const card = document.createElement('div');
-        card.className = 'product-card';
-        card.dataset.id = item.id;
-
-        const loading = idx < 6 ? 'eager' : 'lazy';
-
-        card.innerHTML = `
-            <div class="product-image">
-                <img
-                    src="${item.image}"
-                    alt="${item.name}"
-                    width="400" height="260"
-                    loading="${loading}"
-                    decoding="async"
-                    onerror="this.onerror=null;this.src='${MENU_IMAGE_FALLBACK}';this.classList.add('is-loaded')"
-                    onload="this.classList.add('is-loaded')"
-                >
-                <span class="product-badge">${item.category}</span>
-            </div>
-            <div class="product-info">
-                <h3 class="product-name">${item.name}</h3>
-                <p class="product-price">${item.price}</p>
-                <div class="product-actions">
-                    <div class="quantity-control">
-                        <button class="qty-btn minus" data-id="${item.id}" ${qty <= 0 ? 'disabled' : ''}>-</button>
-                        <span class="qty-value" data-id="${item.id}">${qty}</span>
-                        <button class="qty-btn plus" data-id="${item.id}">+</button>
-                    </div>
-                    <button class="btn-add-cart ${qty > 0 ? 'added' : ''}" data-id="${item.id}">
-                        <i class="fas ${qty > 0 ? 'fa-check' : 'fa-cart-plus'}"></i>
-                        <span class="btn-add-label">${qty > 0 ? 'Added' : 'Add'}</span>
-                    </button>
-                </div>
-            </div>`;
-
-        fragment.appendChild(card);
-    });
-
-    menuContainer.innerHTML = '';
-    menuContainer.appendChild(fragment);
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
 }
 
-function getCartQty(id) {
-    const c = cart.find(c => c.id === id);
-    return c ? c.quantity : 0;
+/* ===== Loading Overlay ===== */
+#loading-overlay {
+    position: fixed;
+    inset: 0;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    transition: opacity 0.4s ease, visibility 0.4s ease;
 }
 
-function updateProductCardState(id) {
-    const card = menuContainer.querySelector(`.product-card[data-id="${id}"]`);
-    if (!card) return;
-    const qty = getCartQty(id);
-    const minus = card.querySelector('.qty-btn.minus');
-    const qtyVal = card.querySelector('.qty-value');
-    const addBtn = card.querySelector('.btn-add-cart');
-    if (minus)  minus.disabled = qty <= 0;
-    if (qtyVal) qtyVal.textContent = qty;
-    if (addBtn) {
-        addBtn.classList.toggle('added', qty > 0);
-        addBtn.querySelector('i').className = `fas ${qty > 0 ? 'fa-check' : 'fa-cart-plus'}`;
-        addBtn.querySelector('.btn-add-label').textContent = qty > 0 ? 'Added' : 'Add';
-    }
+#loading-overlay.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
 }
 
-function refreshAllCards() {
-    menuContainer.querySelectorAll('.product-card[data-id]').forEach(c => updateProductCardState(+c.dataset.id));
+.spinner {
+    width: 48px;
+    height: 48px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid var(--primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-bottom: 16px;
 }
 
-// ===== Cart =====
-function addToCart(id) {
-    const item = menuItemsById.get(id);
-    if (!item) return;
-    const existing = cart.find(c => c.id === id);
-    if (existing) existing.quantity++;
-    else cart.push({ id: item.id, name: item.name, price: item.price, category: item.category, image: item.image, quantity: 1 });
-    saveCart(); updateCartDisplay(); updateProductCardState(id);
-    showToast(`${item.name} added to cart!`);
-    cartBtn.style.animation = 'none';
-    cartBtn.offsetHeight;
-    cartBtn.style.animation = 'cartBounce 0.5s ease';
+@keyframes spin {
+    0%   { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
-function decreaseQuantity(id) {
-    const item = cart.find(c => c.id === id);
-    if (!item) return;
-    item.quantity--;
-    if (item.quantity <= 0) cart = cart.filter(c => c.id !== id);
-    saveCart(); updateCartDisplay(); updateProductCardState(id);
+/* ===== Toast ===== */
+.toast {
+    position: fixed;
+    top: 90px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-20px);
+    background: var(--secondary);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 50px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 500;
+    box-shadow: var(--shadow-lg);
+    z-index: 10000;
+    opacity: 0;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    white-space: nowrap;
+    pointer-events: none;
 }
 
-function removeFromCart(id) {
-    cart = cart.filter(c => c.id !== id);
-    saveCart(); updateCartDisplay(); updateProductCardState(id);
-    showToast('Item removed');
+.toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
 }
 
-function updateCartQuantity(id, change) {
-    const item = cart.find(c => c.id === id);
-    if (!item) return;
-    item.quantity += change;
-    if (item.quantity <= 0) cart = cart.filter(c => c.id !== id);
-    saveCart(); updateCartDisplay(); updateProductCardState(id);
+.toast i { font-size: 1.2rem; }
+
+/* ===== Header ===== */
+.header {
+    position: sticky;
+    top: 0;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+    z-index: 1000;
+    box-shadow: 0 2px 20px rgba(230, 81, 0, 0.3);
 }
 
-function updateCartDisplay() {
-    let totalItems = 0, totalAmount = 0;
-    cart.forEach(i => { totalItems += i.quantity; totalAmount += i.price * i.quantity; });
-    cartCount.textContent = totalItems;
-    cartTotal.textContent = '₹' + totalAmount;
-    stickyCart.style.display = totalItems > 0 ? 'block' : 'none';
-    updateQrAmount();
-
-    if (!cart.length) {
-        emptyCart.style.display = 'flex';
-        cartItems.style.display = 'none';
-        cartDrawerFooter.style.display = 'none';
-        return;
-    }
-    emptyCart.style.display = 'none';
-    cartItems.style.display = 'block';
-    cartDrawerFooter.style.display = 'block';
-
-    const fragment = document.createDocumentFragment();
-    cart.forEach(item => {
-        const div = document.createElement('div');
-        div.className = 'cart-item';
-        div.innerHTML = `
-            <img src="${item.image}" alt="${item.name}" class="cart-item-image"
-                 width="60" height="60" loading="lazy"
-                 onerror="this.onerror=null;this.src='${MENU_IMAGE_FALLBACK}'"
-                 onload="this.classList.add('loaded')">
-            <div class="cart-item-details">
-                <div class="cart-item-name">${item.name}</div>
-                <div class="cart-item-price">₹${item.price} each</div>
-            </div>
-            <div class="cart-item-qty">
-                <button type="button" data-action="decrease" data-id="${item.id}"><i class="fas fa-minus"></i></button>
-                <span>${item.quantity}</span>
-                <button type="button" data-action="increase" data-id="${item.id}"><i class="fas fa-plus"></i></button>
-            </div>
-            <button type="button" class="cart-item-remove" data-action="remove" data-id="${item.id}">
-                <i class="fas fa-trash-alt"></i>
-            </button>`;
-        fragment.appendChild(div);
-    });
-
-    cartItems.innerHTML = '';
-    cartItems.appendChild(fragment);
-
-    cartSubtotal.textContent = '₹' + totalAmount;
-    cartGrandTotal.textContent = '₹' + totalAmount;
+.header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    max-width: 1400px;
+    margin: 0 auto;
+    height: var(--header-height);
+    gap: 10px;
 }
 
-function saveCart()  { writeJsonStorage('sriKrishnaCart', cart); }
-function loadCart()  { const s = readJsonStorage('sriKrishnaCart', []); cart = Array.isArray(s) ? s : []; }
-function clearCart() { cart = []; saveCart(); updateCartDisplay(); refreshAllCards(); }
-
-// ===== Toast =====
-function showToast(msg) {
-    if (!toast || !toastMessage) return;
-    toastMessage.textContent = msg;
-    toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 2500);
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
 }
 
-// ===== FIXED Hero Slider — No z-index manipulation =====
-function startHeroSlider() {
-    const slides = document.querySelectorAll('.hero-slide');
-    const dots   = document.querySelectorAll('.hero-dot');
-    if (!slides.length) return;
-
-    const goto = (idx) => {
-        slides[currentSlide].classList.remove('active');
-        if (dots[currentSlide]) dots[currentSlide].classList.remove('active');
-        currentSlide = idx;
-        const slide = slides[idx];
-
-        // Load background image if not already loaded
-        if (slide.dataset.bg && !slide.dataset.loaded) {
-            const img = new Image();
-            img.onload = () => { 
-                slide.style.backgroundImage = `url('${slide.dataset.bg}')`; 
-                slide.dataset.loaded = 'true'; 
-            };
-            img.src = slide.dataset.bg;
-        }
-
-        slide.classList.add('active');
-        if (dots[idx]) dots[idx].classList.add('active');
-    };
-
-    // Load first slide immediately
-    if (slides[0].dataset.bg && !slides[0].dataset.loaded) {
-        slides[0].style.backgroundImage = `url('${slides[0].dataset.bg}')`;
-        slides[0].dataset.loaded = 'true';
-    }
-
-    if (heroSliderInterval) clearInterval(heroSliderInterval);
-    heroSliderInterval = setInterval(() => goto((currentSlide + 1) % slides.length), 5000);
-
-    dots.forEach((dot, idx) => dot.addEventListener('click', () => { 
-        if (idx !== currentSlide) goto(idx); 
-    }));
+.logo {
+    width: 56px;
+    height: 56px;
+    min-width: 56px;
+    min-height: 56px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.25);
+    border: 2px solid rgba(255,255,255,0.3);
+    flex-shrink: 0;
+    overflow: hidden;
+    background: white;
 }
 
-// ===== UPI Deeplink Functions =====
-function buildUpiDeeplink(app, total) {
-    const pa = encodeURIComponent(UPI_ID);
-    const pn = encodeURIComponent(HOTEL_NAME);
-    const tn = encodeURIComponent('Food Order - Sri Krishna Hotel');
-    const am = encodeURIComponent(total.toFixed(2));
-    const isAndroid = /Android/i.test(navigator.userAgent);
-    const isIOS     = /iPhone|iPad/i.test(navigator.userAgent);
-
-    if (app.id === 'other') {
-        return `upi://pay?pa=${pa}&pn=${pn}&am=${am}&cu=INR&tn=${tn}`;
-    }
-
-    if (isAndroid && app.pkg) {
-        const fallback = encodeURIComponent(`upi://pay?pa=${pa}&pn=${pn}&am=${am}&cu=INR&tn=${tn}`);
-        return `intent://pay?pa=${pa}&pn=${pn}&am=${am}&cu=INR&tn=${tn}#Intent;scheme=upi;package=${app.pkg};S.browser_fallback_url=${fallback};end`;
-    }
-
-    if (isIOS) {
-        if (app.id === 'gpay')    return `tez://upi/pay?pa=${pa}&pn=${pn}&am=${am}&cu=INR&tn=${tn}`;
-        if (app.id === 'phonepe') return `phonepe://pay?pa=${pa}&pn=${pn}&am=${am}&cu=INR&tn=${tn}`;
-        if (app.id === 'paytm')   return `paytmmp://pay?pa=${pa}&pn=${pn}&am=${am}&cu=INR&tn=${tn}`;
-        return `upi://pay?pa=${pa}&pn=${pn}&am=${am}&cu=INR&tn=${tn}`;
-    }
-
-    return `upi://pay?pa=${pa}&pn=${pn}&am=${am}&cu=INR&tn=${tn}`;
+.header-logo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    border-radius: 12px;
 }
 
-// ===== Render UPI App Grid =====
-function renderUpiAppGrid() {
-    const grid = document.getElementById('upi-app-grid');
-    if (!grid) return;
-
-    grid.innerHTML = UPI_APPS.map(app => `
-        <button type="button" class="upi-app-btn" data-app="${app.id}" onclick="handleUpiAppClick('${app.id}')">
-            <div class="upi-app-icon">
-                ${app.icon 
-                    ? `<img src="${app.icon}" alt="${app.name}" loading="lazy" onerror="this.style.display='none';this.parentElement.innerHTML='<span class=\'fallback-icon\' style=\'background:${app.color}\'>${app.name[0]}</span>'">`
-                    : `<span class="fallback-icon" style="background:${app.color}">${app.name[0]}</span>`
-                }
-            </div>
-            <span class="upi-app-name">${app.name}</span>
-        </button>
-    `).join('');
+.hotel-info h1 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    line-height: 1.2;
+    margin-bottom: 1px;
 }
 
-function handleUpiAppClick(appId) {
-    const total = cart.reduce((s, i) => s + i.price * i.quantity, 0);
-    if (total <= 0) { showToast('Please add items to cart first'); return; }
-
-    const app = UPI_APPS.find(a => a.id === appId);
-    if (!app) return;
-
-    selectedUpiApp = appId;
-
-    // Update visual selection
-    document.querySelectorAll('.upi-app-btn').forEach(btn => {
-        btn.classList.toggle('selected', btn.dataset.app === appId);
-    });
-
-    const url = buildUpiDeeplink(app, total);
-
-    if (/Android|iPhone|iPad/i.test(navigator.userAgent)) {
-        window.location.href = url;
-        showToast(`${app.name} திறக்கிறது... Pay செய்த பிறகு Confirm செய்யுங்கள்`);
-    } else {
-        showToast('Mobile-ல open செய்யுங்கள் அல்லது QR scan செய்யுங்கள்');
-    }
-
-    // Show QR section and payment done button
-    document.getElementById('qr-payment-section').style.display = 'block';
-    updatePaymentStatus('pending');
-    btnSubmitOrder.disabled = true;
+.hotel-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    line-height: 1.2;
+    margin-bottom: 1px;
 }
 
-// ===== Event Listeners =====
-function setupEventListeners() {
-    menuContainer.addEventListener('click', handleMenuClick);
-    cartItems.addEventListener('click', handleCartClick);
+.hotel-tagline {
+    font-size: 0.72rem !important;
+    font-weight: 600;
+    color: #ffeb3b;
+    margin-bottom: 2px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
 
-    document.querySelectorAll('.category-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            currentCategory = btn.dataset.category;
-            renderMenu();
-            safeScrollIntoView(document.getElementById('menu-section'));
-        });
-    });
+.hotel-tagline i.fa-leaf        { color: #69f0ae; font-size: 0.65rem; }
+.hotel-tagline i.fa-drumstick-bite { color: #ffab91; font-size: 0.65rem; }
 
-    document.querySelectorAll('.mobile-menu-item[data-category]').forEach(item => {
-        item.addEventListener('click', e => {
-            e.preventDefault();
-            currentCategory = item.dataset.category;
-            document.querySelectorAll('.category-btn').forEach(b => {
-                b.classList.remove('active');
-                if (b.dataset.category === currentCategory) b.classList.add('active');
-            });
-            renderMenu();
-            closeMobileMenu();
-            safeScrollIntoView(document.getElementById('menu-section'));
-        });
-    });
+.hotel-info p {
+    font-size: 0.82rem;
+    opacity: 0.9;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 1px;
+}
 
-    bindEvent('search-toggle', 'click', () => {
-        const bar = document.getElementById('search-bar');
-        bar.classList.toggle('active');
-        if (bar.classList.contains('active')) setTimeout(() => document.getElementById('search-input').focus(), 100);
-    });
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
 
-    bindEvent('search-close', 'click', () => {
-        document.getElementById('search-bar').classList.remove('active');
-        document.getElementById('search-input').value = '';
-        searchQuery = ''; renderMenu();
-    });
+.search-toggle, .menu-toggle {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.15);
+    color: white;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+    touch-action: manipulation;
+}
 
-    bindEvent('search-input', 'input', e => {
-        clearTimeout(searchInputTimer);
-        const v = e.target.value;
-        searchInputTimer = setTimeout(() => { searchQuery = v; renderMenu(); }, 120);
-    });
+.search-toggle:hover, .menu-toggle:hover {
+    background: rgba(255,255,255,0.25);
+    transform: scale(1.05);
+}
 
-    bindEvent('menu-toggle',         'click', openMobileMenu);
-    bindEvent('mobile-menu-close',   'click', closeMobileMenu);
-    bindEvent('mobile-menu-overlay', 'click', closeMobileMenu);
+.search-toggle:active, .menu-toggle:active {
+    transform: scale(0.95);
+}
 
-    bindEvent('cart-btn',     'click', openCart);
-    bindEvent('cart-close',   'click', closeCart);
-    bindEvent('cart-overlay', 'click', closeCart);
-    bindEvent('btn-continue', 'click', closeCart);
+/* ===== Search Bar ===== */
+.search-bar {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, padding 0.3s ease;
+    background: rgba(0,0,0,0.1);
+}
 
-    bindEvent('btn-place-order', 'click', () => { closeCart(); updateQrAmount(); openOrderModal(); });
+.search-bar.active {
+    max-height: 70px;
+    padding: 10px 16px;
+}
 
-    bindEvent('order-modal-close',   'click', closeOrderModal);
-    bindEvent('order-modal-overlay', 'click', closeOrderModal);
+.search-container {
+    display: flex;
+    align-items: center;
+    background: white;
+    border-radius: 50px;
+    padding: 8px 16px;
+    max-width: 600px;
+    margin: 0 auto;
+    gap: 10px;
+}
 
-    document.querySelectorAll('input[name="payment-method"]').forEach(radio => {
-        radio.addEventListener('change', e => {
-            selectedUpiApp = null;
-            document.querySelectorAll('.upi-app-btn').forEach(btn => btn.classList.remove('selected'));
+.search-container i          { color: var(--text-light); font-size: 1rem; }
+.search-container input      { flex: 1; border: none; outline: none; font-size: 1rem; background: transparent; }
 
-            if (e.target.value === 'online') {
-                document.getElementById('online-payment-section').style.display = 'block';
-                document.getElementById('cash-payment-section').style.display = 'none';
-                document.getElementById('qr-payment-section').style.display = 'none';
-                updatePaymentStatus('pending');
-                paymentStatus = 'pending';
-                btnSubmitOrder.disabled = true;
-            } else {
-                document.getElementById('online-payment-section').style.display = 'none';
-                document.getElementById('cash-payment-section').style.display = 'block';
-                document.getElementById('qr-payment-section').style.display = 'none';
-                paymentStatus = 'cash';
-                btnSubmitOrder.disabled = false;
-            }
-        });
-    });
+.search-container button {
+    color: var(--text-light);
+    font-size: 1rem;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: var(--transition);
+    touch-action: manipulation;
+}
 
-    const copyUpiBtn = document.getElementById('btn-copy-upi');
-    if (copyUpiBtn) copyUpiBtn.addEventListener('click', copyUpiId);
+.search-container button:hover { background: #f0f0f0; color: var(--text); }
 
-    if (btnDownloadBill) {
-        btnDownloadBill.addEventListener('click', async () => {
-            if (!lastGeneratedBill) return;
-            try { await generateBillPDF(lastGeneratedBill); showToast('Bill download started'); }
-            catch (e) { console.error(e); showToast('Download failed. Try again.'); }
-        });
-    }
+/* ===== Mobile Menu ===== */
+.mobile-menu {
+    position: fixed;
+    top: 0;
+    right: -320px;
+    width: 300px;
+    max-width: 85vw;
+    height: 100vh;
+    background: white;
+    z-index: 10001;
+    box-shadow: -5px 0 30px rgba(0,0,0,0.15);
+    transition: right 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    will-change: transform;
+}
 
-    bindEvent('order-form', 'submit', e => { e.preventDefault(); submitOrder(); });
-    bindEvent('btn-new-order', 'click', () => { closeSuccessModal(); clearCart(); safeScrollToTop(); });
+.mobile-menu.open { right: 0; }
 
-    bindEvent('mobile-view-orders', 'click', e => { e.preventDefault(); closeMobileMenu(); openHistoryModal(); });
-    bindEvent('footer-history',     'click', e => { e.preventDefault(); openHistoryModal(); });
-    bindEvent('history-modal-close',   'click', closeHistoryModal);
-    bindEvent('history-modal-overlay', 'click', closeHistoryModal);
+.mobile-menu-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+}
 
-    bindEvent('mobile-contact', 'click', e => { e.preventDefault(); closeMobileMenu(); openContactModal(); });
-    bindEvent('footer-contact', 'click', e => { e.preventDefault(); openContactModal(); });
-    bindEvent('contact-modal-close',   'click', closeContactModal);
-    bindEvent('contact-modal-overlay', 'click', closeContactModal);
+.mobile-menu-header h3 { font-size: 1.2rem; }
 
-    bindEvent('customer-mobile', 'input', e => {
-        e.target.value = e.target.value.replace(/\D/g, '').slice(0, 10);
-    });
+.mobile-menu-header button {
+    color: white;
+    font-size: 1.2rem;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    touch-action: manipulation;
+}
 
-    // Add payment done button dynamically
-    const paymentStatusEl = document.getElementById('payment-status');
-    if (paymentStatusEl) {
-        const doneBtn = document.createElement('button');
-        doneBtn.type = 'button';
-        doneBtn.id = 'btn-payment-done';
-        doneBtn.className = 'btn-payment-done';
-        doneBtn.innerHTML = '<i class="fas fa-check-circle"></i> Payment செய்துவிட்டேன் — Confirm';
-        doneBtn.style.cssText = 'width:100%;padding:14px;border-radius:50px;background:linear-gradient(135deg,#2e7d32,#1b5e20);color:white;font-weight:700;font-size:1rem;display:none;align-items:center;justify-content:center;gap:8px;margin-top:12px;box-shadow:0 4px 15px rgba(46,125,50,0.3);cursor:pointer;transition:all 0.3s;';
-        doneBtn.addEventListener('click', () => {
-            paymentStatus = 'paid';
-            updatePaymentStatus('paid');
-            btnSubmitOrder.disabled = false;
-            showToast('✅ Payment confirmed!');
-            notifyBillCounterFromForm();
-            doneBtn.style.display = 'none';
-        });
-        paymentStatusEl.parentNode.insertBefore(doneBtn, paymentStatusEl.nextSibling);
+.mobile-menu-content { flex: 1; overflow-y: auto; padding: 10px 0; }
+
+.mobile-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 20px;
+    color: var(--text);
+    font-weight: 500;
+    transition: var(--transition);
+    border-left: 3px solid transparent;
+    touch-action: manipulation;
+}
+
+.mobile-menu-item i {
+    width: 24px;
+    text-align: center;
+    color: var(--primary);
+    font-size: 1.1rem;
+}
+
+.mobile-menu-item:hover,
+.mobile-menu-item.active {
+    background: #fff3e0;
+    border-left-color: var(--primary);
+    color: var(--primary-dark);
+}
+
+.mobile-menu-divider { height: 1px; background: var(--border); margin: 10px 20px; }
+
+.mobile-menu-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 10000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.mobile-menu-overlay.open { opacity: 1; visibility: visible; }
+
+/* ===== Hero Banner ===== */
+.hero-banner {
+    position: relative;
+    width: 100%;
+    height: 260px;
+    overflow: hidden;
+    display: block;
+    background: #1a1a1a;
+}
+
+.hero-slider {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.hero-slide {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    opacity: 0;
+    transition: opacity 0.8s ease;
+    will-change: opacity;
+}
+
+.hero-slide.active { opacity: 1; }
+
+.hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.4) 100%);
+}
+
+.hero-content {
+    position: absolute;
+    bottom: 35px;
+    left: 20px;
+    right: 20px;
+    color: white;
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.hero-content h2 {
+    font-size: 1.7rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    animation: fadeInUp 0.6s ease;
+}
+
+.hero-content p {
+    font-size: 0.95rem;
+    opacity: 0.9;
+    text-shadow: 0 1px 5px rgba(0,0,0,0.3);
+    animation: fadeInUp 0.6s ease 0.15s both;
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(15px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.hero-dots {
+    position: absolute;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+    z-index: 5;
+}
+
+.hero-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.4);
+    cursor: pointer;
+    transition: var(--transition);
+    touch-action: manipulation;
+}
+
+.hero-dot.active {
+    background: white;
+    width: 28px;
+    border-radius: 5px;
+}
+
+/* ===== Category Section ===== */
+.category-section {
+    position: sticky;
+    top: var(--header-height);
+    background: var(--bg);
+    z-index: 100;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.category-container {
+    display: flex;
+    gap: 8px;
+    padding: 0 16px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.category-container::-webkit-scrollbar { display: none; }
+
+.category-btn {
+    flex-shrink: 0;
+    padding: 10px 20px;
+    border-radius: 50px;
+    background: white;
+    color: var(--text);
+    font-weight: 600;
+    font-size: 0.9rem;
+    border: 2px solid var(--border);
+    transition: var(--transition);
+    white-space: nowrap;
+    touch-action: manipulation;
+}
+
+.category-btn:hover {
+    border-color: var(--primary-light);
+    color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(230, 81, 0, 0.15);
+}
+
+.category-btn:active {
+    transform: translateY(0) scale(0.97);
+}
+
+.category-btn.active {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+    border-color: var(--primary);
+    box-shadow: 0 4px 15px rgba(230, 81, 0, 0.3);
+}
+
+/* ===== Menu Section ===== */
+.menu-section {
+    padding: 20px 16px 40px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.menu-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+/* ===== Product Card ===== */
+.product-card {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--border);
+    opacity: 0;
+    transform: translateY(20px);
+    animation: cardFadeIn 0.4s ease forwards;
+}
+
+@keyframes cardFadeIn {
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
 
-function handleMenuClick(event) {
-    const plus  = event.target.closest('.qty-btn.plus');
-    if (plus)  { addToCart(+plus.dataset.id); return; }
-    const minus = event.target.closest('.qty-btn.minus');
-    if (minus) { decreaseQuantity(+minus.dataset.id); return; }
-    const add   = event.target.closest('.btn-add-cart');
-    if (add)   addToCart(+add.dataset.id);
+.product-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary-light);
 }
 
-function handleCartClick(event) {
-    const btn = event.target.closest('button[data-action][data-id]');
-    if (!btn) return;
-    const id     = +btn.dataset.id;
-    const action = btn.dataset.action;
-    if (action === 'increase') { updateCartQuantity(id, 1); return; }
-    if (action === 'decrease') { updateCartQuantity(id, -1); return; }
-    if (action === 'remove')   removeFromCart(id);
+/* ===== Product Image - FAST LOADING ===== */
+.product-image {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    background: #e8e8e8;
+    flex-shrink: 0;
 }
 
-// ===== Modals =====
-function openCart()         { cartDrawer.classList.add('open'); cartOverlay.classList.add('open'); document.body.style.overflow = 'hidden'; }
-function closeCart()        { cartDrawer.classList.remove('open'); cartOverlay.classList.remove('open'); document.body.style.overflow = ''; }
-function openMobileMenu()   { document.getElementById('mobile-menu').classList.add('open'); document.getElementById('mobile-menu-overlay').classList.add('open'); document.body.style.overflow = 'hidden'; }
-function closeMobileMenu()  { document.getElementById('mobile-menu').classList.remove('open'); document.getElementById('mobile-menu-overlay').classList.remove('open'); document.body.style.overflow = ''; }
-
-function openOrderModal() {
-    document.getElementById('order-modal').classList.add('open');
-    document.getElementById('order-modal-overlay').classList.add('open');
-    document.body.style.overflow = 'hidden';
-    document.getElementById('order-form').reset();
-    document.querySelector('input[name="payment-method"][value="cash"]').checked = true;
-    document.getElementById('online-payment-section').style.display = 'none';
-    document.getElementById('cash-payment-section').style.display = 'block';
-    document.getElementById('qr-payment-section').style.display = 'none';
-
-    selectedUpiApp = null;
-    document.querySelectorAll('.upi-app-btn').forEach(btn => btn.classList.remove('selected'));
-
-    updatePaymentStatus('cash');
-    paymentStatus = 'cash';
-    btnSubmitOrder.disabled = false;
-    if (btnDownloadBill) btnDownloadBill.style.display = 'none';
-    updateQrAmount();
-
-    const doneBtn = document.getElementById('btn-payment-done');
-    if (doneBtn) doneBtn.style.display = 'none';
+/* Skeleton shimmer loading */
+.product-image::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg,
+        #e8e8e8 25%,
+        #d0d0d0 50%,
+        #e8e8e8 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    z-index: 0;
 }
 
-function closeOrderModal()   { document.getElementById('order-modal').classList.remove('open'); document.getElementById('order-modal-overlay').classList.remove('open'); document.body.style.overflow = ''; }
-function openSuccessModal()  { document.getElementById('success-modal').classList.add('open'); document.getElementById('success-modal-overlay').classList.add('open'); document.body.style.overflow = 'hidden'; }
-function closeSuccessModal() { document.getElementById('success-modal').classList.remove('open'); document.getElementById('success-modal-overlay').classList.remove('open'); document.body.style.overflow = ''; }
-function openHistoryModal()  { renderOrderHistory(); document.getElementById('history-modal').classList.add('open'); document.getElementById('history-modal-overlay').classList.add('open'); document.body.style.overflow = 'hidden'; }
-function closeHistoryModal() { document.getElementById('history-modal').classList.remove('open'); document.getElementById('history-modal-overlay').classList.remove('open'); document.body.style.overflow = ''; }
-function openContactModal()  { document.getElementById('contact-modal').classList.add('open'); document.getElementById('contact-modal-overlay').classList.add('open'); document.body.style.overflow = 'hidden'; }
-function closeContactModal() { document.getElementById('contact-modal').classList.remove('open'); document.getElementById('contact-modal-overlay').classList.remove('open'); document.body.style.overflow = ''; }
+.product-image:has(img.is-loaded)::before {
+    display: none;
+}
 
-function updatePaymentStatus(status) {
-    const el = document.getElementById('payment-status');
-    const doneBtn = document.getElementById('btn-payment-done');
+@keyframes shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
 
-    if (status === 'paid') {
-        el.innerHTML = '<span class="status-paid">✅ Payment Completed — Submit Order செய்யலாம்</span>';
-        if (doneBtn) doneBtn.style.display = 'none';
-    } else if (status === 'pending') {
-        el.innerHTML = '<span class="status-pending">⏳ UPI App-ஐ தேர்வு செய்து Pay செய்த பிறகு "Payment Done" click செய்யுங்கள்</span>';
-        if (doneBtn) doneBtn.style.display = 'flex';
-    } else if (status === 'cash') {
-        el.innerHTML = '<span class="status-cash">💵 Cash on Delivery</span>';
-        if (doneBtn) doneBtn.style.display = 'none';
+.product-image img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    display: block;
+    z-index: 1;
+}
+
+.product-image img.is-loaded {
+    opacity: 1;
+}
+
+.product-card:hover .product-image img {
+    transform: scale(1.04);
+    transition: opacity 0.3s ease, transform 0.4s ease;
+}
+
+.product-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: var(--primary);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    z-index: 2;
+}
+
+.product-info {
+    padding: 16px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.product-name {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+    color: var(--text);
+}
+
+.product-price {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--primary);
+    margin-bottom: 14px;
+}
+
+.product-price::before { content: "Rs."; font-size: 1rem; }
+
+.product-actions {
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.quantity-control {
+    display: flex;
+    align-items: center;
+    background: #f5f5f5;
+    border-radius: 50px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+}
+
+.qty-btn {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    color: var(--text);
+    transition: var(--transition);
+    font-weight: 700;
+    touch-action: manipulation;
+}
+
+.qty-btn:hover        { background: var(--primary); color: white; }
+.qty-btn.minus:hover  { background: #dc3545; }
+
+.qty-btn:active {
+    transform: scale(0.9);
+}
+
+.qty-value {
+    width: 40px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 1rem;
+    user-select: none;
+}
+
+.btn-add-cart {
+    flex: 1;
+    padding: 10px 16px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: var(--transition);
+    box-shadow: 0 4px 12px rgba(230, 81, 0, 0.25);
+    touch-action: manipulation;
+}
+
+.btn-add-cart:hover  { transform: scale(1.03); box-shadow: 0 6px 20px rgba(230, 81, 0, 0.35); }
+.btn-add-cart:active { transform: scale(0.97); }
+
+.btn-add-cart.added {
+    background: linear-gradient(135deg, var(--secondary) 0%, #1b5e20 100%);
+    box-shadow: 0 4px 12px rgba(46, 125, 50, 0.25);
+}
+
+/* ===== Sticky Cart ===== */
+.sticky-cart {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 999;
+}
+
+.cart-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 28px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 1rem;
+    box-shadow: 0 6px 25px rgba(230, 81, 0, 0.4);
+    transition: var(--transition);
+    touch-action: manipulation;
+}
+
+.cart-btn:hover {
+    transform: translateX(-50%) scale(1.05);
+    box-shadow: 0 8px 30px rgba(230, 81, 0, 0.5);
+}
+
+.cart-btn:active {
+    transform: translateX(-50%) scale(0.97);
+}
+
+.cart-btn i { font-size: 1.2rem; }
+
+.cart-count {
+    background: white;
+    color: var(--primary);
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+}
+
+.cart-total { font-size: 1.1rem; }
+
+@keyframes cartBounce {
+    0%, 100% { transform: translateX(-50%) scale(1); }
+    50%       { transform: translateX(-50%) scale(1.08); }
+}
+
+/* ===== Cart Drawer ===== */
+.cart-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 1001;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.cart-overlay.open { opacity: 1; visibility: visible; }
+
+.cart-drawer {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 100%;
+    max-width: 450px;
+    height: 100vh;
+    background: white;
+    z-index: 1002;
+    display: flex;
+    flex-direction: column;
+    transition: right 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: -10px 0 40px rgba(0,0,0,0.15);
+    will-change: transform;
+}
+
+.cart-drawer.open { right: 0; }
+
+.cart-drawer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+}
+
+.cart-drawer-header h3 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.2rem;
+}
+
+.cart-close {
+    color: white;
+    font-size: 1.2rem;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    transition: var(--transition);
+    touch-action: manipulation;
+}
+
+.cart-close:hover { background: rgba(255,255,255,0.3); transform: rotate(90deg); }
+.cart-close:active { transform: scale(0.9); }
+
+.cart-drawer-body { flex: 1; overflow-y: auto; padding: 16px; }
+
+.empty-cart {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+    color: var(--text-light);
+}
+
+.empty-cart i    { font-size: 4rem; margin-bottom: 16px; opacity: 0.3; }
+.empty-cart p    { font-size: 1.2rem; font-weight: 600; margin-bottom: 6px; color: var(--text); }
+.empty-cart span { font-size: 0.9rem; }
+
+.cart-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px;
+    background: #f8f9fa;
+    border-radius: var(--radius-sm);
+    margin-bottom: 10px;
+    border: 1px solid var(--border);
+    transition: var(--transition);
+    animation: slideInRight 0.3s ease;
+}
+
+@keyframes slideInRight {
+    from { opacity: 0; transform: translateX(20px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+
+.cart-item:hover { border-color: var(--primary-light); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+
+.cart-item-image {
+    width: 60px;
+    height: 60px;
+    border-radius: 10px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.cart-item-details { flex: 1; min-width: 0; }
+
+.cart-item-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.cart-item-price { color: var(--primary); font-weight: 700; font-size: 0.9rem; }
+
+.cart-item-qty { display: flex; align-items: center; gap: 8px; }
+
+.cart-item-qty button {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: white;
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    transition: var(--transition);
+    touch-action: manipulation;
+}
+
+.cart-item-qty button:hover { background: var(--primary); color: white; border-color: var(--primary); }
+.cart-item-qty button:active { transform: scale(0.85); }
+.cart-item-qty span          { font-weight: 700; min-width: 20px; text-align: center; }
+
+.cart-item-remove {
+    color: #dc3545;
+    font-size: 1rem;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: var(--transition);
+    touch-action: manipulation;
+}
+
+.cart-item-remove:hover { background: #ffebee; transform: scale(1.1); }
+.cart-item-remove:active { transform: scale(0.9); }
+
+.cart-drawer-footer {
+    padding: 20px;
+    border-top: 1px solid var(--border);
+    background: #fafafa;
+}
+
+.cart-summary { margin-bottom: 16px; }
+
+.cart-summary-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    font-size: 0.95rem;
+    color: var(--text-light);
+}
+
+.cart-summary-row.total {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--text);
+    border-top: 2px solid var(--border);
+    padding-top: 10px;
+    margin-top: 6px;
+}
+
+.btn-place-order {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, var(--secondary) 0%, #1b5e20 100%);
+    color: white;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    transition: var(--transition);
+    box-shadow: 0 4px 15px rgba(46, 125, 50, 0.3);
+    touch-action: manipulation;
+}
+
+.btn-place-order:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(46, 125, 50, 0.4); }
+.btn-place-order:active { transform: translateY(0) scale(0.98); }
+
+.btn-continue {
+    width: 100%;
+    padding: 12px;
+    background: transparent;
+    color: var(--text-light);
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: 2px solid var(--border);
+    transition: var(--transition);
+    touch-action: manipulation;
+}
+
+.btn-continue:hover { border-color: var(--primary); color: var(--primary); }
+.btn-continue:active { transform: scale(0.98); }
+
+/* ===== Modal ===== */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 2000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    backdrop-filter: blur(4px);
+}
+
+.modal-overlay.open { opacity: 1; visibility: visible; }
+
+.modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.95);
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    background: white;
+    border-radius: var(--radius);
+    z-index: 2001;
+    display: flex;
+    flex-direction: column;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+    will-change: transform, opacity;
+}
+
+.modal.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+}
+
+.modal-header h3 { display: flex; align-items: center; gap: 10px; font-size: 1.2rem; }
+
+.modal-close {
+    color: white;
+    font-size: 1.2rem;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    transition: var(--transition);
+    touch-action: manipulation;
+}
+
+.modal-close:hover { background: rgba(255,255,255,0.3); transform: rotate(90deg); }
+.modal-close:active { transform: scale(0.9); }
+
+.modal-body { padding: 24px; overflow-y: auto; flex: 1; }
+
+.text-center { text-align: center; }
+
+/* ===== Form ===== */
+.form-group { margin-bottom: 18px; }
+
+.form-group label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 8px;
+    color: var(--text);
+}
+
+.form-group label i { color: var(--primary); width: 18px; }
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 1rem;
+    font-family: inherit;
+    transition: var(--transition);
+    background: #fafafa;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--primary);
+    background: white;
+    box-shadow: 0 0 0 4px rgba(230, 81, 0, 0.1);
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder { color: #adb5bd; }
+
+/* ===== Payment Options ===== */
+.payment-options { display: flex; gap: 12px; }
+
+.payment-option {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px;
+    border: 2px solid var(--border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: var(--transition);
+    background: #fafafa;
+    touch-action: manipulation;
+}
+
+.payment-option:hover { border-color: var(--primary-light); }
+.payment-option input { display: none; }
+
+.payment-radio {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--border);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: var(--transition);
+}
+
+.payment-radio::after {
+    content: "";
+    width: 10px;
+    height: 10px;
+    background: var(--primary);
+    border-radius: 50%;
+    transform: scale(0);
+    transition: transform 0.2s ease;
+}
+
+.payment-option input:checked + .payment-radio              { border-color: var(--primary); }
+.payment-option input:checked + .payment-radio::after       { transform: scale(1); }
+.payment-option input:checked ~ span                        { color: var(--primary); font-weight: 700; }
+.payment-option:has(input:checked)                          { border-color: var(--primary); background: #fff3e0; }
+.payment-option i                                           { font-size: 1.3rem; color: var(--primary); }
+
+/* ===== UPI App Grid ===== */
+.upi-app-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.upi-app-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 8px;
+    border: 2px solid var(--border);
+    border-radius: 14px;
+    background: white;
+    cursor: pointer;
+    transition: var(--transition);
+    position: relative;
+    touch-action: manipulation;
+}
+
+.upi-app-btn:hover {
+    border-color: var(--primary-light);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.upi-app-btn:active {
+    transform: translateY(0) scale(0.95);
+}
+
+.upi-app-btn.selected {
+    border-color: var(--primary);
+    background: #fff3e0;
+    box-shadow: 0 4px 12px rgba(230, 81, 0, 0.15);
+}
+
+.upi-app-btn.selected::after {
+    content: "✓";
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 20px;
+    height: 20px;
+    background: var(--secondary);
+    color: white;
+    border-radius: 50%;
+    font-size: 0.7rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+}
+
+.upi-app-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: #f5f5f5;
+    flex-shrink: 0;
+}
+
+.upi-app-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 4px;
+}
+
+.upi-app-icon .fallback-icon {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: white;
+    border-radius: 10px;
+}
+
+.upi-app-name {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--text);
+    text-align: center;
+    line-height: 1.2;
+}
+
+/* ===== QR Code Payment Section ===== */
+#qr-payment-section {
+    margin-bottom: 14px;
+    animation: fadeInUp 0.4s ease;
+}
+
+.qr-container {
+    border: 2px solid #e0d0f0;
+    border-radius: 16px;
+    padding: 16px;
+    background: linear-gradient(145deg, #faf5ff 0%, #f0e8ff 100%);
+    text-align: center;
+}
+
+.qr-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.qr-brand-logo { height: 28px; width: auto; object-fit: contain; }
+
+.qr-title-block { display: flex; flex-direction: column; align-items: flex-start; }
+.qr-title       { font-size: 1.05rem; font-weight: 800; color: var(--phonepe); line-height: 1.2; }
+.qr-subtitle    { font-size: 0.72rem; color: var(--text-light); font-weight: 500; }
+
+.qr-image-wrap {
+    position: relative;
+    display: inline-block;
+    margin: 0 auto 12px;
+}
+
+.qr-image {
+    width: 100%;
+    max-width: 220px;
+    height: auto;
+    border-radius: 12px;
+    border: 3px solid white;
+    box-shadow: 0 4px 20px rgba(95, 37, 159, 0.2);
+    display: block;
+    margin: 0 auto;
+}
+
+.qr-amount-badge {
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+    font-weight: 800;
+    font-size: 1rem;
+    padding: 4px 16px;
+    border-radius: 50px;
+    white-space: nowrap;
+    box-shadow: 0 3px 10px rgba(230, 81, 0, 0.3);
+}
+
+.qr-upi-id {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 18px;
+    margin-bottom: 10px;
+    background: white;
+    border: 1px solid #e0d0f0;
+    border-radius: 50px;
+    padding: 8px 16px;
+    font-size: 0.88rem;
+    color: var(--text);
+}
+
+.qr-upi-id i      { color: var(--phonepe); font-size: 0.85rem; }
+.qr-upi-id strong { color: var(--phonepe); }
+
+.btn-copy-upi {
+    background: #f3ebff;
+    border: 1px solid #d0b0f0;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--phonepe);
+    font-size: 0.8rem;
+    transition: var(--transition);
+    cursor: pointer;
+    flex-shrink: 0;
+    touch-action: manipulation;
+}
+
+.btn-copy-upi:hover { background: var(--phonepe); color: white; transform: scale(1.1); }
+.btn-copy-upi:active { transform: scale(0.9); }
+
+.qr-note {
+    font-size: 0.8rem;
+    color: var(--text-light);
+    background: white;
+    border-radius: 8px;
+    padding: 8px 12px;
+    border: 1px dashed #c9b0e0;
+    line-height: 1.4;
+}
+
+/* ===== Payment Status ===== */
+.payment-status {
+    padding: 12px;
+    border-radius: 12px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.status-pending {
+    color: #e65100;
+    background: #fff3e0;
+    display: block;
+    padding: 10px;
+    border-radius: 10px;
+}
+
+.status-paid {
+    color: #2e7d32;
+    background: #e8f5e9;
+    display: block;
+    padding: 10px;
+    border-radius: 10px;
+}
+
+.status-cash {
+    color: #1565c0;
+    background: #e3f2fd;
+    display: block;
+    padding: 10px;
+    border-radius: 10px;
+}
+
+/* ===== Submit / Download Buttons ===== */
+.btn-submit-order,
+.btn-download-bill {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 1.05rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: var(--transition);
+    box-shadow: 0 6px 20px rgba(230, 81, 0, 0.3);
+    margin-top: 10px;
+    touch-action: manipulation;
+}
+
+.btn-download-bill {
+    background: linear-gradient(135deg, var(--secondary) 0%, #1b5e20 100%);
+}
+
+.btn-download-bill:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(27, 94, 32, 0.35);
+}
+
+.btn-submit-order:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(230, 81, 0, 0.4);
+}
+
+.btn-submit-order:active,
+.btn-download-bill:active {
+    transform: translateY(0) scale(0.98);
+}
+
+.btn-submit-order:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* ===== Admin Notification Panel ===== */
+.admin-notification-panel {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    left: auto;
+    max-width: 320px;
+    background: linear-gradient(135deg, rgba(95,37,159,0.98), rgba(63,13,110,0.98));
+    color: white;
+    padding: 18px 20px;
+    border-radius: 22px;
+    box-shadow: 0 18px 50px rgba(0,0,0,0.3);
+    font-size: 0.95rem;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px);
+    transition: all 0.35s ease;
+    z-index: 11000;
+}
+
+.admin-notification-panel.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.admin-notification-panel h4   { margin-bottom: 8px; font-size: 1rem; }
+.admin-notification-panel p    { margin-bottom: 6px; line-height: 1.4; }
+.admin-notification-panel small{ display: block; margin-top: 8px; opacity: 0.8; font-size: 0.82rem; }
+
+/* ===== Success Modal ===== */
+.success-modal .modal-body { padding: 40px 30px; }
+
+.success-icon {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, var(--secondary) 0%, #1b5e20 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    animation: scaleIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.success-icon i { font-size: 2.5rem; color: white; }
+
+@keyframes scaleIn {
+    from { transform: scale(0); }
+    to   { transform: scale(1); }
+}
+
+.success-modal h3    { font-size: 1.5rem; margin-bottom: 10px; color: var(--text); }
+.success-modal p     { color: var(--text-light); margin-bottom: 6px; }
+.success-note        { font-size: 0.9rem; color: var(--secondary); font-weight: 600; }
+
+.btn-new-order {
+    margin-top: 24px;
+    padding: 14px 32px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: var(--transition);
+    box-shadow: 0 4px 15px rgba(230, 81, 0, 0.3);
+    touch-action: manipulation;
+}
+
+.btn-new-order:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(230, 81, 0, 0.4); }
+.btn-new-order:active { transform: scale(0.97); }
+
+/* ===== Order History ===== */
+.empty-history { text-align: center; padding: 40px 20px; color: var(--text-light); }
+.empty-history i { font-size: 3rem; margin-bottom: 12px; opacity: 0.3; }
+
+.history-item {
+    padding: 16px;
+    background: #f8f9fa;
+    border-radius: var(--radius-sm);
+    margin-bottom: 10px;
+    border: 1px solid var(--border);
+    transition: var(--transition);
+}
+
+.history-item:hover {
+    border-color: var(--primary-light);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.history-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.history-item-header h4 { font-size: 0.95rem; color: var(--text); }
+.history-item-date      { font-size: 0.8rem; color: var(--text-light); }
+.history-item-details   { font-size: 0.85rem; color: var(--text-light); line-height: 1.6; }
+.history-item-total     { font-weight: 700; color: var(--primary); margin-top: 6px; font-size: 1rem; }
+
+/* ===== Contact Modal ===== */
+.contact-info { display: flex; flex-direction: column; gap: 12px; }
+
+.contact-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background: #f8f9fa;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    transition: var(--transition);
+    touch-action: manipulation;
+}
+
+.contact-item:hover { border-color: var(--primary-light); background: #fff3e0; }
+
+.contact-item i {
+    width: 44px;
+    height: 44px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.contact-item h4 { font-size: 1rem; margin-bottom: 2px; color: var(--text); }
+.contact-item p  { font-size: 0.9rem; color: var(--text-light); }
+
+/* ===== Footer ===== */
+.footer {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: white;
+    padding: 40px 20px 20px;
+    margin-top: 40px;
+}
+
+.footer-content { max-width: 1200px; margin: 0 auto; text-align: center; }
+.footer-brand   { margin-bottom: 24px; }
+.footer-brand i { font-size: 2.5rem; color: var(--primary-light); margin-bottom: 10px; }
+.footer-brand h3{ font-size: 1.5rem; margin-bottom: 4px; }
+.footer-brand p { opacity: 0.7; font-size: 0.9rem; }
+
+.footer-links {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+
+.footer-links a {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    opacity: 0.8;
+    transition: var(--transition);
+    font-weight: 500;
+    touch-action: manipulation;
+}
+
+.footer-links a:hover { opacity: 1; color: var(--primary-light); }
+
+.footer-bottom {
+    border-top: 1px solid rgba(255,255,255,0.1);
+    padding-top: 20px;
+    font-size: 0.85rem;
+    opacity: 0.6;
+}
+
+.footer-bottom p { margin-bottom: 4px; }
+
+/* ===== Scrollbar ===== */
+::-webkit-scrollbar       { width: 6px; }
+::-webkit-scrollbar-track { background: #f1f1f1; }
+::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #a1a1a1; }
+
+/* ===== Print ===== */
+@media print {
+    body * { visibility: hidden; }
+    #bill-print-area, #bill-print-area * { visibility: visible; }
+    #bill-print-area { position: absolute; left: 0; top: 0; width: 100%; }
+}
+
+/* ===================================================
+   RESPONSIVE
+=================================================== */
+
+/* Mobile */
+@media (max-width: 480px) {
+    :root { --header-height: 65px; }
+
+    .logo {
+        width: 44px; height: 44px;
+        min-width: 44px; min-height: 44px;
+        border-radius: 10px;
+    }
+
+    .hotel-info h1,
+    .hotel-title { font-size: 1rem; }
+
+    .hero-banner    { height: 200px; }
+    .hero-content   { bottom: 25px; }
+    .hero-content h2{ font-size: 1.15rem; }
+    .hero-content p { font-size: 0.8rem; }
+
+    .menu-container {
+        grid-template-columns: 1fr;
+        gap: 14px;
+        padding: 0 4px;
+    }
+
+    .product-image  { aspect-ratio: 16 / 7; }
+    .product-info   { padding: 12px 14px 14px; }
+    .product-name   { font-size: 1rem; }
+    .product-price  { font-size: 1.15rem; margin-bottom: 10px; }
+
+    .cart-btn { padding: 12px 20px; font-size: 0.9rem; }
+
+    .modal    { width: 95%; max-height: 85vh; }
+
+    .payment-options { flex-direction: column; }
+    .upi-app-grid    { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .upi-app-btn     { padding: 10px 4px; }
+    .upi-app-icon    { width: 32px; height: 32px; }
+    .upi-app-name    { font-size: 0.65rem; }
+
+    .qr-image    { max-width: 180px; }
+    .qr-upi-id   { font-size: 0.78rem; flex-wrap: wrap; justify-content: center; }
+    .qr-container{ padding: 12px; }
+
+    .admin-notification-panel {
+        left: 12px; right: 12px;
+        bottom: 16px; max-width: none;
+        border-radius: 18px;
     }
 }
 
-function notifyBillCounterFromForm() {
-    const name   = document.getElementById('customer-name').value.trim() || 'Guest';
-    const table  = document.getElementById('table-number').value.trim() || 'N/A';
-    const total  = cart.reduce((s, i) => s + i.price * i.quantity, 0);
-    const items  = cart.map(i => `${i.name} x${i.quantity}`);
-    showAdminNotification(name, table, items, total);
-    if ('Notification' in window && Notification.permission === 'granted') {
-        try { new Notification('NEW ORDER', { body: `Customer: ${name}\nTable: ${table}\nTotal: ₹${total}` }); }
-        catch (e) { console.warn(e); }
-    }
+/* Tablet */
+@media (min-width: 481px) and (max-width: 768px) {
+    .logo { width: 50px; height: 50px; min-width: 50px; min-height: 50px; }
+    .menu-container { grid-template-columns: repeat(2, 1fr); }
+    .hero-banner    { height: 240px; }
+    .product-image  { aspect-ratio: 4 / 3; }
+    .qr-image       { max-width: 200px; }
 }
 
-function showAdminNotification(name, table, items, total) {
-    if (!adminNotificationPanel) return;
-    adminNotificationPanel.innerHTML = `
-        <h4>🔔 NEW ORDER RECEIVED</h4>
-        <p><strong>Customer:</strong> ${name}</p>
-        <p><strong>Table:</strong> ${table}</p>
-        <p><strong>Total:</strong> ₹${total}</p>
-        <p><strong>Items:</strong> ${items.join(', ')}</p>
-        <small>Payment completed.</small>`;
-    adminNotificationPanel.classList.add('open');
-    speakText('New order received. Check bill counter.');
-    setTimeout(() => adminNotificationPanel.classList.remove('open'), 8000);
+/* Small desktop */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .menu-container { grid-template-columns: repeat(3, 1fr); }
+    .hero-banner    { height: 280px; }
 }
 
-// ===== WhatsApp Bill =====
-function buildWhatsAppBill(order) {
-    const d = '%0A━━━━━━━━━━━━━━━━━━━━';
-    const t = '%0A─────────────────────';
-    const rows = order.items.map(item => {
-        const n = item.name.length > 16 ? item.name.substring(0, 14) + '..' : item.name;
-        return `${encodeURIComponent(n + ' x' + item.quantity)}%20%20%E2%82%B9${item.price * item.quantity}`;
-    }).join('%0A');
-    return `%F0%9F%A7%BE%20*${encodeURIComponent(HOTEL_NAME.toUpperCase())}*` +
-        `%0A%F0%9F%93%9E%20${encodeURIComponent(PHONE_NUMBER)}${d}` +
-        `%0A%F0%9F%94%96%20*Order:*%20${encodeURIComponent(order.id)}` +
-        `%0A%F0%9F%93%85%20${encodeURIComponent(order.date)}%20${encodeURIComponent(order.time)}${d}` +
-        `%0A%F0%9F%91%A4%20${encodeURIComponent(order.customerName)}%20%7C%20%F0%9F%AA%91%20Table%20${encodeURIComponent(order.tableNumber)}${d}` +
-        `%0A${rows}${t}` +
-        `%0A*%F0%9F%92%B0%20TOTAL%3A%20%E2%82%B9${order.totalAmount}*${d}` +
-        `%0A%F0%9F%92%B3%20${encodeURIComponent(order.paymentStatus)}` +
-        (order.notes ? `%0A%F0%9F%93%9D%20${encodeURIComponent(order.notes)}` : '') +
-        `${d}%0A%F0%9F%99%8F%20*Thank you! Visit again.*`;
+/* Desktop */
+@media (min-width: 1025px) and (max-width: 1440px) {
+    .menu-container { grid-template-columns: repeat(4, 1fr); }
+    .hero-banner    { height: 320px; }
 }
 
-// ===== Submit Order =====
-function submitOrder() {
-    const name   = document.getElementById('customer-name').value.trim();
-    const mobile = document.getElementById('customer-mobile').value.trim();
-    const table  = document.getElementById('table-number').value.trim();
-    const notes  = document.getElementById('order-notes').value.trim();
-    const method = document.querySelector('input[name="payment-method"]:checked')?.value || 'cash';
-
-    if (!name || !mobile || !table)  { showToast('Please fill all required fields'); return; }
-    if (mobile.length !== 10)        { showToast('Enter valid 10-digit mobile number'); return; }
-    if (method === 'online' && paymentStatus !== 'paid') {
-        showToast('Please complete payment first. UPI App-ல pay செய்து "Payment Done" click செய்யுங்கள்.');
-        return;
+/* Large desktop */
+@media (min-width: 1441px) {
+    .logo {
+        width: 64px; height: 64px;
+        min-width: 64px; min-height: 64px;
+        border-radius: 16px;
     }
 
-    const totalAmount = cart.reduce((s, i) => s + i.price * i.quantity, 0);
-    const now = new Date();
-    const order = {
-        id:              'ORD' + Date.now(),
-        customerName:    name,
-        customerMobile:  mobile,
-        tableNumber:     table,
-        notes,
-        paymentMethod:   method,
-        paymentStatus:   method === 'cash' ? '💵 Cash' : '✅ Paid (Online)',
-        items:           [...cart],
-        totalAmount,
-        date:            now.toLocaleDateString('en-IN'),
-        time:            now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
-        timestamp:       now.getTime()
-    };
-
-    saveOrderToHistory(order);
-    lastGeneratedBill = order;
-    if (btnDownloadBill) btnDownloadBill.style.display = 'none';
-
-    generateBillPDF(order)
-        .then(() => { if (btnDownloadBill) btnDownloadBill.style.display = 'flex'; })
-        .catch(e => { console.error(e); showToast('Order saved. Bill download can be retried.'); });
-
-    setTimeout(() => safeOpen(`https://wa.me/${WHATSAPP_NUMBER}?text=${buildWhatsAppBill(order)}`), 400);
-    setTimeout(() => speakText('Thank you for your order. Visit again.'), 500);
-
-    closeOrderModal();
-    openSuccessModal();
+    .menu-container  { grid-template-columns: repeat(5, 1fr); }
+    .hero-banner     { height: 360px; }
+    .hero-content h2 { font-size: 2rem; }
 }
-
-// ===== Order History =====
-function saveOrderToHistory(order) {
-    let h = readJsonStorage('sriKrishnaOrders', []);
-    if (!Array.isArray(h)) h = [];
-    h.unshift(order);
-    if (h.length > 50) h = h.slice(0, 50);
-    writeJsonStorage('sriKrishnaOrders', h);
-}
-
-function renderOrderHistory() {
-    const history   = readJsonStorage('sriKrishnaOrders', []);
-    const container = document.getElementById('order-history-list');
-    if (!history.length) {
-        container.innerHTML = `<div class="empty-history"><i class="fas fa-clipboard-list"></i><p>No orders yet</p></div>`;
-        return;
-    }
-    container.innerHTML = history.map(o => `
-        <div class="history-item">
-            <div class="history-item-header">
-                <h4>${o.customerName} - Table ${o.tableNumber}</h4>
-                <span class="history-item-date">${o.date} ${o.time}</span>
-            </div>
-            <div class="history-item-details">${o.items.map(i => `${i.name} x${i.quantity}`).join(', ')}</div>
-           div class="history-item-total">₹${o.totalAmount} - ${o.paymentStatus}</div>
-        </div>`).join('');
-}
-
-// ===== Bill PDF =====
-async function generateBillPDF(order) {
-    const jsPDF = await ensureJsPdfLoaded();
-    const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
-    const L = 18, R = 192;
-    let y = 18;
-    doc.setFontSize(18); doc.setFont('helvetica', 'bold');
-    doc.text(HOTEL_NAME.toUpperCase(), 105, y, { align: 'center' }); y += 8;
-    doc.setFontSize(11); doc.setFont('helvetica', 'normal');
-    doc.text('Authentic South Indian Cuisine', 105, y, { align: 'center' }); y += 6;
-    doc.text(`Phone: ${PHONE_NUMBER}`, 105, y, { align: 'center' }); y += 8;
-    doc.setLineWidth(0.5); doc.line(L, y, R, y); y += 8;
-    doc.setFontSize(10);
-    doc.text(`Date: ${order.date}`, L, y); doc.text(`Time: ${order.time}`, R, y, { align: 'right' }); y += 7;
-    doc.text(`Order ID: ${order.id}`, L, y); y += 8;
-    doc.line(L, y, R, y); y += 8;
-    doc.text(`Customer: ${order.customerName}`, L, y); y += 6;
-    doc.text(`Mobile: ${order.customerMobile}`, L, y); y += 6;
-    doc.text(`Table No: ${order.tableNumber}`, L, y); y += 6;
-    if (order.notes) { doc.text(`Notes: ${order.notes}`, L, y); y += 6; }
-    y += 2; doc.line(L, y, R, y); y += 8;
-    doc.setFont('helvetica', 'bold');
-    doc.text('Item', L, y); doc.text('Qty', 120, y, { align: 'center' }); doc.text('Amount', R, y, { align: 'right' }); y += 6;
-    doc.setLineWidth(0.3); doc.line(L, y, R, y); y += 8;
-    doc.setFont('helvetica', 'normal');
-    order.items.forEach(item => {
-        const n = item.name.length > 28 ? item.name.slice(0, 25) + '...' : item.name;
-        doc.text(n, L, y); doc.text(String(item.quantity), 120, y, { align: 'center' });
-        doc.text(`Rs.${item.price * item.quantity}`, R, y, { align: 'right' }); y += 7;
-    });
-    y += 4; doc.line(L, y, R, y); y += 8;
-    doc.setFont('helvetica', 'bold');
-    doc.text('Total Amount', L, y); doc.text(`Rs.${order.totalAmount}`, R, y, { align: 'right' }); y += 10;
-    doc.setFont('helvetica', 'normal');
-    doc.text(`Payment: ${order.paymentStatus}`, L, y); y += 10;
-    doc.setLineWidth(0.5); doc.line(L, y, R, y); y += 10;
-    doc.text('Thank you for choosing Sri Krishna Hotel!', 105, y, { align: 'center' }); y += 7;
-    doc.text('Order prepared with care and served fresh.', 105, y, { align: 'center' });
-    doc.save(`SriKrishna_Bill_${order.id}.pdf`);
-}
-
-function ensureJsPdfLoaded() {
-    if (window.jspdf && window.jspdf.jsPDF) return Promise.resolve(window.jspdf.jsPDF);
-    if (jspdfLoader) return jspdfLoader;
-    jspdfLoader = new Promise((resolve, reject) => {
-        const s = document.createElement('script');
-        s.src = PDF_SCRIPT_URL; s.async = true;
-        s.onload  = () => window.jspdf && window.jspdf.jsPDF ? resolve(window.jspdf.jsPDF) : reject(new Error('jsPDF not found'));
-        s.onerror = () => reject(new Error('jsPDF load failed'));
-        document.head.appendChild(s);
-    }).catch(e => { jspdfLoader = null; throw e; });
-    return jspdfLoader;
-}
-
-// ===== QR / UPI Helpers =====
-function updateQrAmount() {
-    const total = cart.reduce((s, i) => s + i.price * i.quantity, 0);
-    const el = document.getElementById('qr-display-amount');
-    if (el) el.textContent = total;
-}
-
-function copyUpiId() {
-    const upi = UPI_ID;
-    if (navigator.clipboard && window.isSecureContext) {
-        navigator.clipboard.writeText(upi).then(() => showToast('UPI ID copied! ✅')).catch(() => fallbackCopy(upi));
-    } else fallbackCopy(upi);
-}
-
-function fallbackCopy(text) {
-    try {
-        const ta = document.createElement('textarea');
-        ta.value = text; ta.style.cssText = 'position:fixed;opacity:0';
-        document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
-        showToast('UPI ID copied! ✅');
-    } catch { showToast('Copy failed. Please copy manually.'); }
-}
-
-// ===== Voice =====
-if ('speechSynthesis' in window) { window.speechSynthesis.onvoiceschanged = function(){}; }
