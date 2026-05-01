@@ -144,18 +144,7 @@ function initializeApp() {
     ].forEach(([label, fn]) => {
         try { fn(); } catch (e) { console.error('Init failed:', label, e); }
     });
-    hideLoadingOverlay();
-}
-
-function hideLoadingOverlay() {
-    const overlay = document.getElementById('loading-overlay');
-    if (!overlay) return;
-    requestAnimationFrame(() => overlay.classList.add('hidden'));
-    setTimeout(() => overlay.remove(), 600);
-}
-
-function scheduleWelcomeVoice() {
-    setTimeout(() => speakText('Welcome to Sri Krishna Hotel. Please place your order.'), 900);
+    
 }
 
 // ===== Storage =====
