@@ -1,5 +1,5 @@
 // ===== Sri Krishna Hotel Ordering System =====
-// Fixed: UPI direct deeplink, image loading, hero slider z-index, category sticky
+// Fixed: Payment flow, UPI icons, hero slider positioning, performance
 
 // ===== Menu Data =====
 const menuItems = [
@@ -39,6 +39,7 @@ let currentCategory = 'all';
 let searchQuery = '';
 let paymentStatus = 'pending';
 let currentSlide = 0;
+let selectedUpiApp = null;
 
 // ===== Hotel Details =====
 const HOTEL_NAME       = "Sri Krishna Hotel";
@@ -50,52 +51,47 @@ const PDF_SCRIPT_URL   = "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jsp
 
 const MENU_IMAGE_FALLBACK = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&fm=webp&q=80";
 
-// ===== UPI Apps — direct deeplink config =====
+// ===== UPI Apps — with icons =====
 const UPI_APPS = [
     {
         id: 'gpay',
-        name: 'Google Pay',
-        icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Google_Pay_Logo.svg/512px-Google_Pay_Logo.svg.png',
+        name: 'GPay',
+        icon: 'https://img.icons8.com/color/96/google-pay.png',
         color: '#4285F4',
         pkg: 'com.google.android.apps.nbu.paisa.user',
-        iosScheme: 'gpay',
-        upiParam: 'pa'
+        iosScheme: 'tez'
     },
     {
         id: 'phonepe',
         name: 'PhonePe',
-        icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/PhonePe_Logo.svg/512px-PhonePe_Logo.svg.png',
+        icon: 'https://img.icons8.com/color/96/phone-pe.png',
         color: '#5f259f',
         pkg: 'com.phonepe.app',
-        iosScheme: 'phonepe',
-        upiParam: 'pa'
+        iosScheme: 'phonepe'
     },
     {
         id: 'paytm',
         name: 'Paytm',
-        icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/Paytm_Logo_%28standalone%29.svg/512px-Paytm_Logo_%28standalone%29.svg.png',
+        icon: 'https://img.icons8.com/color/96/paytm.png',
         color: '#00b9f1',
         pkg: 'net.one97.paytm',
-        iosScheme: 'paytmmp',
-        upiParam: 'pa'
+        iosScheme: 'paytmmp'
     },
     {
         id: 'bhim',
         name: 'BHIM',
-        icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e9/BHIM_Icon.svg/512px-BHIM_Icon.svg.png',
+        icon: 'https://img.icons8.com/color/96/bhim.png',
         color: '#00a651',
         pkg: 'in.org.npci.upiapp',
-        iosScheme: 'upi',
-        upiParam: 'pa'
+        iosScheme: 'upi'
     },
     {
         id: 'amazonpay',
-        name: 'Amazon Pay',
-        icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Amazon_logo.svg/512px-Amazon_logo.svg.png',
+        name: 'Amazon',
+        icon: 'https://img.icons8.com/color/96/amazon.png',
         color: '#FF9900',
         pkg: 'in.amazon.mShop.android.shopping',
-        iosScheme: 'amznmobile',
-        upiParam: 'pa'
+        iosScheme: 'amznmobile'
     },
     {
         id: 'other',
@@ -103,8 +99,7 @@ const UPI_APPS = [
         icon: null,
         color: '#607d8b',
         pkg: null,
-        iosScheme: 'upi',
-        upiParam: 'pa'
+        iosScheme: 'upi'
     }
 ];
 
@@ -143,6 +138,7 @@ function initializeApp() {
         ['render menu',         renderMenu],
         ['update cart',         updateCartDisplay],
         ['update qr amount',    updateQrAmount],
+        ['render upi apps',     renderUpiAppGrid],
         ['hero slider',         startHeroSlider],
         ['welcome voice',       scheduleWelcomeVoice]
     ].forEach(([label, fn]) => {
@@ -205,7 +201,7 @@ function speakText(text) {
     } catch (e) { console.warn('TTS failed', e); }
 }
 
-// ===== FIXED: Render Menu — images load correctly =====
+// ===== Render Menu — Optimized =====
 function renderMenu() {
     let items = menuItems;
     const q = searchQuery.trim().toLowerCase();
@@ -224,12 +220,17 @@ function renderMenu() {
         return;
     }
 
-    menuContainer.innerHTML = items.map((item, idx) => {
+    const fragment = document.createDocumentFragment();
+
+    items.forEach((item, idx) => {
         const qty = qtyMap.get(item.id) || 0;
-        // Use native lazy loading — browser handles it correctly for local files
+        const card = document.createElement('div');
+        card.className = 'product-card';
+        card.dataset.id = item.id;
+
         const loading = idx < 6 ? 'eager' : 'lazy';
-        return `
-        <div class="product-card" data-id="${item.id}">
+
+        card.innerHTML = `
             <div class="product-image">
                 <img
                     src="${item.image}"
@@ -256,9 +257,13 @@ function renderMenu() {
                         <span class="btn-add-label">${qty > 0 ? 'Added' : 'Add'}</span>
                     </button>
                 </div>
-            </div>
-        </div>`;
-    }).join('');
+            </div>`;
+
+        fragment.appendChild(card);
+    });
+
+    menuContainer.innerHTML = '';
+    menuContainer.appendChild(fragment);
 }
 
 function getCartQty(id) {
@@ -339,8 +344,12 @@ function updateCartDisplay() {
     emptyCart.style.display = 'none';
     cartItems.style.display = 'block';
     cartDrawerFooter.style.display = 'block';
-    cartItems.innerHTML = cart.map(item => `
-        <div class="cart-item">
+
+    const fragment = document.createDocumentFragment();
+    cart.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'cart-item';
+        div.innerHTML = `
             <img src="${item.image}" alt="${item.name}" class="cart-item-image"
                  width="60" height="60" loading="lazy"
                  onerror="this.onerror=null;this.src='${MENU_IMAGE_FALLBACK}'"
@@ -356,8 +365,13 @@ function updateCartDisplay() {
             </div>
             <button type="button" class="cart-item-remove" data-action="remove" data-id="${item.id}">
                 <i class="fas fa-trash-alt"></i>
-            </button>
-        </div>`).join('');
+            </button>`;
+        fragment.appendChild(div);
+    });
+
+    cartItems.innerHTML = '';
+    cartItems.appendChild(fragment);
+
     cartSubtotal.textContent = '₹' + totalAmount;
     cartGrandTotal.textContent = '₹' + totalAmount;
 }
@@ -374,45 +388,47 @@ function showToast(msg) {
     setTimeout(() => toast.classList.remove('show'), 2500);
 }
 
-// ===== FIXED Hero Slider — z-index won't cover navbar =====
+// ===== FIXED Hero Slider — No z-index manipulation =====
 function startHeroSlider() {
     const slides = document.querySelectorAll('.hero-slide');
     const dots   = document.querySelectorAll('.hero-dot');
     if (!slides.length) return;
 
-    // Ensure hero banner z-index is below header
-    const hero = document.getElementById('hero-banner');
-    if (hero) hero.style.zIndex = '1';
-
     const goto = (idx) => {
         slides[currentSlide].classList.remove('active');
-        dots[currentSlide] && dots[currentSlide].classList.remove('active');
+        if (dots[currentSlide]) dots[currentSlide].classList.remove('active');
         currentSlide = idx;
-        // Lazy-load background image
         const slide = slides[idx];
+
+        // Load background image if not already loaded
         if (slide.dataset.bg && !slide.dataset.loaded) {
             const img = new Image();
-            img.onload = () => { slide.style.backgroundImage = `url('${slide.dataset.bg}')`; slide.dataset.loaded = 'true'; };
+            img.onload = () => { 
+                slide.style.backgroundImage = `url('${slide.dataset.bg}')`; 
+                slide.dataset.loaded = 'true'; 
+            };
             img.src = slide.dataset.bg;
         }
+
         slide.classList.add('active');
-        dots[idx] && dots[idx].classList.add('active');
+        if (dots[idx]) dots[idx].classList.add('active');
     };
 
-    // Pre-load first slide bg if data-bg set
-    if (slides[0].dataset.bg) {
-        const img = new Image();
-        img.onload = () => { slides[0].style.backgroundImage = `url('${slides[0].dataset.bg}')`; slides[0].dataset.loaded = 'true'; };
-        img.src = slides[0].dataset.bg;
+    // Load first slide immediately
+    if (slides[0].dataset.bg && !slides[0].dataset.loaded) {
+        slides[0].style.backgroundImage = `url('${slides[0].dataset.bg}')`;
+        slides[0].dataset.loaded = 'true';
     }
 
     if (heroSliderInterval) clearInterval(heroSliderInterval);
     heroSliderInterval = setInterval(() => goto((currentSlide + 1) % slides.length), 5000);
 
-    dots.forEach((dot, idx) => dot.addEventListener('click', () => { if (idx !== currentSlide) goto(idx); }));
+    dots.forEach((dot, idx) => dot.addEventListener('click', () => { 
+        if (idx !== currentSlide) goto(idx); 
+    }));
 }
 
-// ===== UPI Direct Deeplink Functions =====
+// ===== UPI Deeplink Functions =====
 function buildUpiDeeplink(app, total) {
     const pa = encodeURIComponent(UPI_ID);
     const pn = encodeURIComponent(HOTEL_NAME);
@@ -422,187 +438,69 @@ function buildUpiDeeplink(app, total) {
     const isIOS     = /iPhone|iPad/i.test(navigator.userAgent);
 
     if (app.id === 'other') {
-        // Generic UPI — system chooser
         return `upi://pay?pa=${pa}&pn=${pn}&am=${am}&cu=INR&tn=${tn}`;
     }
 
     if (isAndroid && app.pkg) {
-        // Android intent — forces specific app, no chooser dialog
         const fallback = encodeURIComponent(`upi://pay?pa=${pa}&pn=${pn}&am=${am}&cu=INR&tn=${tn}`);
         return `intent://pay?pa=${pa}&pn=${pn}&am=${am}&cu=INR&tn=${tn}#Intent;scheme=upi;package=${app.pkg};S.browser_fallback_url=${fallback};end`;
     }
 
     if (isIOS) {
-        // iOS custom scheme per app
         if (app.id === 'gpay')    return `tez://upi/pay?pa=${pa}&pn=${pn}&am=${am}&cu=INR&tn=${tn}`;
         if (app.id === 'phonepe') return `phonepe://pay?pa=${pa}&pn=${pn}&am=${am}&cu=INR&tn=${tn}`;
         if (app.id === 'paytm')   return `paytmmp://pay?pa=${pa}&pn=${pn}&am=${am}&cu=INR&tn=${tn}`;
         return `upi://pay?pa=${pa}&pn=${pn}&am=${am}&cu=INR&tn=${tn}`;
     }
 
-    // Desktop fallback
     return `upi://pay?pa=${pa}&pn=${pn}&am=${am}&cu=INR&tn=${tn}`;
 }
 
-// ===== UPI App Chooser Modal =====
-function openUpiAppChooser() {
+// ===== Render UPI App Grid =====
+function renderUpiAppGrid() {
+    const grid = document.getElementById('upi-app-grid');
+    if (!grid) return;
+
+    grid.innerHTML = UPI_APPS.map(app => `
+        <button type="button" class="upi-app-btn" data-app="${app.id}" onclick="handleUpiAppClick('${app.id}')">
+            <div class="upi-app-icon">
+                ${app.icon 
+                    ? `<img src="${app.icon}" alt="${app.name}" loading="lazy" onerror="this.style.display='none';this.parentElement.innerHTML='<span class=\'fallback-icon\' style=\'background:${app.color}\'>${app.name[0]}</span>'">`
+                    : `<span class="fallback-icon" style="background:${app.color}">${app.name[0]}</span>`
+                }
+            </div>
+            <span class="upi-app-name">${app.name}</span>
+        </button>
+    `).join('');
+}
+
+function handleUpiAppClick(appId) {
     const total = cart.reduce((s, i) => s + i.price * i.quantity, 0);
     if (total <= 0) { showToast('Please add items to cart first'); return; }
 
-    // Remove any existing chooser
-    ['upi-chooser-modal','upi-chooser-overlay'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.remove();
+    const app = UPI_APPS.find(a => a.id === appId);
+    if (!app) return;
+
+    selectedUpiApp = appId;
+
+    // Update visual selection
+    document.querySelectorAll('.upi-app-btn').forEach(btn => {
+        btn.classList.toggle('selected', btn.dataset.app === appId);
     });
 
-    const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
+    const url = buildUpiDeeplink(app, total);
 
-    const appCards = UPI_APPS.map(app => `
-        <button class="upi-app-card" data-app="${app.id}" style="
-            display:flex;flex-direction:column;align-items:center;gap:8px;
-            padding:14px 10px;border-radius:14px;border:1.5px solid #e0e0e0;
-            background:#fff;cursor:pointer;transition:all 0.2s;min-width:80px;flex:1;">
-            <div style="width:48px;height:48px;border-radius:12px;overflow:hidden;
-                        background:#f5f5f5;display:flex;align-items:center;justify-content:center;">
-                ${app.icon
-                    ? `<img src="${app.icon}" alt="${app.name}" style="width:100%;height:100%;object-fit:contain"
-                            onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
-                    : ''}
-                <span style="display:${app.icon ? 'none' : 'flex'};width:100%;height:100%;
-                              align-items:center;justify-content:center;font-weight:700;font-size:1.1rem;
-                              color:white;background:${app.color};border-radius:12px">${app.name[0]}</span>
-            </div>
-            <span style="font-size:0.72rem;font-weight:600;color:#333;text-align:center;line-height:1.2">${app.name}</span>
-        </button>`).join('');
-
-    const overlay = document.createElement('div');
-    overlay.id = 'upi-chooser-overlay';
-    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:3000;backdrop-filter:blur(3px)';
-    overlay.addEventListener('click', closeUpiChooser);
-
-    const modal = document.createElement('div');
-    modal.id = 'upi-chooser-modal';
-    modal.style.cssText = `
-        position:fixed;bottom:0;left:0;right:0;
-        background:#fff;z-index:3001;
-        border-radius:24px 24px 0 0;
-        padding:20px 20px 32px;
-        box-shadow:0 -8px 40px rgba(0,0,0,0.18);
-        max-height:90vh;overflow-y:auto;
-        transform:translateY(100%);transition:transform 0.35s cubic-bezier(0.4,0,0.2,1)`;
-
-    modal.innerHTML = `
-        <div style="width:40px;height:4px;background:#e0e0e0;border-radius:2px;margin:0 auto 16px"></div>
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-            <h3 style="font-size:1.1rem;font-weight:700;color:#1a1a1a">
-                <i class="fas fa-mobile-alt" style="color:#5f259f;margin-right:8px"></i>Payment App தேர்வு செய்யுங்க
-            </h3>
-            <button onclick="closeUpiChooser()" style="width:32px;height:32px;border-radius:50%;
-                background:#f5f5f5;display:flex;align-items:center;justify-content:center;
-                font-size:1rem;color:#666">✕</button>
-        </div>
-
-        <div style="background:linear-gradient(135deg,#e8f5e9,#f3e5f5);border-radius:14px;
-                    padding:14px 16px;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center">
-            <div>
-                <div style="font-size:0.78rem;color:#666;font-weight:500">Pay பண்ண வேண்டிய தொகை</div>
-                <div style="font-size:1.6rem;font-weight:800;color:#1a1a1a">₹${total}</div>
-                <div style="font-size:0.72rem;color:#5f259f;font-weight:600">${UPI_ID}</div>
-            </div>
-            <i class="fas fa-rupee-sign" style="font-size:2rem;color:#5f259f;opacity:0.3"></i>
-        </div>
-
-        ${isMobile ? `
-        <p style="font-size:0.82rem;color:#666;margin-bottom:14px;display:flex;align-items:center;gap:6px">
-            <i class="fas fa-info-circle" style="color:#2196f3"></i>
-            App click பண்ணா — UPI ID & amount automatically fill ஆகும்
-        </p>
-        <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px">${appCards}</div>
-        ` : `
-        <p style="font-size:0.85rem;color:#666;margin-bottom:14px">
-            <i class="fas fa-desktop" style="color:#2196f3;margin-right:6px"></i>
-            Desktop-ல இருக்கீங்க — QR scan பண்ணுங்க அல்லது mobile-ல open பண்ணுங்க
-        </p>`}
-
-        <div style="border-top:1px dashed #e0e0e0;padding-top:16px;margin-bottom:16px">
-            <p style="font-size:0.8rem;color:#888;text-align:center;margin-bottom:12px">
-                — அல்லது QR Scan பண்ணுங்க —
-            </p>
-            <div style="display:flex;gap:14px;align-items:center">
-                <img src="qr.jpeg" alt="QR Code" style="width:110px;height:110px;object-fit:contain;
-                    border-radius:10px;border:2px solid #e0d0f0">
-                <div>
-                    <p style="font-size:0.85rem;font-weight:700;margin-bottom:4px">Scan & Pay</p>
-                    <p style="font-size:0.75rem;color:#666;margin-bottom:4px">GPay / PhonePe / Paytm</p>
-                    <p style="font-size:0.78rem;color:#5f259f;font-weight:700;margin-bottom:8px">${UPI_ID}</p>
-                    <button onclick="copyUpiId()" style="font-size:0.75rem;padding:5px 12px;
-                        border:1px solid #d0b0f0;border-radius:20px;background:#f3ebff;color:#5f259f;cursor:pointer">
-                        <i class="fas fa-copy"></i> Copy UPI ID
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <button id="btn-upi-confirm" style="
-            width:100%;padding:15px;border-radius:50px;
-            background:linear-gradient(135deg,#2e7d32,#1b5e20);
-            color:white;font-weight:700;font-size:1rem;
-            display:flex;align-items:center;justify-content:center;gap:8px;
-            box-shadow:0 4px 15px rgba(46,125,50,0.3);cursor:pointer">
-            <i class="fas fa-check-circle"></i> Payment பண்ணிட்டேன் — Confirm
-        </button>`;
-
-    document.body.appendChild(overlay);
-    document.body.appendChild(modal);
-
-    // Slide up animation
-    requestAnimationFrame(() => {
-        requestAnimationFrame(() => { modal.style.transform = 'translateY(0)'; });
-    });
-
-    // App card clicks — direct deeplink
-    modal.querySelectorAll('.upi-app-card').forEach(card => {
-        card.addEventListener('click', () => {
-            const app = UPI_APPS.find(a => a.id === card.dataset.app);
-            if (!app) return;
-            card.style.transform = 'scale(0.93)';
-            card.style.borderColor = app.color;
-            setTimeout(() => { card.style.transform = ''; }, 150);
-
-            const url = buildUpiDeeplink(app, total);
-            if (/Android|iPhone|iPad/i.test(navigator.userAgent)) {
-                window.location.href = url;
-                setTimeout(() => showToast(`${app.name} திறக்கிறது... Pay பண்ணிட்டு திரும்பவும்`), 600);
-            } else {
-                showToast('Mobile-ல open பண்ணுங்க அல்லது QR scan பண்ணுங்க');
-            }
-        });
-    });
-
-    // Confirm button
-    modal.querySelector('#btn-upi-confirm').addEventListener('click', () => {
-        paymentStatus = 'paid';
-        updatePaymentStatus();
-        btnSubmitOrder.disabled = false;
-        showToast('✅ Payment confirmed!');
-        notifyBillCounterFromForm();
-        closeUpiChooser();
-        const outerDone = document.getElementById('btn-payment-done');
-        if (outerDone) { outerDone.style.display = 'flex'; }
-    });
-}
-
-function closeUpiChooser() {
-    const modal   = document.getElementById('upi-chooser-modal');
-    const overlay = document.getElementById('upi-chooser-overlay');
-    if (modal) {
-        modal.style.transform = 'translateY(100%)';
-        setTimeout(() => modal.remove(), 350);
+    if (/Android|iPhone|iPad/i.test(navigator.userAgent)) {
+        window.location.href = url;
+        showToast(`${app.name} திறக்கிறது... Pay செய்த பிறகு Confirm செய்யுங்கள்`);
+    } else {
+        showToast('Mobile-ல open செய்யுங்கள் அல்லது QR scan செய்யுங்கள்');
     }
-    if (overlay) {
-        overlay.style.opacity = '0';
-        setTimeout(() => overlay.remove(), 350);
-    }
+
+    // Show QR section and payment done button
+    document.getElementById('qr-payment-section').style.display = 'block';
+    updatePaymentStatus('pending');
+    btnSubmitOrder.disabled = true;
 }
 
 // ===== Event Listeners =====
@@ -668,13 +566,14 @@ function setupEventListeners() {
 
     document.querySelectorAll('input[name="payment-method"]').forEach(radio => {
         radio.addEventListener('change', e => {
+            selectedUpiApp = null;
+            document.querySelectorAll('.upi-app-btn').forEach(btn => btn.classList.remove('selected'));
+
             if (e.target.value === 'online') {
                 document.getElementById('online-payment-section').style.display = 'block';
                 document.getElementById('cash-payment-section').style.display = 'none';
-                document.getElementById('btn-payment-done').style.display = 'none';
                 document.getElementById('qr-payment-section').style.display = 'none';
-                document.getElementById('payment-status').innerHTML =
-                    '<span class="status-pending">⏳ "Pay Now" click செய்து UPI App-ஐ தேர்வு செய்யுங்கள்</span>';
+                updatePaymentStatus('pending');
                 paymentStatus = 'pending';
                 btnSubmitOrder.disabled = true;
             } else {
@@ -685,18 +584,6 @@ function setupEventListeners() {
                 btnSubmitOrder.disabled = false;
             }
         });
-    });
-
-    // Pay Now → UPI app chooser
-    bindEvent('btn-pay-now', 'click', openUpiAppChooser);
-
-    const doneBtn = document.getElementById('btn-payment-done');
-    if (doneBtn) doneBtn.addEventListener('click', () => {
-        paymentStatus = 'paid';
-        updatePaymentStatus();
-        btnSubmitOrder.disabled = false;
-        showToast('✅ Payment confirmed!');
-        notifyBillCounterFromForm();
     });
 
     const copyUpiBtn = document.getElementById('btn-copy-upi');
@@ -726,6 +613,26 @@ function setupEventListeners() {
     bindEvent('customer-mobile', 'input', e => {
         e.target.value = e.target.value.replace(/\D/g, '').slice(0, 10);
     });
+
+    // Add payment done button dynamically
+    const paymentStatusEl = document.getElementById('payment-status');
+    if (paymentStatusEl) {
+        const doneBtn = document.createElement('button');
+        doneBtn.type = 'button';
+        doneBtn.id = 'btn-payment-done';
+        doneBtn.className = 'btn-payment-done';
+        doneBtn.innerHTML = '<i class="fas fa-check-circle"></i> Payment செய்துவிட்டேன் — Confirm';
+        doneBtn.style.cssText = 'width:100%;padding:14px;border-radius:50px;background:linear-gradient(135deg,#2e7d32,#1b5e20);color:white;font-weight:700;font-size:1rem;display:none;align-items:center;justify-content:center;gap:8px;margin-top:12px;box-shadow:0 4px 15px rgba(46,125,50,0.3);cursor:pointer;transition:all 0.3s;';
+        doneBtn.addEventListener('click', () => {
+            paymentStatus = 'paid';
+            updatePaymentStatus('paid');
+            btnSubmitOrder.disabled = false;
+            showToast('✅ Payment confirmed!');
+            notifyBillCounterFromForm();
+            doneBtn.style.display = 'none';
+        });
+        paymentStatusEl.parentNode.insertBefore(doneBtn, paymentStatusEl.nextSibling);
+    }
 }
 
 function handleMenuClick(event) {
@@ -761,13 +668,19 @@ function openOrderModal() {
     document.querySelector('input[name="payment-method"][value="cash"]').checked = true;
     document.getElementById('online-payment-section').style.display = 'none';
     document.getElementById('cash-payment-section').style.display = 'block';
-    document.getElementById('btn-payment-done').style.display = 'none';
     document.getElementById('qr-payment-section').style.display = 'none';
-    document.getElementById('payment-status').innerHTML = '<span class="status-pending">⏳ "Pay Now" click செய்து UPI App-ஐ தேர்வு செய்யுங்கள்</span>';
+
+    selectedUpiApp = null;
+    document.querySelectorAll('.upi-app-btn').forEach(btn => btn.classList.remove('selected'));
+
+    updatePaymentStatus('cash');
     paymentStatus = 'cash';
     btnSubmitOrder.disabled = false;
     if (btnDownloadBill) btnDownloadBill.style.display = 'none';
     updateQrAmount();
+
+    const doneBtn = document.getElementById('btn-payment-done');
+    if (doneBtn) doneBtn.style.display = 'none';
 }
 
 function closeOrderModal()   { document.getElementById('order-modal').classList.remove('open'); document.getElementById('order-modal-overlay').classList.remove('open'); document.body.style.overflow = ''; }
@@ -778,12 +691,20 @@ function closeHistoryModal() { document.getElementById('history-modal').classLis
 function openContactModal()  { document.getElementById('contact-modal').classList.add('open'); document.getElementById('contact-modal-overlay').classList.add('open'); document.body.style.overflow = 'hidden'; }
 function closeContactModal() { document.getElementById('contact-modal').classList.remove('open'); document.getElementById('contact-modal-overlay').classList.remove('open'); document.body.style.overflow = ''; }
 
-function updatePaymentStatus() {
+function updatePaymentStatus(status) {
     const el = document.getElementById('payment-status');
-    if (paymentStatus === 'paid')
-        el.innerHTML = '<span class="status-paid">✅ Payment Completed — Submit Order பண்ணலாம்</span>';
-    else if (paymentStatus === 'pending')
-        el.innerHTML = '<span class="status-pending">⏳ Payment Pending</span>';
+    const doneBtn = document.getElementById('btn-payment-done');
+
+    if (status === 'paid') {
+        el.innerHTML = '<span class="status-paid">✅ Payment Completed — Submit Order செய்யலாம்</span>';
+        if (doneBtn) doneBtn.style.display = 'none';
+    } else if (status === 'pending') {
+        el.innerHTML = '<span class="status-pending">⏳ UPI App-ஐ தேர்வு செய்து Pay செய்த பிறகு "Payment Done" click செய்யுங்கள்</span>';
+        if (doneBtn) doneBtn.style.display = 'flex';
+    } else if (status === 'cash') {
+        el.innerHTML = '<span class="status-cash">💵 Cash on Delivery</span>';
+        if (doneBtn) doneBtn.style.display = 'none';
+    }
 }
 
 function notifyBillCounterFromForm() {
@@ -843,8 +764,7 @@ function submitOrder() {
     if (!name || !mobile || !table)  { showToast('Please fill all required fields'); return; }
     if (mobile.length !== 10)        { showToast('Enter valid 10-digit mobile number'); return; }
     if (method === 'online' && paymentStatus !== 'paid') {
-        alert('Please complete payment first.\n"Pay Now" click பண்ணி UPI app-ல pay பண்ணி "I Have Paid" click பண்ணுங்க.');
-        showToast('Please complete payment first');
+        showToast('Please complete payment first. UPI App-ல pay செய்து "Payment Done" click செய்யுங்கள்.');
         return;
     }
 
@@ -903,7 +823,7 @@ function renderOrderHistory() {
                 <span class="history-item-date">${o.date} ${o.time}</span>
             </div>
             <div class="history-item-details">${o.items.map(i => `${i.name} x${i.quantity}`).join(', ')}</div>
-            <div class="history-item-total">₹${o.totalAmount} - ${o.paymentStatus}</div>
+           div class="history-item-total">₹${o.totalAmount} - ${o.paymentStatus}</div>
         </div>`).join('');
 }
 
