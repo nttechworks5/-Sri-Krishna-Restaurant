@@ -3,19 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Sri Krishna Hotel | Fast Online Restaurant Ordering</title>
-    <meta name="description" content="Order fresh South Indian meals online from Sri Krishna Hotel. Fast mobile-friendly restaurant ordering with GPay/UPI payment and instant bill download.">
-    <meta name="keywords" content="Sri Krishna Restaurant, South Indian food, online food order, GPay payment, UPI order, hotel ordering, restaurant delivery">
+    <title>Sri Krishna Hotel | Online Ordering</title>
+    <meta name="description" content="Order fresh South Indian meals online from Sri Krishna Hotel.">
     <meta name="theme-color" content="#e65100">
-    <meta property="og:title" content="Sri Krishna Hotel | Fast Online Restaurant Ordering">
-    <meta property="og:description" content="Order fresh South Indian meals online from Sri Krishna Hotel. Fast mobile-friendly restaurant ordering with GPay/UPI payment and instant bill download.">
-    <meta property="og:type" content="website">
-    <meta property="og:image" content="https://images.unsplash.com/photo-1563379926898-05f4575a45d8?w=1200&fm=webp&q=80">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Sri Krishna Hotel | Fast Online Restaurant Ordering">
-    <meta name="twitter:description" content="Order fresh South Indian meals online from Sri Krishna Hotel. Fast mobile-friendly restaurant ordering with GPay/UPI payment and instant bill download.">
-    <meta name="twitter:image" content="https://images.unsplash.com/photo-1563379926898-05f4575a45d8?w=1200&fm=webp&q=80">
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
     <link rel="preconnect" href="https://images.unsplash.com">
     <link rel="preconnect" href="https://img.icons8.com">
@@ -25,13 +15,10 @@
 <base target="_blank">
 </head>
 <body>
-<p>Loading Sri Krishna Hotel...</p>
-    </div>
-
-    <!-- Toast Notification -->
+    <!-- Toast -->
     <div id="toast" class="toast">
         <i class="fas fa-check-circle"></i>
-        <span id="toast-message">Item added to cart!</span>
+        <span id="toast-message">Item added!</span>
     </div>
 
     <!-- Header -->
@@ -39,12 +26,12 @@
         <div class="header-top">
             <div class="header-left">
                 <div class="logo">
-                    <img src="icon.jpeg" alt="Sri Krishna Restaurant Logo" class="header-logo" width="56" height="56" loading="eager">
+                    <img src="icon.jpeg" alt="Logo" width="56" height="56" loading="eager">
                 </div>
                 <div class="hotel-info">
                     <div class="hotel-title">Sri Krishna Restaurant</div>
-                    <p class="hotel-tagline"><i class="fas fa-leaf" aria-hidden="true"></i> Veg & <i class="fas fa-drumstick-bite" aria-hidden="true"></i> Non-Veg</p>
-                    <p><i class="fas fa-phone" aria-hidden="true"></i> 6374462276</p>
+                    <p class="hotel-tagline"><i class="fas fa-leaf"></i> Veg & <i class="fas fa-drumstick-bite"></i> Non-Veg</p>
+                    <p><i class="fas fa-phone"></i> 6374462276</p>
                 </div>
             </div>
             <div class="header-right">
@@ -59,329 +46,282 @@
         <div class="search-bar" id="search-bar">
             <div class="search-container">
                 <i class="fas fa-search"></i>
-                <input type="text" id="search-input" placeholder="Search for food items..." autocomplete="off">
-                <button id="search-close" aria-label="Close search"><i class="fas fa-times"></i></button>
+                <input type="text" id="search-input" placeholder="Search food items..." autocomplete="off">
+                <button id="search-close"><i class="fas fa-times"></i></button>
             </div>
         </div>
     </header>
 
-    <main id="main-content" role="main">
-
-    <!-- Mobile Menu -->
-    <div class="mobile-menu" id="mobile-menu">
-        <div class="mobile-menu-header">
-            <h3>Menu</h3>
-            <button id="mobile-menu-close" aria-label="Close menu"><i class="fas fa-times"></i></button>
-        </div>
-        <div class="mobile-menu-content">
-            <a href="#" class="mobile-menu-item" data-category="all"><i class="fas fa-th-large"></i> All Items</a>
-            <a href="#" class="mobile-menu-item" data-category="Rice"><i class="fas fa-bowl-rice"></i> Rice</a>
-            <a href="#" class="mobile-menu-item" data-category="Tiffin"><i class="fas fa-bread-slice"></i> Idly & Dosa</a>
-            <a href="#" class="mobile-menu-item" data-category="Biryani"><i class="fas fa-drumstick-bite"></i> Biryani</a>
-            <a href="#" class="mobile-menu-item" data-category="Meals"><i class="fas fa-utensils"></i> Meals</a>
-            <a href="#" class="mobile-menu-item" data-category="Bread Items"><i class="fas fa-bread-slice"></i> Bread Items</a>
-            <a href="#" class="mobile-menu-item" data-category="Egg Items"><i class="fas fa-egg"></i> Egg Items</a>
-            <a href="#" class="mobile-menu-item" data-category="Chicken"><i class="fas fa-drumstick-bite"></i> Chicken</a>
-            <a href="#" class="mobile-menu-item" data-category="Noodles"><i class="fas fa-bowl-food"></i> Noodles</a>
-            <div class="mobile-menu-divider"></div>
-            <a href="#" class="mobile-menu-item" id="mobile-view-orders"><i class="fas fa-history"></i> Order History</a>
-            <a href="#" class="mobile-menu-item" id="mobile-contact"><i class="fas fa-phone"></i> Contact Us</a>
-        </div>
-    </div>
-    <div class="mobile-menu-overlay" id="mobile-menu-overlay"></div>
-
-    <!-- Hero Banner -->
-    <section aria-hidden="true" class="sr-only">
-        <h1>Sri Krishna Hotel Online Food Ordering</h1>
-    </section>
-    <section class="hero-banner" id="hero-banner">
-        <div class="hero-slider">
-            <div class="hero-slide active" data-bg="https://images.unsplash.com/photo-1563379926898-05f4575a45d8?w=1200&fm=webp&q=80">
-                <div class="hero-overlay"></div>
-                <div class="hero-content">
-                    <h2>Delicious South Indian Cuisine</h2>
-                    <p>Authentic flavors, fresh ingredients, made with love</p>
-                </div>
+    <main id="main-content">
+        <!-- Mobile Menu -->
+        <div class="mobile-menu" id="mobile-menu">
+            <div class="mobile-menu-header">
+                <h3>Menu</h3>
+                <button id="mobile-menu-close"><i class="fas fa-times"></i></button>
             </div>
-            <div class="hero-slide" data-bg="https://images.unsplash.com/photo-1512058564366-18510be2db19?w=1200&fm=webp&q=80">
-                <div class="hero-overlay"></div>
-                <div class="hero-content">
-                    <h2>Fresh & Tasty Meals</h2>
-                    <p>Homestyle cooking at its best</p>
-                </div>
-            </div>
-            <div class="hero-slide" data-bg="https://images.unsplash.com/photo-1600891964092-4316c288032e?w=1200&fm=webp&q=80">
-                <div class="hero-overlay"></div>
-                <div class="hero-content">
-                    <h2>Order Now, Enjoy Later</h2>
-                    <p>Quick service, great taste</p>
-                </div>
+            <div class="mobile-menu-content">
+                <a href="#" class="mobile-menu-item" data-category="all"><i class="fas fa-th-large"></i> All Items</a>
+                <a href="#" class="mobile-menu-item" data-category="Rice"><i class="fas fa-bowl-rice"></i> Rice</a>
+                <a href="#" class="mobile-menu-item" data-category="Tiffin"><i class="fas fa-bread-slice"></i> Idly & Dosa</a>
+                <a href="#" class="mobile-menu-item" data-category="Biryani"><i class="fas fa-drumstick-bite"></i> Biryani</a>
+                <a href="#" class="mobile-menu-item" data-category="Meals"><i class="fas fa-utensils"></i> Meals</a>
+                <a href="#" class="mobile-menu-item" data-category="Bread Items"><i class="fas fa-bread-slice"></i> Bread</a>
+                <a href="#" class="mobile-menu-item" data-category="Egg Items"><i class="fas fa-egg"></i> Egg</a>
+                <a href="#" class="mobile-menu-item" data-category="Chicken"><i class="fas fa-drumstick-bite"></i> Chicken</a>
+                <a href="#" class="mobile-menu-item" data-category="Noodles"><i class="fas fa-bowl-food"></i> Noodles</a>
+                <div class="mobile-menu-divider"></div>
+                <a href="#" class="mobile-menu-item" id="mobile-view-orders"><i class="fas fa-history"></i> Order History</a>
+                <a href="#" class="mobile-menu-item" id="mobile-contact"><i class="fas fa-phone"></i> Contact Us</a>
             </div>
         </div>
-        <div class="hero-dots">
-            <span class="hero-dot active" data-slide="0"></span>
-            <span class="hero-dot" data-slide="1"></span>
-            <span class="hero-dot" data-slide="2"></span>
-        </div>
-    </section>
+        <div class="mobile-menu-overlay" id="mobile-menu-overlay"></div>
 
-    <!-- Category Filter -->
-    <section class="category-section" id="category-section">
-        <div class="category-container">
-            <button class="category-btn active" data-category="all" aria-label="Show all items">All</button>
-            <button class="category-btn" data-category="Rice" aria-label="Show rice items">Rice</button>
-            <button class="category-btn" data-category="Tiffin" aria-label="Show idly and dosa items">Idly & Dosa</button>
-            <button class="category-btn" data-category="Biryani" aria-label="Show biryani items">Biryani</button>
-            <button class="category-btn" data-category="Meals" aria-label="Show meals">Meals</button>
-            <button class="category-btn" data-category="Bread Items" aria-label="Show bread items">Bread</button>
-            <button class="category-btn" data-category="Egg Items" aria-label="Show egg items">Egg</button>
-            <button class="category-btn" data-category="Chicken" aria-label="Show chicken items">Chicken</button>
-            <button class="category-btn" data-category="Noodles" aria-label="Show noodles items">Noodles</button>
-        </div>
-    </section>
-
-    <!-- Menu Items -->
-    <section class="menu-section" id="menu-section">
-        <div class="menu-container" id="menu-container">
-            <!-- Items will be rendered by JavaScript -->
-        </div>
-    </section>
-
-    <!-- Sticky Cart Button -->
-    <div class="sticky-cart" id="sticky-cart">
-        <button class="cart-btn" id="cart-btn" aria-label="Open cart">
-            <i class="fas fa-shopping-cart" aria-hidden="true"></i>
-            <span class="cart-count" id="cart-count">0</span>
-            <span class="cart-total" id="cart-total">Rs.0</span>
-        </button>
-    </div>
-
-    <!-- Cart Drawer -->
-    <div class="cart-overlay" id="cart-overlay"></div>
-    <div class="cart-drawer" id="cart-drawer">
-        <div class="cart-drawer-header">
-            <h3><i class="fas fa-shopping-cart"></i> Your Cart</h3>
-            <button class="cart-close" id="cart-close" aria-label="Close cart"><i class="fas fa-times" aria-hidden="true"></i></button>
-        </div>
-        <div class="cart-drawer-body" id="cart-drawer-body">
-            <div class="empty-cart" id="empty-cart">
-                <i class="fas fa-shopping-basket"></i>
-                <p>Your cart is empty</p>
-                <span>Add some delicious items!</span>
-            </div>
-            <div class="cart-items" id="cart-items"></div>
-        </div>
-        <div class="cart-drawer-footer" id="cart-drawer-footer" style="display: none;">
-            <div class="cart-summary">
-                <div class="cart-summary-row">
-                    <span>Subtotal</span>
-                    <span id="cart-subtotal">Rs.0</span>
-                </div>
-                <div class="cart-summary-row total">
-                    <span>Total</span>
-                    <span id="cart-grand-total">Rs.0</span>
-                </div>
-            </div>
-            <button class="btn-place-order" id="btn-place-order" aria-label="Place order">
-                <i class="fas fa-receipt" aria-hidden="true"></i> Place Order
-            </button>
-            <button class="btn-continue" id="btn-continue" aria-label="Continue shopping">
-                <i class="fas fa-arrow-left" aria-hidden="true"></i> Continue Shopping
-            </button>
-        </div>
-    </div>
-
-    <!-- Order Modal -->
-    <div class="modal-overlay" id="order-modal-overlay"></div>
-    <div class="modal order-modal" id="order-modal">
-        <div class="modal-header">
-            <h3><i class="fas fa-receipt"></i> Place Your Order</h3>
-            <button class="modal-close" id="order-modal-close"><i class="fas fa-times"></i></button>
-        </div>
-        <div class="modal-body">
-            <form id="order-form">
-                <div class="form-group">
-                    <label for="customer-name"><i class="fas fa-user"></i> Customer Name *</label>
-                    <input type="text" id="customer-name" placeholder="Enter your name" required>
-                </div>
-                <div class="form-group">
-                    <label for="customer-mobile"><i class="fas fa-phone"></i> Mobile Number *</label>
-                    <input type="tel" id="customer-mobile" placeholder="Enter mobile number" maxlength="10" required>
-                </div>
-                <div class="form-group">
-                    <label for="table-number"><i class="fas fa-chair"></i> Table Number *</label>
-                    <input type="text" id="table-number" placeholder="Enter table number" required>
-                </div>
-                <div class="form-group">
-                    <label for="order-notes"><i class="fas fa-sticky-note"></i> Notes (Optional)</label>
-                    <textarea id="order-notes" rows="2" placeholder="Any special instructions..."></textarea>
-                </div>
-                <div class="form-group">
-                    <label><i class="fas fa-credit-card"></i> Payment Method *</label>
-                    <div class="payment-options">
-                        <label class="payment-option">
-                            <input type="radio" name="payment-method" value="cash" checked>
-                            <span class="payment-radio"></span>
-                            <i class="fas fa-money-bill-wave"></i>
-                            <span>Cash</span>
-                        </label>
-                        <label class="payment-option">
-                            <input type="radio" name="payment-method" value="online">
-                            <span class="payment-radio"></span>
-                            <i class="fas fa-mobile-alt"></i>
-                            <span>Online Payment</span>
-                        </label>
+        <!-- Hero Banner -->
+        <section class="hero-banner" id="hero-banner">
+            <div class="hero-slider">
+                <div class="hero-slide active" style="background-image:url('https://images.unsplash.com/photo-1563379926898-05f4575a45d8?w=1200&fm=webp&q=80')">
+                    <div class="hero-overlay"></div>
+                    <div class="hero-content">
+                        <h2>Delicious South Indian Cuisine</h2>
+                        <p>Authentic flavors, fresh ingredients</p>
                     </div>
                 </div>
-
-                <!-- Online Payment Section -->
-                <div id="online-payment-section" style="display: none;">
-                    <div class="upi-app-grid" id="upi-app-grid">
-                        <!-- UPI app buttons will be rendered by JS -->
+                <div class="hero-slide" style="background-image:url('https://images.unsplash.com/photo-1512058564366-18510be2db19?w=1200&fm=webp&q=80')">
+                    <div class="hero-overlay"></div>
+                    <div class="hero-content">
+                        <h2>Fresh & Tasty Meals</h2>
+                        <p>Homestyle cooking at its best</p>
                     </div>
+                </div>
+                <div class="hero-slide" style="background-image:url('https://images.unsplash.com/photo-1600891964092-4316c288032e?w=1200&fm=webp&q=80')">
+                    <div class="hero-overlay"></div>
+                    <div class="hero-content">
+                        <h2>Order Now, Enjoy Later</h2>
+                        <p>Quick service, great taste</p>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-dots">
+                <span class="hero-dot active" data-slide="0"></span>
+                <span class="hero-dot" data-slide="1"></span>
+                <span class="hero-dot" data-slide="2"></span>
+            </div>
+        </section>
 
-                    <!-- QR Code Section -->
-                    <div id="qr-payment-section" style="display: none;">
-                        <div class="qr-container">
-                            <div class="qr-header">
-                                <img src="https://img.icons8.com/color/96/000000/google-pay.png"
-                                     alt="UPI payment logo"
-                                     class="qr-brand-logo"
-                                     width="96" height="96" loading="eager">
-                                <div class="qr-title-block">
-                                    <span class="qr-title">Scan & Pay</span>
-                                    <span class="qr-subtitle">Any UPI App - GPay - PhonePe - Paytm</span>
-                                </div>
-                            </div>
-                            <div class="qr-image-wrap">
-                                <img src="qr.jpeg" alt="UPI QR Code to scan and pay" class="qr-image" width="280" height="280" loading="lazy">
-                                <div class="qr-amount-badge" id="qr-amount-badge">Rs.<span id="qr-display-amount">0</span></div>
-                            </div>
-                            <div class="qr-upi-id">
-                                <i class="fas fa-at"></i>
-                                <span>UPI ID: <strong>9843336980@ibl</strong></span>
-                                <button type="button" id="btn-copy-upi" class="btn-copy-upi" title="Copy UPI ID">
-                                    <i class="fas fa-copy"></i>
-                                </button>
-                            </div>
-                            <p class="qr-note">Screenshot QR - Open any UPI app - Scan from Gallery</p>
+        <!-- Category Filter -->
+        <section class="category-section" id="category-section">
+            <div class="category-container">
+                <button class="category-btn active" data-category="all">All</button>
+                <button class="category-btn" data-category="Rice">Rice</button>
+                <button class="category-btn" data-category="Tiffin">Idly & Dosa</button>
+                <button class="category-btn" data-category="Biryani">Biryani</button>
+                <button class="category-btn" data-category="Meals">Meals</button>
+                <button class="category-btn" data-category="Bread Items">Bread</button>
+                <button class="category-btn" data-category="Egg Items">Egg</button>
+                <button class="category-btn" data-category="Chicken">Chicken</button>
+                <button class="category-btn" data-category="Noodles">Noodles</button>
+            </div>
+        </section>
+
+        <!-- Menu Items -->
+        <section class="menu-section" id="menu-section">
+            <div class="menu-container" id="menu-container"></div>
+        </section>
+
+        <!-- Sticky Cart -->
+        <div class="sticky-cart" id="sticky-cart">
+            <button class="cart-btn" id="cart-btn">
+                <i class="fas fa-shopping-cart"></i>
+                <span class="cart-count" id="cart-count">0</span>
+                <span class="cart-total" id="cart-total">Rs.0</span>
+            </button>
+        </div>
+
+        <!-- Cart Drawer -->
+        <div class="cart-overlay" id="cart-overlay"></div>
+        <div class="cart-drawer" id="cart-drawer">
+            <div class="cart-drawer-header">
+                <h3><i class="fas fa-shopping-cart"></i> Your Cart</h3>
+                <button class="cart-close" id="cart-close"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="cart-drawer-body" id="cart-drawer-body">
+                <div class="empty-cart" id="empty-cart">
+                    <i class="fas fa-shopping-basket"></i>
+                    <p>Your cart is empty</p>
+                    <span>Add some delicious items!</span>
+                </div>
+                <div class="cart-items" id="cart-items"></div>
+            </div>
+            <div class="cart-drawer-footer" id="cart-drawer-footer">
+                <div class="cart-summary">
+                    <div class="cart-summary-row">
+                        <span>Subtotal</span>
+                        <span id="cart-subtotal">Rs.0</span>
+                    </div>
+                    <div class="cart-summary-row total">
+                        <span>Total</span>
+                        <span id="cart-grand-total">Rs.0</span>
+                    </div>
+                </div>
+                <button class="btn-place-order" id="btn-place-order">
+                    <i class="fas fa-receipt"></i> Place Order
+                </button>
+                <button class="btn-continue" id="btn-continue">
+                    <i class="fas fa-arrow-left"></i> Continue Shopping
+                </button>
+            </div>
+        </div>
+
+        <!-- Order Modal -->
+        <div class="modal-overlay" id="order-modal-overlay"></div>
+        <div class="modal order-modal" id="order-modal">
+            <div class="modal-header">
+                <h3><i class="fas fa-receipt"></i> Place Your Order</h3>
+                <button class="modal-close" id="order-modal-close"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="order-form">
+                    <div class="form-group">
+                        <label><i class="fas fa-user"></i> Customer Name *</label>
+                        <input type="text" id="customer-name" placeholder="Enter your name" required>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-phone"></i> Mobile Number *</label>
+                        <input type="tel" id="customer-mobile" placeholder="Enter mobile number" maxlength="10" required>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-chair"></i> Table Number *</label>
+                        <input type="text" id="table-number" placeholder="Enter table number" required>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-sticky-note"></i> Notes (Optional)</label>
+                        <textarea id="order-notes" rows="2" placeholder="Any special instructions..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-credit-card"></i> Payment Method *</label>
+                        <div class="payment-options">
+                            <label class="payment-option">
+                                <input type="radio" name="payment-method" value="cash" checked>
+                                <span class="payment-radio"></span>
+                                <i class="fas fa-money-bill-wave"></i>
+                                <span>Cash</span>
+                            </label>
+                            <label class="payment-option">
+                                <input type="radio" name="payment-method" value="online">
+                                <span class="payment-radio"></span>
+                                <i class="fas fa-mobile-alt"></i>
+                                <span>Online Payment</span>
+                            </label>
                         </div>
                     </div>
 
-                    <div class="payment-status" id="payment-status">
-                        <span class="status-pending">Select a UPI App and complete payment</span>
+                    <div id="online-payment-section" style="display:none">
+                        <div class="upi-app-grid" id="upi-app-grid"></div>
+                        <div id="qr-payment-section" style="display:none">
+                            <div class="qr-container">
+                                <div class="qr-header">
+                                    <span class="qr-title">Scan & Pay</span>
+                                    <span class="qr-subtitle">Any UPI App - GPay - PhonePe - Paytm</span>
+                                </div>
+                                <div class="qr-image-wrap">
+                                    <img src="qr.jpeg" alt="QR Code" class="qr-image" width="280" height="280">
+                                    <div class="qr-amount-badge">Rs.<span id="qr-display-amount">0</span></div>
+                                </div>
+                                <div class="qr-upi-id">
+                                    <span>UPI ID: <strong>9843336980@ibl</strong></span>
+                                    <button type="button" id="btn-copy-upi" title="Copy UPI ID"><i class="fas fa-copy"></i></button>
+                                </div>
+                                <p class="qr-note">Screenshot QR - Open any UPI app - Scan from Gallery</p>
+                            </div>
+                        </div>
+                        <div class="payment-status" id="payment-status">
+                            <span class="status-pending">Select a UPI App to enable payment</span>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Cash Payment Section -->
-                <div id="cash-payment-section">
-                    <div class="payment-status">
-                        <span class="status-cash">Cash on Delivery</span>
+                    <div id="cash-payment-section">
+                        <div class="payment-status">
+                            <span class="status-cash">Cash on Delivery</span>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Submit Order button -->
-                <button type="submit" class="btn-submit-order" id="btn-submit-order" aria-label="Submit order">
-                    <i class="fas fa-paper-plane" aria-hidden="true"></i> Submit Order
+                    <button type="submit" class="btn-submit-order" id="btn-submit-order">
+                        <i class="fas fa-paper-plane"></i> Submit Order
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Success Modal -->
+        <div class="modal-overlay" id="success-modal-overlay"></div>
+        <div class="modal success-modal" id="success-modal">
+            <div class="modal-body text-center">
+                <div class="success-icon"><i class="fas fa-check-circle"></i></div>
+                <h3>Order Placed Successfully!</h3>
+                <p>Thank you for your order.</p>
+                <p class="success-note">A confirmation has been sent via WhatsApp.</p>
+                <button class="btn-download-bill" id="btn-download-bill" style="display:none">
+                    <i class="fas fa-download"></i> Download Bill
                 </button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Order Success Modal -->
-    <div class="modal-overlay" id="success-modal-overlay"></div>
-    <div class="modal success-modal" id="success-modal">
-        <div class="modal-body text-center">
-            <div class="success-icon">
-                <i class="fas fa-check-circle"></i>
+                <button class="btn-new-order" id="btn-new-order">
+                    <i class="fas fa-plus"></i> Place New Order
+                </button>
             </div>
-            <h3>Order Placed Successfully!</h3>
-            <p>Thank you for your order. Your bill has been downloaded.</p>
-            <p class="success-note">A confirmation has been sent via WhatsApp.</p>
-            <button class="btn-download-bill" id="btn-download-bill" style="display: none;" aria-label="Download bill">
-                <i class="fas fa-download" aria-hidden="true"></i> Download Bill
-            </button>
-            <button class="btn-new-order" id="btn-new-order" aria-label="Place new order">
-                <i class="fas fa-plus" aria-hidden="true"></i> Place New Order
-            </button>
         </div>
-    </div>
 
-    <!-- Admin Notification Panel -->
-    <div id="admin-notification-panel" class="admin-notification-panel" aria-live="polite"></div>
-
-    <!-- Order History Modal -->
-    <div class="modal-overlay" id="history-modal-overlay"></div>
-    <div class="modal history-modal" id="history-modal">
-        <div class="modal-header">
-            <h3><i class="fas fa-history"></i> Order History</h3>
-            <button class="modal-close" id="history-modal-close" aria-label="Close history modal"><i class="fas fa-times" aria-hidden="true"></i></button>
-        </div>
-        <div class="modal-body">
-            <div id="order-history-list">
-                <div class="empty-history">
-                    <i class="fas fa-clipboard-list"></i>
-                    <p>No orders yet</p>
+        <!-- History Modal -->
+        <div class="modal-overlay" id="history-modal-overlay"></div>
+        <div class="modal history-modal" id="history-modal">
+            <div class="modal-header">
+                <h3><i class="fas fa-history"></i> Order History</h3>
+                <button class="modal-close" id="history-modal-close"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div id="order-history-list">
+                    <div class="empty-history"><i class="fas fa-clipboard-list"></i><p>No orders yet</p></div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Contact Modal -->
-    <div class="modal-overlay" id="contact-modal-overlay"></div>
-    <div class="modal contact-modal" id="contact-modal">
-        <div class="modal-header">
-            <h3><i class="fas fa-address-card"></i> Contact Us</h3>
-            <button class="modal-close" id="contact-modal-close" aria-label="Close contact modal"><i class="fas fa-times" aria-hidden="true"></i></button>
-        </div>
-        <div class="modal-body">
-            <div class="contact-info">
-                <div class="contact-item">
-                    <i class="fas fa-hotel"></i>
-                    <div>
-                        <h4>Sri Krishna Hotel</h4>
-                        <p>Authentic South Indian Cuisine</p>
+        <!-- Contact Modal -->
+        <div class="modal-overlay" id="contact-modal-overlay"></div>
+        <div class="modal contact-modal" id="contact-modal">
+            <div class="modal-header">
+                <h3><i class="fas fa-address-card"></i> Contact Us</h3>
+                <button class="modal-close" id="contact-modal-close"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="contact-info">
+                    <div class="contact-item">
+                        <i class="fas fa-hotel"></i>
+                        <div><h4>Sri Krishna Hotel</h4><p>Authentic South Indian Cuisine</p></div>
                     </div>
+                    <a href="tel:9843336980" class="contact-item">
+                        <i class="fas fa-phone"></i>
+                        <div><h4>Phone</h4><p>98433 36980</p></div>
+                    </a>
+                    <a href="https://wa.me/919843336980" target="_blank" class="contact-item">
+                        <i class="fab fa-whatsapp"></i>
+                        <div><h4>WhatsApp</h4><p>98433 36980</p></div>
+                    </a>
+                    <a href="mailto:kumaranglids@gmail.com" class="contact-item">
+                        <i class="fas fa-envelope"></i>
+                        <div><h4>Email</h4><p>kumaranglids@gmail.com</p></div>
+                    </a>
                 </div>
-                <a href="tel:9843336980" class="contact-item" aria-label="Call Sri Krishna Hotel">
-                    <i class="fas fa-phone" aria-hidden="true"></i>
-                    <div>
-                        <h4>Phone</h4>
-                        <p>98433 36980</p>
-                    </div>
-                </a>
-                <a href="https://wa.me/919843336980" target="_blank" rel="noopener noreferrer" class="contact-item" aria-label="WhatsApp Sri Krishna Hotel">
-                    <i class="fab fa-whatsapp" aria-hidden="true"></i>
-                    <div>
-                        <h4>WhatsApp</h4>
-                        <p>98433 36980</p>
-                    </div>
-                </a>
-                <a href="mailto:kumaranglids@gmail.com" class="contact-item" aria-label="Email Sri Krishna Hotel">
-                    <i class="fas fa-envelope" aria-hidden="true"></i>
-                    <div>
-                        <h4>Email</h4>
-                        <p>kumaranglids@gmail.com</p>
-                    </div>
-                </a>
             </div>
         </div>
-    </div>
-
     </main>
 
     <footer class="footer">
         <div class="footer-content">
             <div class="footer-brand">
-                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 40px; height: 40px; margin: 0 auto 10px;">
-                    <path d="M12 2C10.5 2 9.5 3 9.5 4.5V9H8V4.5C8 3 7 2 5.5 2C4 2 3 3 3 4.5V9C3 12.5 5.5 15.5 9 16.2V20C9 21.1 9.9 22 11 22H13C14.1 22 15 21.1 15 20V16.2C18.5 15.5 21 12.5 21 9V4.5C21 3 20 2 18.5 2C17 2 16 3 16 4.5V9H14.5V4.5C14.5 3 13.5 2 12 2Z" fill="#ff9800"/>
-                </svg>
                 <h3>Sri Krishna Restaurant</h3>
                 <p>Veg & Non-Veg | Authentic South Indian Cuisine</p>
             </div>
             <div class="footer-links">
-                <a href="#" id="footer-history" aria-label="View order history"><i class="fas fa-history" aria-hidden="true"></i> Order History</a>
-                <a href="#" id="footer-contact" aria-label="Contact Sri Krishna Hotel"><i class="fas fa-phone" aria-hidden="true"></i> Contact</a>
+                <a href="#" id="footer-history"><i class="fas fa-history"></i> Order History</a>
+                <a href="#" id="footer-contact"><i class="fas fa-phone"></i> Contact</a>
             </div>
             <div class="footer-bottom">
                 <p>&copy; 2026 Sri Krishna Hotel. All rights reserved.</p>
@@ -390,6 +330,6 @@
         </div>
     </footer>
 
-    <script src="script.js" defer></script>
+    <script src="script.js"></script>
 </body>
 </html>
