@@ -237,11 +237,17 @@
                     </div>
                 </div>
 
-                <!-- ✅ Online Payment Section -->
+                <!-- Online Payment Section -->
                 <div id="online-payment-section" style="display: none;">
                     <div class="upi-buttons">
+                        <!-- FIXED: GPay logo added -->
                         <button type="button" class="btn-upi" id="btn-pay-now" aria-label="Pay with GPay or UPI">
-                            <i class="fas fa-qrcode" aria-hidden="true"></i> Pay with GPay / UPI
+                            <img src="https://img.icons8.com/color/48/google-pay.png"
+                                 alt="GPay"
+                                 width="22" height="22"
+                                 style="border-radius:4px;vertical-align:middle;object-fit:contain;flex-shrink:0;"
+                                 onerror="this.style.display='none'">
+                            Pay with GPay / UPI
                         </button>
                         <!-- "I Have Paid" button (shown after Pay Now clicked) -->
                         <button type="button" class="btn-upi btn-payment-done" id="btn-payment-done" style="display: none;" aria-label="Confirm payment completed">
@@ -249,7 +255,7 @@
                         </button>
                     </div>
 
-                    <!-- ✅ NEW: PhonePe QR Code Section -->
+                    <!-- PhonePe QR Code Section -->
                     <div id="qr-payment-section" style="display: none;">
                         <div class="qr-container">
                             <div class="qr-header">
@@ -276,7 +282,6 @@
                             <p class="qr-note">📸 Screenshot QR → Open any UPI app → Scan from Gallery</p>
                         </div>
                     </div>
-                    <!-- END QR Section -->
 
                     <div class="payment-status" id="payment-status">
                         <span class="status-pending">⏳ "Pay Now" click செய்து UPI App திறக்கவும்</span>
@@ -378,7 +383,6 @@
         </div>
     </div>
 
-    <!-- Footer -->
     </main>
 
     <footer class="footer">
