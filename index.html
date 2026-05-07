@@ -9,19 +9,15 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-    <!-- Preconnect -->
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
     <link rel="preconnect" href="https://images.unsplash.com" crossorigin>
     <link rel="preconnect" href="https://img.icons8.com" crossorigin>
     <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
-
-    <!-- Preload critical font -->
     <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/webfonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin>
 
     <link rel="icon" href="icon.jpeg" type="image/jpeg">
     <link rel="apple-touch-icon" href="icon.jpeg">
 
-    <!-- Inline Critical CSS -->
     <style>
     :root{--primary:#e65100;--primary-dark:#bf360c;--secondary:#2e7d32;--bg:#f8f9fa;--card-bg:#fff;--text:#212529;--text-light:#6c757d;--border:#dee2e6;--shadow:0 2px 8px rgba(0,0,0,0.08);--radius:14px;--radius-sm:10px;--header-height:64px}
     *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -31,7 +27,6 @@
     button{border:none;background:none;cursor:pointer;font-family:inherit;touch-action:manipulation}
     img{max-width:100%;display:block;height:auto}
 
-    /* Header */
     .header{position:sticky;top:0;background:linear-gradient(135deg,var(--primary) 0%,var(--primary-dark) 100%);color:#fff;z-index:1000;box-shadow:0 2px 12px rgba(230,81,0,0.25)}
     .header-top{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;max-width:1400px;margin:0 auto;height:var(--header-height);gap:8px}
     .header-left{display:flex;align-items:center;gap:10px}
@@ -44,14 +39,12 @@
     .search-toggle,.menu-toggle{width:40px;height:40px;border-radius:10px;background:rgba(255,255,255,0.12);color:#fff;font-size:1rem;display:flex;align-items:center;justify-content:center}
     .search-toggle:active,.menu-toggle:active{background:rgba(255,255,255,0.25);transform:scale(0.95)}
 
-    /* Search Bar */
     .search-bar{max-height:0;overflow:hidden;transition:max-height 0.25s,padding 0.25s;background:rgba(0,0,0,0.08)}
     .search-bar.active{max-height:60px;padding:8px 12px}
     .search-container{display:flex;align-items:center;background:#fff;border-radius:50px;padding:6px 14px;max-width:600px;margin:0 auto;gap:8px}
     .search-container input{flex:1;border:none;outline:none;font-size:0.95rem;background:transparent}
     .search-container button{color:var(--text-light);font-size:1rem;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:50%}
 
-    /* Hero */
     .hero-banner{position:relative;width:100%;height:180px;overflow:hidden;background:#1a1a1a}
     .hero-slider{position:relative;width:100%;height:100%}
     .hero-slide{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;transition:opacity 0.5s ease}
@@ -64,7 +57,6 @@
     .hero-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.35);cursor:pointer;transition:all 0.2s}
     .hero-dot.active{background:#fff;width:20px;border-radius:4px}
 
-    /* Category */
     .category-section{position:sticky;top:var(--header-height);background:var(--bg);z-index:100;padding:8px 0;border-bottom:1px solid var(--border)}
     .category-container{display:flex;gap:6px;padding:0 12px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
     .category-container::-webkit-scrollbar{display:none}
@@ -72,11 +64,9 @@
     .category-btn.active{background:linear-gradient(135deg,var(--primary) 0%,var(--primary-dark) 100%);color:#fff;border-color:var(--primary);box-shadow:0 3px 10px rgba(230,81,0,0.22)}
     .category-btn:active{transform:scale(0.96)}
 
-    /* Menu */
     .menu-section{padding:12px 12px 30px;max-width:1400px;margin:0 auto}
     .menu-container{display:grid;grid-template-columns:1fr;gap:12px}
 
-    /* Skeleton */
     .skeleton-card{background:var(--card-bg);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);border:1px solid var(--border)}
     .skeleton-img{width:100%;aspect-ratio:16/9;background:linear-gradient(90deg,#e8e8e8 25%,#d0d0d0 50%,#e8e8e8 75%);background-size:200% 100%;animation:shimmer 1s infinite}
     .skeleton-body{padding:12px}
@@ -85,7 +75,6 @@
     .skeleton-btn{height:36px;width:100%;background:#e8e8e8;border-radius:50px}
     @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
-    /* Product Card */
     .product-card{background:var(--card-bg);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);border:1px solid var(--border);display:flex;flex-direction:column}
     .product-card:active{transform:scale(0.985)}
     .product-image{position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;background:#e8e8e8}
@@ -106,17 +95,14 @@
     .btn-add-cart:active{transform:scale(0.97)}
     .btn-add-cart.added{background:linear-gradient(135deg,var(--secondary) 0%,#1b5e20 100%)}
 
-    /* Toast */
     .toast{position:fixed;top:80px;left:50%;transform:translateX(-50%) translateY(-15px);background:var(--secondary);color:#fff;padding:8px 18px;border-radius:50px;display:flex;align-items:center;gap:8px;font-weight:500;font-size:0.85rem;box-shadow:0 4px 20px rgba(0,0,0,0.15);z-index:10000;opacity:0;transition:opacity 0.2s,transform 0.2s;white-space:nowrap;pointer-events:none}
     .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
 
-    /* Sticky Cart */
     .sticky-cart{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);z-index:999;display:none}
     .cart-btn{display:flex;align-items:center;gap:8px;padding:11px 22px;background:linear-gradient(135deg,var(--primary) 0%,var(--primary-dark) 100%);color:#fff;border-radius:50px;font-weight:700;font-size:0.95rem;box-shadow:0 4px 18px rgba(230,81,0,0.35)}
     .cart-btn:active{transform:scale(0.97)}
     .cart-count{background:#fff;color:var(--primary);width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:800}
 
-    /* Cart Drawer */
     .cart-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1001;opacity:0;visibility:hidden;transition:opacity 0.2s,visibility 0.2s}
     .cart-overlay.open{opacity:1;visibility:visible}
     .cart-drawer{position:fixed;top:0;right:-100%;width:100%;max-width:420px;height:100dvh;background:#fff;z-index:1002;display:flex;flex-direction:column;transition:right 0.25s;box-shadow:-6px 0 25px rgba(0,0,0,0.1)}
@@ -147,7 +133,6 @@
     .btn-place-order{width:100%;padding:12px;background:linear-gradient(135deg,var(--secondary) 0%,#1b5e20 100%);color:#fff;border-radius:50px;font-weight:700;font-size:0.95rem;display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:8px;box-shadow:0 3px 12px rgba(46,125,50,0.22)}
     .btn-continue{width:100%;padding:10px;background:transparent;color:var(--text-light);border-radius:50px;font-weight:600;font-size:0.88rem;display:flex;align-items:center;justify-content:center;gap:6px;border:1.5px solid var(--border)}
 
-    /* Mobile Menu */
     .mobile-menu{position:fixed;top:0;right:-300px;width:280px;max-width:80vw;height:100dvh;background:#fff;z-index:10001;box-shadow:-4px 0 20px rgba(0,0,0,0.12);transition:right 0.25s;display:flex;flex-direction:column}
     .mobile-menu.open{right:0}
     .mobile-menu-header{display:flex;align-items:center;justify-content:space-between;padding:18px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,var(--primary) 0%,var(--primary-dark) 100%);color:#fff}
@@ -161,7 +146,6 @@
     .mobile-menu-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:10000;opacity:0;visibility:hidden;transition:opacity 0.2s,visibility 0.2s}
     .mobile-menu-overlay.open{opacity:1;visibility:visible}
 
-    /* Footer */
     .footer{background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);color:#fff;padding:28px 16px 16px;margin-top:30px}
     .footer-content{max-width:1200px;margin:0 auto;text-align:center}
     .footer-brand{margin-bottom:16px}
@@ -172,7 +156,6 @@
     .footer-links a:active{opacity:1;color:#ff9800}
     .footer-bottom{border-top:1px solid rgba(255,255,255,0.1);padding-top:14px;font-size:0.78rem;opacity:0.6}
 
-    /* Tablet+ */
     @media(min-width:480px){.menu-container{grid-template-columns:repeat(2,1fr)}.hero-banner{height:200px}}
     @media(min-width:640px){.header-top{padding:10px 16px}.hotel-title{font-size:1.1rem}.logo{width:52px;height:52px}}
     @media(min-width:768px){.menu-container{grid-template-columns:repeat(3,1fr)}.hero-banner{height:220px}.hero-content h2{font-size:1.5rem}}
@@ -180,11 +163,9 @@
     @media(min-width:1440px){.menu-container{grid-template-columns:repeat(5,1fr)}.hero-banner{height:300px}}
     </style>
 
-    <!-- Async Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
     <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
 
-    <!-- Non-critical CSS -->
     <link rel="stylesheet" href="style.css" media="print" onload="this.media='all'">
     <noscript><link rel="stylesheet" href="style.css"></noscript>
 
@@ -192,13 +173,11 @@
 <base target="_blank">
 </head>
 <body>
-    <!-- Toast -->
     <div id="toast" class="toast">
         <i class="fas fa-check-circle"></i>
         <span id="toast-message">Item added!</span>
     </div>
 
-    <!-- Header -->
     <header class="header" id="header">
         <div class="header-top">
             <div class="header-left">
@@ -212,12 +191,8 @@
                 </div>
             </div>
             <div class="header-right">
-                <button class="search-toggle" id="search-toggle" aria-label="Search">
-                    <i class="fas fa-search"></i>
-                </button>
-                <button class="menu-toggle" id="menu-toggle" aria-label="Menu">
-                    <i class="fas fa-bars"></i>
-                </button>
+                <button class="search-toggle" id="search-toggle" aria-label="Search"><i class="fas fa-search"></i></button>
+                <button class="menu-toggle" id="menu-toggle" aria-label="Menu"><i class="fas fa-bars"></i></button>
             </div>
         </div>
         <div class="search-bar" id="search-bar">
@@ -230,7 +205,6 @@
     </header>
 
     <main id="main-content">
-        <!-- Mobile Menu -->
         <div class="mobile-menu" id="mobile-menu">
             <div class="mobile-menu-header">
                 <h3>Menu</h3>
@@ -253,30 +227,11 @@
         </div>
         <div class="mobile-menu-overlay" id="mobile-menu-overlay"></div>
 
-        <!-- Hero Banner -->
         <section class="hero-banner" id="hero-banner">
             <div class="hero-slider">
-                <div class="hero-slide active" style="background-image:url('https://images.unsplash.com/photo-1563379926898-05f4575a45d8?w=400&q=50&fm=webp')">
-                    <div class="hero-overlay"></div>
-                    <div class="hero-content">
-                        <h2>Delicious South Indian Cuisine</h2>
-                        <p>Authentic flavors, fresh ingredients</p>
-                    </div>
-                </div>
-                <div class="hero-slide" style="background-image:url('https://images.unsplash.com/photo-1512058564366-18510be2db19?w=400&q=50&fm=webp')">
-                    <div class="hero-overlay"></div>
-                    <div class="hero-content">
-                        <h2>Fresh & Tasty Meals</h2>
-                        <p>Homestyle cooking at its best</p>
-                    </div>
-                </div>
-                <div class="hero-slide" style="background-image:url('https://images.unsplash.com/photo-1600891964092-4316c288032e?w=400&q=50&fm=webp')">
-                    <div class="hero-overlay"></div>
-                    <div class="hero-content">
-                        <h2>Order Now, Enjoy Later</h2>
-                        <p>Quick service, great taste</p>
-                    </div>
-                </div>
+                <div class="hero-slide active" style="background-image:url('https://images.unsplash.com/photo-1563379926898-05f4575a45d8?w=400&q=50&fm=webp')"><div class="hero-overlay"></div><div class="hero-content"><h2>Delicious South Indian Cuisine</h2><p>Authentic flavors, fresh ingredients</p></div></div>
+                <div class="hero-slide" style="background-image:url('https://images.unsplash.com/photo-1512058564366-18510be2db19?w=400&q=50&fm=webp')"><div class="hero-overlay"></div><div class="hero-content"><h2>Fresh & Tasty Meals</h2><p>Homestyle cooking at its best</p></div></div>
+                <div class="hero-slide" style="background-image:url('https://images.unsplash.com/photo-1600891964092-4316c288032e?w=400&q=50&fm=webp')"><div class="hero-overlay"></div><div class="hero-content"><h2>Order Now, Enjoy Later</h2><p>Quick service, great taste</p></div></div>
             </div>
             <div class="hero-dots">
                 <span class="hero-dot active" data-slide="0"></span>
@@ -285,7 +240,6 @@
             </div>
         </section>
 
-        <!-- Category Filter -->
         <section class="category-section" id="category-section">
             <div class="category-container">
                 <button class="category-btn active" data-category="all">All</button>
@@ -300,7 +254,6 @@
             </div>
         </section>
 
-        <!-- Menu Items -->
         <section class="menu-section" id="menu-section">
             <div class="menu-container" id="menu-container">
                 <div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-body"><div class="skeleton-title"></div><div class="skeleton-price"></div><div class="skeleton-btn"></div></div></div>
@@ -312,7 +265,6 @@
             </div>
         </section>
 
-        <!-- Sticky Cart -->
         <div class="sticky-cart" id="sticky-cart">
             <button class="cart-btn" id="cart-btn">
                 <i class="fas fa-shopping-cart"></i>
@@ -321,7 +273,6 @@
             </button>
         </div>
 
-        <!-- Cart Drawer -->
         <div class="cart-overlay" id="cart-overlay"></div>
         <div class="cart-drawer" id="cart-drawer">
             <div class="cart-drawer-header">
@@ -338,25 +289,14 @@
             </div>
             <div class="cart-drawer-footer" id="cart-drawer-footer">
                 <div class="cart-summary">
-                    <div class="cart-summary-row">
-                        <span>Subtotal</span>
-                        <span id="cart-subtotal">Rs.0</span>
-                    </div>
-                    <div class="cart-summary-row total">
-                        <span>Total</span>
-                        <span id="cart-grand-total">Rs.0</span>
-                    </div>
+                    <div class="cart-summary-row"><span>Subtotal</span><span id="cart-subtotal">Rs.0</span></div>
+                    <div class="cart-summary-row total"><span>Total</span><span id="cart-grand-total">Rs.0</span></div>
                 </div>
-                <button class="btn-place-order" id="btn-place-order">
-                    <i class="fas fa-receipt"></i> Place Order
-                </button>
-                <button class="btn-continue" id="btn-continue">
-                    <i class="fas fa-arrow-left"></i> Continue Shopping
-                </button>
+                <button class="btn-place-order" id="btn-place-order"><i class="fas fa-receipt"></i> Place Order</button>
+                <button class="btn-continue" id="btn-continue"><i class="fas fa-arrow-left"></i> Continue Shopping</button>
             </div>
         </div>
 
-        <!-- Order Modal -->
         <div class="modal-overlay" id="order-modal-overlay"></div>
         <div class="modal order-modal" id="order-modal">
             <div class="modal-header">
@@ -403,40 +343,27 @@
                         <div class="upi-app-grid" id="upi-app-grid"></div>
                         <div id="qr-payment-section" style="display:none">
                             <div class="qr-container">
-                                <div class="qr-header">
-                                    <span class="qr-title">Scan & Pay</span>
-                                    <span class="qr-subtitle">Any UPI App - GPay - PhonePe - Paytm</span>
-                                </div>
+                                <div class="qr-header"><span class="qr-title">Scan & Pay</span><span class="qr-subtitle">Any UPI App - GPay - PhonePe - Paytm</span></div>
                                 <div class="qr-image-wrap">
                                     <img src="qr.jpeg" alt="QR Code" class="qr-image" width="200" height="200" loading="lazy">
                                     <div class="qr-amount-badge">Rs.<span id="qr-display-amount">0</span></div>
                                 </div>
-                                <div class="qr-upi-id">
-                                    <span>UPI ID: <strong>9843336980@ibl</strong></span>
-                                    <button type="button" id="btn-copy-upi" title="Copy UPI ID"><i class="fas fa-copy"></i></button>
-                                </div>
+                                <div class="qr-upi-id"><span>UPI ID: <strong>9843336980@ibl</strong></span><button type="button" id="btn-copy-upi"><i class="fas fa-copy"></i></button></div>
                                 <p class="qr-note">Screenshot QR - Open any UPI app - Scan from Gallery</p>
                             </div>
                         </div>
-                        <div class="payment-status" id="payment-status">
-                            <span class="status-pending">Select a UPI App to enable payment</span>
-                        </div>
+                        <div class="payment-status" id="payment-status"><span class="status-pending">Select a UPI App to enable payment</span></div>
                     </div>
 
                     <div id="cash-payment-section">
-                        <div class="payment-status">
-                            <span class="status-cash">Cash on Delivery</span>
-                        </div>
+                        <div class="payment-status"><span class="status-cash">Cash on Delivery</span></div>
                     </div>
 
-                    <button type="submit" class="btn-submit-order" id="btn-submit-order">
-                        <i class="fas fa-paper-plane"></i> Submit Order
-                    </button>
+                    <button type="submit" class="btn-submit-order" id="btn-submit-order"><i class="fas fa-paper-plane"></i> Submit Order</button>
                 </form>
             </div>
         </div>
 
-        <!-- Success Modal -->
         <div class="modal-overlay" id="success-modal-overlay"></div>
         <div class="modal success-modal" id="success-modal">
             <div class="modal-body text-center">
@@ -444,54 +371,27 @@
                 <h3>Order Placed Successfully!</h3>
                 <p>Thank you for your order.</p>
                 <p class="success-note">A confirmation has been sent via WhatsApp.</p>
-                <button class="btn-download-bill" id="btn-download-bill" style="display:none">
-                    <i class="fas fa-download"></i> Download Bill
-                </button>
-                <button class="btn-new-order" id="btn-new-order">
-                    <i class="fas fa-plus"></i> Place New Order
-                </button>
+                <div id="firebase-status" style="margin:10px 0;font-size:0.85rem;color:#666;"></div>
+                <button class="btn-download-bill" id="btn-download-bill" style="display:none"><i class="fas fa-download"></i> Download Bill</button>
+                <button class="btn-new-order" id="btn-new-order"><i class="fas fa-plus"></i> Place New Order</button>
             </div>
         </div>
 
-        <!-- History Modal -->
         <div class="modal-overlay" id="history-modal-overlay"></div>
         <div class="modal history-modal" id="history-modal">
-            <div class="modal-header">
-                <h3><i class="fas fa-history"></i> Order History</h3>
-                <button class="modal-close" id="history-modal-close"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="modal-body">
-                <div id="order-history-list">
-                    <div class="empty-history"><i class="fas fa-clipboard-list"></i><p>No orders yet</p></div>
-                </div>
-            </div>
+            <div class="modal-header"><h3><i class="fas fa-history"></i> Order History</h3><button class="modal-close" id="history-modal-close"><i class="fas fa-times"></i></button></div>
+            <div class="modal-body"><div id="order-history-list"><div class="empty-history"><i class="fas fa-clipboard-list"></i><p>No orders yet</p></div></div></div>
         </div>
 
-        <!-- Contact Modal -->
         <div class="modal-overlay" id="contact-modal-overlay"></div>
         <div class="modal contact-modal" id="contact-modal">
-            <div class="modal-header">
-                <h3><i class="fas fa-address-card"></i> Contact Us</h3>
-                <button class="modal-close" id="contact-modal-close"><i class="fas fa-times"></i></button>
-            </div>
+            <div class="modal-header"><h3><i class="fas fa-address-card"></i> Contact Us</h3><button class="modal-close" id="contact-modal-close"><i class="fas fa-times"></i></button></div>
             <div class="modal-body">
                 <div class="contact-info">
-                    <div class="contact-item">
-                        <i class="fas fa-hotel"></i>
-                        <div><h4>Sri Krishna Hotel</h4><p>Authentic South Indian Cuisine</p></div>
-                    </div>
-                    <a href="tel:9843336980" class="contact-item">
-                        <i class="fas fa-phone"></i>
-                        <div><h4>Phone</h4><p>98433 36980</p></div>
-                    </a>
-                    <a href="https://wa.me/919843336980" target="_blank" class="contact-item">
-                        <i class="fab fa-whatsapp"></i>
-                        <div><h4>WhatsApp</h4><p>98433 36980</p></div>
-                    </a>
-                    <a href="mailto:kumaranglids@gmail.com" class="contact-item">
-                        <i class="fas fa-envelope"></i>
-                        <div><h4>Email</h4><p>kumaranglids@gmail.com</p></div>
-                    </a>
+                    <div class="contact-item"><i class="fas fa-hotel"></i><div><h4>Sri Krishna Hotel</h4><p>Authentic South Indian Cuisine</p></div></div>
+                    <a href="tel:9843336980" class="contact-item"><i class="fas fa-phone"></i><div><h4>Phone</h4><p>98433 36980</p></div></a>
+                    <a href="https://wa.me/919843336980" target="_blank" class="contact-item"><i class="fab fa-whatsapp"></i><div><h4>WhatsApp</h4><p>98433 36980</p></div></a>
+                    <a href="mailto:kumaranglids@gmail.com" class="contact-item"><i class="fas fa-envelope"></i><div><h4>Email</h4><p>kumaranglids@gmail.com</p></div></a>
                 </div>
             </div>
         </div>
@@ -499,68 +399,90 @@
 
     <footer class="footer">
         <div class="footer-content">
-            <div class="footer-brand">
-                <h3>Sri Krishna Restaurant</h3>
-                <p>Veg & Non-Veg | Authentic South Indian Cuisine</p>
-            </div>
+            <div class="footer-brand"><h3>Sri Krishna Restaurant</h3><p>Veg & Non-Veg | Authentic South Indian Cuisine</p></div>
             <div class="footer-links">
                 <a href="#" id="footer-history"><i class="fas fa-history"></i> Order History</a>
                 <a href="#" id="footer-contact"><i class="fas fa-phone"></i> Contact</a>
             </div>
-            <div class="footer-bottom">
-                <p>&copy; 2026 Sri Krishna Hotel. All rights reserved.</p>
-                <p><i class="fas fa-phone"></i> 98433 36980</p>
-            </div>
+            <div class="footer-bottom"><p>&copy; 2026 Sri Krishna Hotel. All rights reserved.</p><p><i class="fas fa-phone"></i> 98433 36980</p></div>
         </div>
     </footer>
 
-    <!-- Firebase SDK - Loaded only when needed -->
+    <!-- Firebase SDK -->
     <script type="module">
-        // Firebase config - REPLACE WITH YOUR ACTUAL CONFIG
-         const firebaseConfig = {
-    apiKey: "AIzaSyAXhng2PVJBg3YpigP-wVMi-AjRrW7GQPE",
-    authDomain: "srikrishnarestaurant-34f8a.firebaseapp.com",
-    projectId: "srikrishnarestaurant-34f8a",
-    storageBucket: "srikrishnarestaurant-34f8a.firebasestorage.app",
-    messagingSenderId: "395985566012",
-    appId: "1:395985566012:web:ab76f6074023dbafab8639",
-    measurementId: "G-ZENF42H745"
-  };
+        // Your Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyAXhng2PVJBg3YpigP-wVMi-AjRrW7GQPE",
+            authDomain: "srikrishnarestaurant-34f8a.firebaseapp.com",
+            projectId: "srikrishnarestaurant-34f8a",
+            storageBucket: "srikrishnarestaurant-34f8a.firebasestorage.app",
+            messagingSenderId: "395985566012",
+            appId: "1:395985566012:web:ab76f6074023dbafab8639",
+            measurementId: "G-ZENF42H745"
+        };
 
+        // Debug logger
+        window.fbDebug = function(msg) {
+            console.log('[Firebase]', msg);
+            const statusEl = document.getElementById('firebase-status');
+            if (statusEl) statusEl.textContent = msg;
+        };
 
-        // Dynamic import Firebase only when needed
+        // Initialize Firebase
         window.initFirebase = async function() {
             if (window.db) return window.db;
             try {
+                window.fbDebug('Loading Firebase modules...');
                 const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js");
-                const { getFirestore, collection, addDoc } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
+                const { getFirestore, collection, addDoc, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
+
+                window.fbDebug('Initializing app...');
                 const app = initializeApp(firebaseConfig);
+
+                window.fbDebug('Getting Firestore...');
                 const db = getFirestore(app);
+
                 window.db = db;
                 window.firebaseAddDoc = addDoc;
                 window.firebaseCollection = collection;
-                console.log("Firebase connected!");
+                window.firebaseServerTimestamp = serverTimestamp;
+
+                window.fbDebug('Firebase connected successfully!');
                 return db;
             } catch(e) {
-                console.error("Firebase error:", e);
+                window.fbDebug('Firebase Error: ' + e.message);
+                console.error('Firebase init error:', e);
                 return null;
             }
         };
 
+        // Save order to Firestore
         window.saveOrderToFirestore = async function(order) {
+            window.fbDebug('Saving order...');
             const db = await window.initFirebase();
-            if (!db) return null;
+            if (!db) {
+                window.fbDebug('Firebase not available - saved locally only');
+                return null;
+            }
             try {
-                const docRef = await window.firebaseAddDoc(window.firebaseCollection(db, "orders"), {
+                const orderData = {
                     ...order,
-                    createdAt: new Date().toISOString()
-                });
+                    createdAt: window.firebaseServerTimestamp ? window.firebaseServerTimestamp() : new Date().toISOString(),
+                    _savedFrom: 'web'
+                };
+                window.fbDebug('Adding document...');
+                const docRef = await window.firebaseAddDoc(window.firebaseCollection(db, "orders"), orderData);
+                window.fbDebug('Order saved! ID: ' + docRef.id);
                 return docRef.id;
             } catch(e) {
-                console.error("Firestore save error:", e);
+                window.fbDebug('Save failed: ' + e.message);
+                console.error('Firestore save error:', e);
                 return null;
             }
         };
+
+        // Auto-init on load
+        window.initFirebase();
     </script>
 
     <script src="script.js" defer></script>
