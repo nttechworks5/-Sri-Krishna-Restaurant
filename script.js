@@ -2,33 +2,33 @@
 'use strict';
 
 const MENU_ITEMS = Object.freeze([
-    { id: 1,  name: "Chicken Rice",      price: 90,  category: "Rice",        image: "chickenrice.webp", emoji: "🍗" },
-    { id: 2,  name: "Egg Rice",          price: 80,  category: "Rice",        image: "eggrice.webp", emoji: "🍳" },
-    { id: 3,  name: "Veg Rice",          price: 70,  category: "Rice",        image: "vegrice.webp", emoji: "🍚" },
-    { id: 4,  name: "Idly",              price: 10,  category: "Tiffin",      image: "idly.webp", emoji: "🥘" },
-    { id: 5,  name: "Vada",              price: 10,  category: "Tiffin",      image: "vada.webp", emoji: "🍩" },
-    { id: 6,  name: "Dosa",              price: 20,  category: "Tiffin",      image: "dosa.webp", emoji: "🥞" },
-    { id: 7,  name: "Plain Dosa",        price: 50,  category: "Tiffin",      image: "plain dosa.webp", emoji: "🥞" },
-    { id: 8,  name: "Set Dosa",          price: 50,  category: "Tiffin",      image: "set dosa.webp", emoji: "🥞" },
-    { id: 9,  name: "Masala Dosa",       price: 70,  category: "Tiffin",      image: "masal dosa.webp", emoji: "🥘" },
-    { id: 10, name: "Poori",             price: 40,  category: "Tiffin",      image: "poori.jpg", emoji: "🍞" },
-    { id: 11, name: "Chicken Biryani",   price: 90,  category: "Biryani",     image: "chicken-biryani.webp", emoji: "🍗" },
-    { id: 12, name: "Egg Biryani",       price: 80,  category: "Biryani",     image: "eggbiryani.webp", emoji: "🍳" },
-    { id: 13, name: "Veg Biryani",       price: 70,  category: "Biryani",     image: "vegbiryani.webp", emoji: "🍚" },
-    { id: 14, name: "Veg Meals",         price: 80,  category: "Meals",       image: "veg meals.webp", emoji: "🍛" },
-    { id: 15, name: "Non Veg Meals",     price: 120, category: "Meals",       image: "non veg meals.webp", emoji: "🍱" },
-    { id: 16, name: "Fish Meals",        price: 140, category: "Meals",       image: "fish meals.webp", emoji: "🐟" },
-    { id: 17, name: "Bread",             price: 20,  category: "Bread Items", image: "bread.webp", emoji: "🍞" },
-    { id: 18, name: "Veg Sandwich",      price: 80,  category: "Bread Items", image: "Veg sandwich.webp", emoji: "🥪" },
-    { id: 19, name: "Chicken Sandwich",  price: 120, category: "Bread Items", image: "chicken sandwich.webp", emoji: "🥪" },
-    { id: 20, name: "Omelette",          price: 20,  category: "Egg Items",   image: "Omelette.webp", emoji: "🍳" },
-    { id: 21, name: "Half Boil",         price: 20,  category: "Egg Items",   image: "half boil.webp", emoji: "🥚" },
-    { id: 22, name: "Boiled Egg",        price: 20,  category: "Egg Items",   image: "Boiled egg.webp", emoji: "🥚" },
-    { id: 23, name: "Chicken 100g",      price: 40,  category: "Chicken",     image: "chicken 100g.webp", emoji: "🍗" },
-    { id: 24, name: "Chicken 1kg",       price: 400, category: "Chicken",     image: "chicken 40g.webp", emoji: "🍗" },
-    { id: 25, name: "Chicken Noodles",   price: 90,  category: "Noodles",     image: "chickennoodles.webp", emoji: "🍜" },
-    { id: 26, name: "Veg Noodles",       price: 60,  category: "Noodles",     image: "veg noodles.webp", emoji: "🍜" },
-    { id: 27, name: "Egg Noodles",       price: 80,  category: "Noodles",     image: "eggnoodles.webp", emoji: "🍜" }
+    { id: 1,  name: "Chicken Rice",      price: 90,  category: "Rice",        image: "img/chickenrice.webp", emoji: "🍗" },
+    { id: 2,  name: "Egg Rice",          price: 80,  category: "Rice",        image: "img/eggrice.webp", emoji: "🍳" },
+    { id: 3,  name: "Veg Rice",          price: 70,  category: "Rice",        image: "img/vegrice.webp", emoji: "🍚" },
+    { id: 4,  name: "Idly",              price: 10,  category: "Tiffin",      image: "img/idly .webp", emoji: "🥘" },
+    { id: 5,  name: "Vada",              price: 10,  category: "Tiffin",      image: "img/vada.webp", emoji: "🍩" },
+    { id: 6,  name: "Dosa",              price: 20,  category: "Tiffin",      image: "img/dosa.webp", emoji: "🥞" },
+    { id: 7,  name: "Plain Dosa",        price: 50,  category: "Tiffin",      image: "img/plain dosa .webp", emoji: "🥞" },
+    { id: 8,  name: "Set Dosa",          price: 50,  category: "Tiffin",      image: "img/set dosa.webp", emoji: "🥞" },
+    { id: 9,  name: "Masala Dosa",       price: 70,  category: "Tiffin",      image: "img/masal dosa.webp", emoji: "🥘" },
+    { id: 10, name: "Poori",             price: 40,  category: "Tiffin",      image: "img/poori.webp", emoji: "🍞" },
+    { id: 11, name: "Chicken Biryani",   price: 90,  category: "Biryani",     image: "img/chicken-biryani.webp", emoji: "🍗" },
+    { id: 12, name: "Egg Biryani",       price: 80,  category: "Biryani",     image: "img/eggbiryani.webp", emoji: "🍳" },
+    { id: 13, name: "Veg Biryani",       price: 70,  category: "Biryani",     image: "img/vegbiryani.webp", emoji: "🍚" },
+    { id: 14, name: "Veg Meals",         price: 80,  category: "Meals",       image: "img/veg meals.webp", emoji: "🍛" },
+    { id: 15, name: "Non Veg Meals",     price: 120, category: "Meals",       image: "img/non veg meals.webp", emoji: "🍱" },
+    { id: 16, name: "Fish Meals",        price: 140, category: "Meals",       image: "img/fish meals.webp", emoji: "🐟" },
+    { id: 17, name: "Bread",             price: 20,  category: "Bread Items", image: "img/bread.webp", emoji: "🍞" },
+    { id: 18, name: "Veg Sandwich",      price: 80,  category: "Bread Items", image: "img/Veg sandwich .webp", emoji: "🥪" },
+    { id: 19, name: "Chicken Sandwich",  price: 120, category: "Bread Items", image: "img/chicken sandwich .webp", emoji: "🥪" },
+    { id: 20, name: "Omelette",          price: 20,  category: "Egg Items",   image: "img/Omelette .webp", emoji: "🍳" },
+    { id: 21, name: "Half Boil",         price: 20,  category: "Egg Items",   image: "img/half boil.webp", emoji: "🥚" },
+    { id: 22, name: "Boiled Egg",        price: 20,  category: "Egg Items",   image: "img/Boiled egg.webp", emoji: "🥚" },
+    { id: 23, name: "Chicken 100g",      price: 40,  category: "Chicken",     image: "img/chicken 100g.webp", emoji: "🍗" },
+    { id: 24, name: "Chicken 1kg",       price: 400, category: "Chicken",     image: "img/chicken 40g.webp", emoji: "🍗" },
+    { id: 25, name: "Chicken Noodles",   price: 90,  category: "Noodles",     image: "img/chickennoodles.webp", emoji: "🍜" },
+    { id: 26, name: "Veg Noodles",       price: 60,  category: "Noodles",     image: "img/veg noodles.webp", emoji: "🍜" },
+    { id: 27, name: "Egg Noodles",       price: 80,  category: "Noodles",     image: "img/eggnoodles.webp", emoji: "🍜" }
 ]);
 
 const HOTEL_NAME = "Sri Krishna Hotel";
@@ -384,7 +384,7 @@ function renderMenu() {
         const qty = qtyMap.get(item.id) || 0;
         const eager = idx < 2;
         const imgAttr = eager ? `src="${item.image}"` : `src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-src="${item.image}"`;
-        parts.push(`<div class="product-card" data-id="${item.id}"><div class="product-image"><div class="product-image-fallback">${item.emoji}</div><img ${imgAttr} alt="${item.name}" loading="${eager ? 'eager' : 'lazy'}" width="400" height="225" decoding="async" onerror="this.style.display='none'" onload="this.classList.add('loaded')"><span class="product-badge">${item.category}</span></div><div class="product-info"><h3 class="product-name">${item.name}</h3><p class="product-price">Rs.${item.price}</p><div class="product-actions"><div class="quantity-control"><button class="qty-btn minus" data-id="${item.id}" ${qty <= 0 ? 'disabled' : ''}>-</button><span class="qty-value">${qty}</span><button class="qty-btn plus" data-id="${item.id}">+</button></div><button class="btn-add-cart ${qty > 0 ? 'added' : ''}" data-id="${item.id}"><i class="fas ${qty > 0 ? 'fa-check' : 'fa-cart-plus'}"></i><span>${qty > 0 ? 'Added' : 'Add'}</span></button></div></div></div>`);
+        parts.push(`<div class="product-card" data-id="${item.id}"><div class="product-image"><img ${imgAttr} alt="${item.name}" loading="${eager ? 'eager' : 'lazy'}" width="400" height="225" decoding="async" onerror="this.style.display='none'" onload="this.classList.add('loaded')"><span class="product-badge">${item.category}</span></div><div class="product-info"><h3 class="product-name">${item.name}</h3><p class="product-price">Rs.${item.price}</p><div class="product-actions"><div class="quantity-control"><button class="qty-btn minus" data-id="${item.id}" ${qty <= 0 ? 'disabled' : ''}>-</button><span class="qty-value">${qty}</span><button class="qty-btn plus" data-id="${item.id}">+</button></div><button class="btn-add-cart ${qty > 0 ? 'added' : ''}" data-id="${item.id}"><i class="fas ${qty > 0 ? 'fa-check' : 'fa-cart-plus'}"></i><span>${qty > 0 ? 'Added' : 'Add'}</span></button></div></div></div>`);
     });
     menuContainer.innerHTML = parts.join('');
     if (imgObserver) menuContainer.querySelectorAll('img[data-src]').forEach(img => imgObserver.observe(img));
