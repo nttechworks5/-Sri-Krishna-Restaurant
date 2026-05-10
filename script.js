@@ -13,7 +13,7 @@ const MENU_ITEMS = Object.freeze([
     { id: 5,  name: "Vada",              price: 10,  category: "Tiffin",      image: "vada.webp", emoji: "🍩" },
     { id: 6,  name: "Dosa",              price: 20,  category: "Tiffin",      image: "dosa.webp", emoji: "🥞" },
     { id: 7,  name: "Plain Dosa",        price: 50,  category: "Tiffin",      image: "plain dosa .webp", emoji: "🥞" },
-    { id: 8,  name: "Set Dosa",          price: 50,  category: "Tiffin",      image: "set dosa.webp", emoji: "🥞" },
+    { id: 8,  name: "Set Dosa",          price: 50,  category: "Tiffin",      image: "set dosa.jpg", emoji: "🥞" },
     { id: 9,  name: "Masala Dosa",       price: 70,  category: "Tiffin",      image: "masal dosa.webp", emoji: "🥞" },
     { id: 10, name: "Poori",             price: 40,  category: "Tiffin",      image: "poori.webp", emoji: "🫓" },
     { id: 11, name: "Chicken Biryani",   price: 100, category: "Biryani",     image: "chicken-biryani.webp", emoji: "🍗" },
@@ -33,14 +33,15 @@ const MENU_ITEMS = Object.freeze([
     { id: 25, name: "Chicken Noodles",   price: 90,  category: "Noodles",     image: "chickennoodles.webp", emoji: "🍜" },
     { id: 26, name: "Veg Noodles",       price: 60,  category: "Noodles",     image: "veg noodles.webp", emoji: "🍜" },
     { id: 27, name: "Egg Noodles",       price: 80,  category: "Noodles",     image: "eggnoodles.webp", emoji: "🍜" },
-    { id: 28, name: "Chicken Semiya",    price: 90,  category: "Semiya",      image: "chicken-semiya.webp", emoji: "🍝" },
-    { id: 29, name: "Egg Semiya",        price: 60,  category: "Semiya",      image: "egg-semiya.webp", emoji: "🍝" },
-    { id: 30, name: "Veg Semiya",        price: 60,  category: "Semiya",      image: "veg-semiya.webp", emoji: "🍝" }
+    { id: 28, name: "Chicken Semiya",    price: 90,  category: "Semiya",      image: "chickennoodles.webp", emoji: "🍝" },
+    { id: 29, name: "Egg Semiya",        price: 60,  category: "Semiya",      image: "eggnoodles.webp", emoji: "🍝" },
+    { id: 30, name: "Veg Semiya",        price: 60,  category: "Semiya",      image: "veg noodles.webp", emoji: "🍝" }
 ]);
 
 const HOTEL_NAME = "Sri Krishna Hotel";
 const PHONE_NUMBER = "98433 36980";
 const WHATSAPP_NUMBER = "919843336980";
+const ADMIN_WHATSAPP_NUMBER = "919843336980"; // Admin WhatsApp for bills
 const UPI_ID = "9843336980@ibl";
 const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200&q=30&fm=webp";
 
@@ -77,6 +78,7 @@ let currentSlide = 0, selectedUpiApp = null, lastGeneratedBill = null;
 let heroSliderInterval = null, searchDebounceTimer = null, imgObserver = null, upiGridRendered = false;
 let giftBoxState = null;
 let giftBoxVisible = false;
+let isSubmittingOrder = false;
 
 // ===================== UTILITY FUNCTIONS =====================
 
@@ -91,6 +93,10 @@ function safeJSONSet(key, value) {
 }
 
 function getTotal() { return cart.reduce((s, i) => s + i.price * i.quantity, 0); }
+
+function getMenuImageSrc(image) {
+    return /^https?:\/\//i.test(image) ? image : `img/${image}`;
+}
 
 function getDistanceKm(lat1, lng1, lat2, lng2) {
     const R = 6371;
@@ -468,7 +474,8 @@ function renderMenu() {
     items.forEach((item, idx) => {
         const qty = qtyMap.get(item.id) || 0;
         const eager = idx < 2;
-        const imgAttr = eager ? `src="${item.image}"` : `src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-src="${item.image}"`;
+        const imageSrc = getMenuImageSrc(item.image);
+        const imgAttr = eager ? `src="${imageSrc}"` : `src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-src="${imageSrc}"`;
         const onErr = `this.onerror=null;this.style.display='none';this.parentElement.querySelector('.img-emoji-fallback').style.display='flex'`;
         parts.push(`<div class="product-card" data-id="${item.id}"><div class="product-image"><img ${imgAttr} alt="${item.name}" loading="${eager ? 'eager' : 'lazy'}" width="400" height="225" decoding="async" onerror="${onErr}" onload="this.classList.add('loaded')"><div class="img-emoji-fallback" style="display:none;position:absolute;inset:0;align-items:center;justify-content:center;font-size:3.5rem;background:linear-gradient(135deg,#fff3e0,#ffe0b2)">${item.emoji||'🍽️'}</div><span class="product-badge">${item.category}</span></div><div class="product-info"><h3 class="product-name">${item.name}</h3><p class="product-price">Rs.${item.price}</p><div class="product-actions"><div class="quantity-control"><button class="qty-btn minus" data-id="${item.id}" ${qty <= 0 ? 'disabled' : ''}>-</button><span class="qty-value">${qty}</span><button class="qty-btn plus" data-id="${item.id}">+</button></div><button class="btn-add-cart ${qty > 0 ? 'added' : ''}" data-id="${item.id}"><i class="fas ${qty > 0 ? 'fa-check' : 'fa-cart-plus'}"></i><span>${qty > 0 ? 'Added' : 'Add'}</span></button></div></div></div>`);
     });
@@ -640,7 +647,20 @@ function handleUpiAppClick(appId) {
     const app = UPI_APPS.find(a => a.id === appId);
     if (!app) return;
     selectedUpiApp = appId;
-    document.querySelectorAll('.upi-app-btn').forEach(btn => btn.classList.toggle('selected', btn.dataset.app === appId));
+
+    // Highlight selected app
+    document.querySelectorAll('.upi-app-btn').forEach(btn => {
+        if (btn.dataset.app === appId) {
+            btn.style.borderColor = 'var(--primary)';
+            btn.style.background = '#fff3e0';
+            btn.style.boxShadow = '0 2px 8px rgba(230,81,0,0.15)';
+        } else {
+            btn.style.borderColor = 'var(--border)';
+            btn.style.background = '#fff';
+            btn.style.boxShadow = 'none';
+        }
+    });
+
     const pa = encodeURIComponent(UPI_ID), pn = encodeURIComponent(HOTEL_NAME), am = encodeURIComponent(total.toFixed(2)), tn = encodeURIComponent('Food Order - Sri Krishna Hotel');
     let url;
     if (/Android/i.test(navigator.userAgent) && app.pkg) {
@@ -656,7 +676,7 @@ function handleUpiAppClick(appId) {
         window.location.href = url;
         showToast('Opening ' + app.name + '...');
     } else { showToast('Please open on mobile or scan QR'); }
-    document.getElementById('qr-payment-section').style.display = 'block';
+
     updatePaymentStatus('upi_initiated');
     paymentStatus = 'upi_initiated';
     document.getElementById('btn-submit-order').disabled = false;
@@ -667,16 +687,21 @@ function updatePaymentStatus(status) {
     if (!el) return;
     const map = {
         paid:         '<span class="status-paid">✅ Payment Confirmed! Submit Order now</span>',
-        upi_initiated:'<span class="status-upi-initiated">⏳ UPI App திறந்தது - Pay பண்ணி திரும்பி வந்து Submit பண்ணுங்க</span>',
-        pending:      '<span class="status-pending">Select a UPI App to enable payment</span>',
-        cash:         '<span class="status-cash">Cash on Delivery</span>'
+        upi_initiated:'<span class="status-upi-initiated">⏳ UPI App opened - Pay and come back to submit</span>',
+        pending:      '<span class="status-pending">Scan QR code or select UPI app to pay</span>',
+        qr_pending:   '<span class="status-pending">📱 Scan QR and pay ₹' + getTotal() + '</span>',
+        cash:         '<span class="status-cash">💵 Cash on Delivery / Pickup</span>'
     };
     el.innerHTML = map[status] || '';
+    el.style.display = 'block';
 }
 
 function updateQrAmount() {
     const el = document.getElementById('qr-display-amount');
-    if (el) el.textContent = getTotal();
+    const el2 = document.getElementById('qr-amount-display');
+    const total = getTotal();
+    if (el) el.textContent = total;
+    if (el2) el2.textContent = total;
 }
 
 function copyUpiId() {
@@ -772,30 +797,47 @@ function setupEventListeners() {
 
     document.querySelectorAll('input[name="payment-method"]').forEach(radio => {
         radio.addEventListener('change', function() {
-            selectedUpiApp = null;
-            document.querySelectorAll('.upi-app-btn').forEach(btn => btn.classList.remove('selected'));
-            if (this.value === 'online') {
-                document.getElementById('online-payment-section').style.display = 'block';
-                document.getElementById('cash-payment-section').style.display   = 'none';
-                document.getElementById('qr-payment-section').style.display     = 'none';
-                paymentStatus = 'pending';
-                updatePaymentStatus('pending');
+            const qrSection = document.getElementById('qr-payment-section');
+            const cashInfo = document.getElementById('cash-info-section');
+            const cashLabel = document.getElementById('cash-option-label');
+            const qrLabel = document.getElementById('qr-option-label');
+
+            if (this.value === 'qr') {
+                // Show QR section
+                qrSection.style.display = 'block';
+                cashInfo.style.display = 'none';
+                // Highlight selected
+                qrLabel.style.borderColor = 'var(--primary)';
+                qrLabel.style.background = '#fff3e0';
+                cashLabel.style.borderColor = 'var(--border)';
+                cashLabel.style.background = '#fff';
+                // Update amount
+                updateQrAmount();
+                paymentStatus = 'qr_pending';
+                updatePaymentStatus('qr_pending');
                 document.getElementById('btn-submit-order').disabled = false;
             } else {
-                document.getElementById('online-payment-section').style.display = 'none';
-                document.getElementById('cash-payment-section').style.display   = 'block';
-                document.getElementById('qr-payment-section').style.display     = 'none';
+                // Show Cash section
+                qrSection.style.display = 'none';
+                cashInfo.style.display = 'block';
+                // Highlight selected
+                cashLabel.style.borderColor = 'var(--primary)';
+                cashLabel.style.background = '#fff3e0';
+                qrLabel.style.borderColor = 'var(--border)';
+                qrLabel.style.background = '#fff';
                 paymentStatus = 'cash';
-                document.getElementById('btn-submit-order').disabled = false;
                 updatePaymentStatus('cash');
+                document.getElementById('btn-submit-order').disabled = false;
             }
         });
     });
 
-    const upiAppGrid = document.getElementById('upi-app-grid');
-    if (upiAppGrid) upiAppGrid.addEventListener('click', function(e) {
+    // Handle UPI app buttons in QR section
+    document.addEventListener('click', function(e) {
         const btn = e.target.closest('.upi-app-btn');
-        if (btn) handleUpiAppClick(btn.dataset.app);
+        if (btn && btn.dataset.app) {
+            handleUpiAppClick(btn.dataset.app);
+        }
     });
 
     const btnCopyUpi = document.getElementById('btn-copy-upi');
@@ -878,10 +920,13 @@ function closeOrderModal() {
     const modal   = document.getElementById('order-modal');
     const overlay = document.getElementById('order-modal-overlay');
     const form    = document.getElementById('order-form');
+    const submitBtn = document.getElementById('btn-submit-order');
     if (modal)   modal.classList.remove('open');
     if (overlay) overlay.classList.remove('open');
     if (form) { form.reset(); form.querySelectorAll('input, textarea').forEach(el => { el.value = ''; el.blur(); }); }
     paymentStatus = 'cash';
+    isSubmittingOrder = false;
+    if (submitBtn) submitBtn.disabled = false;
     document.querySelectorAll('.upi-app-btn').forEach(btn => btn.classList.remove('selected'));
     document.getElementById('qr-payment-section').style.display = 'none';
     document.body.style.overflow = '';
@@ -894,17 +939,30 @@ function openContactModal()  { document.getElementById('contact-modal')?.classLi
 function closeContactModal() { document.getElementById('contact-modal')?.classList.remove('open'); document.getElementById('contact-modal-overlay')?.classList.remove('open'); document.body.style.overflow = ''; }
 
 function openOrderModal() {
-    renderUpiAppGrid();
     document.getElementById('order-modal')?.classList.add('open');
     document.getElementById('order-modal-overlay')?.classList.add('open');
     document.body.style.overflow = 'hidden';
+    isSubmittingOrder = false;
+    const modalBody = document.querySelector('#order-modal .modal-body');
+    if (modalBody) modalBody.scrollTop = 0;
     const form = document.getElementById('order-form');
     if (form) form.reset();
+
+    // Reset payment to Cash by default
     const cashRadio = document.querySelector('input[name="payment-method"][value="cash"]');
     if (cashRadio) cashRadio.checked = true;
-    document.getElementById('online-payment-section').style.display = 'none';
-    document.getElementById('cash-payment-section').style.display   = 'block';
-    document.getElementById('qr-payment-section').style.display     = 'none';
+
+    // Reset UI
+    const qrSection = document.getElementById('qr-payment-section');
+    const cashInfo = document.getElementById('cash-info-section');
+    const cashLabel = document.getElementById('cash-option-label');
+    const qrLabel = document.getElementById('qr-option-label');
+
+    if (qrSection) qrSection.style.display = 'none';
+    if (cashInfo) cashInfo.style.display = 'block';
+    if (cashLabel) { cashLabel.style.borderColor = 'var(--primary)'; cashLabel.style.background = '#fff3e0'; }
+    if (qrLabel) { qrLabel.style.borderColor = 'var(--border)'; qrLabel.style.background = '#fff'; }
+
     selectedUpiApp = null;
     document.querySelectorAll('.upi-app-btn').forEach(btn => btn.classList.remove('selected'));
     updatePaymentStatus('cash');
@@ -918,6 +976,9 @@ function openOrderModal() {
 // ===================== ORDER SUBMISSION =====================
 
 function submitOrder() {
+    const submitBtn = document.getElementById('btn-submit-order');
+    if (isSubmittingOrder) { showToast('Order is already being submitted'); return; }
+
     const name   = document.getElementById('customer-name').value.trim();
     const mobile = document.getElementById('customer-mobile').value.trim();
     const table  = document.getElementById('table-number').value.trim();
@@ -926,20 +987,26 @@ function submitOrder() {
 
     if (!name || !mobile || !table) { showToast('Please fill all required fields'); return; }
     if (!/^[6-9]\d{9}$/.test(mobile)) { showToast('Enter valid 10-digit mobile number (start with 6-9)'); return; }
-    if (name.length < 3 || !/^[a-zA-Z\s]+$/.test(name)) { showToast('Enter valid customer name (letters only, min 3 chars)'); return; }
-    if (!/^\d+$/.test(table) || table < 1 || table > 100) { showToast('Enter valid table number (1-100)'); return; }
+    if (name.length < 2 || !/^[\p{L}\s.'-]+$/u.test(name)) { showToast('Enter valid customer name'); return; }
+    if (table.length < 2 || !/^[\p{L}\p{N}\s,./#()'-]+$/u.test(table)) { showToast('Enter valid place or table details'); return; }
 
-    if (method === 'online') {
-        if (!selectedUpiApp) { showToast('Please select a UPI app first!'); return; }
-        if (paymentStatus !== 'upi_initiated') { showToast('UPI app-ஐ click பண்ணி payment பண்ணுங்க!'); return; }
-        const confirmed = confirm('UPI payment complete ஆச்சா?\n\nOK = Payment பண்ணாச்சு, Submit பண்ற\nCancel = இல்ல, திரும்பி payment பண்றேன்');
-        if (!confirmed) return;
+    if (method === 'qr') {
+        // For QR payment, just confirm they have paid
+        const confirmed = confirm('Have you completed the QR code payment of ₹' + getTotal() + '?\n\nOK = Yes, payment done\nCancel = No, I will pay now');
+        if (!confirmed) {
+            // Scroll to QR section
+            document.getElementById('qr-payment-section').scrollIntoView({ behavior: 'smooth' });
+            return;
+        }
         paymentStatus = 'paid';
     }
 
     if (cart.length === 0) { showToast('Cart is empty'); return; }
     const totalAmount = getTotal();
     if (totalAmount <= 0 || !isFinite(totalAmount)) { showToast('Invalid order amount'); return; }
+
+    isSubmittingOrder = true;
+    if (submitBtn) submitBtn.disabled = true;
 
     const now = new Date();
     const order = {
@@ -979,11 +1046,12 @@ function submitOrder() {
 
     updateSpendTracking(order.totalAmount);
 
-    saveOrderToHistory(order);
+    // Send bill to admin WhatsApp automatically
+    sendBillToAdminWhatsApp(order);
 
-    generateBillPDF(order, 'whatsapp').catch(err => {
+    // Also generate PDF for customer download
+    generateBillPDF(order, 'download').catch(err => {
         console.error('PDF error:', err);
-        sendWhatsAppText(order);
     });
 
     closeOrderModal();
@@ -1003,6 +1071,87 @@ function generateOrderHash(name, mobile, amount) {
 }
 
 // ===================== PDF & WHATSAPP =====================
+
+// ===================== SEND BILL TO ADMIN WHATSAPP =====================
+
+function sendBillToAdminWhatsApp(order) {
+    const adminMsg = buildAdminBillMessage(order);
+    const encodedMsg = encodeURIComponent(adminMsg);
+    const waUrl = 'https://wa.me/' + ADMIN_WHATSAPP_NUMBER + '?text=' + encodedMsg;
+
+    // Open WhatsApp to admin in new tab
+    window.open(waUrl, '_blank');
+
+    showToast('📲 Bill opened for admin on WhatsApp!');
+    return true;
+}
+
+/* function buildAdminBillMessage(order) {
+    const items = order.items.map(i => 
+        `• ${i.name} x${i.quantity} = ₹${i.price * i.quantity}`
+    ).join('
+');
+
+    return `*🧾 NEW ORDER - Sri Krishna Hotel*
+
+` +
+           `*Order ID:* ${order.id}
+` +
+           `*Date:* ${order.date} ${order.time}
+
+` +
+           `*Customer:* ${order.customerName}
+` +
+           `*Mobile:* ${order.customerMobile}
+` +
+           `*Table:* ${order.tableNumber}
+` +
+           `*Payment:* ${order.paymentStatus}
+
+` +
+           `*📋 ITEMS:*
+${items}
+
+` +
+           `*💰 TOTAL: ₹${order.totalAmount}*
+
+` +
+           `${order.notes ? '*Notes:* ' + order.notes + '
+' : ''}` +
+           `━━━━━━━━━━━━━━━━━━
+` +
+           `_Auto-generated bill from online order_`;
+}
+*/
+
+function buildAdminBillMessage(order) {
+    const items = order.items
+        .map(i => `- ${i.name} x${i.quantity} = Rs.${i.price * i.quantity}`)
+        .join('\n');
+
+    return [
+        '*NEW ORDER - Sri Krishna Hotel*',
+        '',
+        `*Order ID:* ${order.id}`,
+        `*Date:* ${order.date} ${order.time}`,
+        '',
+        `*Customer:* ${order.customerName}`,
+        `*Mobile:* ${order.customerMobile}`,
+        `*Place / Table:* ${order.tableNumber}`,
+        `*Payment:* ${order.paymentStatus}`,
+        '',
+        '*ITEMS:*',
+        items,
+        '',
+        `*TOTAL:* Rs.${order.totalAmount}*`,
+        '',
+        ...(order.notes ? [`*Notes:* ${order.notes}`, ''] : []),
+        '------------------',
+        '_Auto-generated bill from online order_'
+    ].join('\n');
+}
+
+// ===================== END ADMIN WHATSAPP =====================
 
 function generateBillPDF(order, mode) {
     return new Promise(function(resolve, reject) {
@@ -1045,7 +1194,7 @@ function createPDFDataUri(order, jsPDFClass) {
     doc.line(L, y, R, y); y += 8;
     doc.text('Customer : ' + order.customerName, L, y); y += 6;
     doc.text('Mobile   : ' + order.customerMobile, L, y); y += 6;
-    doc.text('Table No : ' + order.tableNumber, L, y); y += 6;
+    doc.text('Place / Table : ' + order.tableNumber, L, y); y += 6;
     if (order.notes) { doc.text('Notes    : ' + order.notes, L, y); y += 6; }
     y += 2; doc.line(L, y, R, y); y += 8;
     doc.setFont('helvetica', 'bold');
@@ -1104,7 +1253,7 @@ function downloadPDFAndOpenWhatsApp(order, pdfDataUri) {
 
 function buildWhatsAppText(order) {
     const items = order.items.map(i => i.name + ' x' + i.quantity + ' - Rs.' + (i.price * i.quantity)).join('\n');
-    return `*${HOTEL_NAME.toUpperCase()}*\n\nOrder: ${order.id}\nDate: ${order.date} ${order.time}\n\nCustomer: ${order.customerName}\nTable: ${order.tableNumber}\n\nItems:\n${items}\n\nTotal: Rs.${order.totalAmount}\nPayment: ${order.paymentStatus}${order.notes ? '\nNotes: ' + order.notes : ''}\n\nThank you! Visit again.`;
+    return `*${HOTEL_NAME.toUpperCase()}*\n\nOrder: ${order.id}\nDate: ${order.date} ${order.time}\n\nCustomer: ${order.customerName}\nPlace / Table: ${order.tableNumber}\n\nItems:\n${items}\n\nTotal: Rs.${order.totalAmount}\nPayment: ${order.paymentStatus}${order.notes ? '\nNotes: ' + order.notes : ''}\n\nThank you! Visit again.`;
 }
 function buildWhatsAppMessageEncoded(order) { return encodeURIComponent(buildWhatsAppText(order)); }
 function sendWhatsAppText(order) { window.open('https://wa.me/' + WHATSAPP_NUMBER + '?text=' + buildWhatsAppMessageEncoded(order), '_blank'); }
@@ -1114,6 +1263,8 @@ function sendWhatsAppText(order) { window.open('https://wa.me/' + WHATSAPP_NUMBE
 function saveOrderToHistory(order) {
     try {
         let h = safeJSONParse('sriKrishnaOrders', []);
+        if (!Array.isArray(h)) h = [];
+        h = h.filter(existing => existing?.id !== order.id);
         h.unshift(order);
         if (h.length > 50) h = h.slice(0, 50);
         safeJSONSet('sriKrishnaOrders', h);
@@ -1126,11 +1277,17 @@ function renderOrderHistory() {
     try {
         const history = safeJSONParse('sriKrishnaOrders', []);
         if (!history.length) { container.innerHTML = '<div class="empty-history"><i class="fas fa-clipboard-list"></i><p>No orders yet</p></div>'; return; }
-        container.innerHTML = history.map(o => `<div class="history-item"><div class="history-item-header"><h4>${o.customerName} - Table ${o.tableNumber}</h4><span class="history-item-date">${o.date} ${o.time}</span></div><div class="history-item-details">${o.items.map(i => i.name + ' x' + i.quantity).join(', ')}</div><div class="history-item-total">Rs.${o.totalAmount} - ${o.paymentStatus}</div></div>`).join('');
+        container.innerHTML = history.map(o => `<div class="history-item"><div class="history-item-header"><h4>${o.customerName} - ${o.tableNumber}</h4><span class="history-item-date">${o.date} ${o.time}</span></div><div class="history-item-details">${o.items.map(i => i.name + ' x' + i.quantity).join(', ')}</div><div class="history-item-total">Rs.${o.totalAmount} - ${o.paymentStatus}</div></div>`).join('');
     } catch { container.innerHTML = '<div class="empty-history"><i class="fas fa-clipboard-list"></i><p>No orders yet</p></div>'; }
 }
 
-// ===================== GIFT BOX SYSTEM =====================
+
+// ===================== GIFT BOX SYSTEM (UPDATED) =====================
+// Changes:
+// - Only shows days 1 through current day (not all 10 days upfront)
+// - Shows tracking text: "Day X of 10 • Y days remaining"
+// - Gift box hidden by default - requires phone login to unlock view
+// - Eligibility verified against order database before showing UI
 
 function loadGiftBoxState() {
     giftBoxState = safeJSONParse(GIFT_CONFIG.STORAGE_KEY, null);
@@ -1177,7 +1334,7 @@ function updateSpendTracking(amount) {
     if (!giftBoxState) loadGiftBoxState();
     giftBoxState.totalSpent += amount;
     saveGiftBoxState();
-    renderGiftBox();
+    // Don't auto-render - user must login again to see updated status
     updateGiftBadge();
 }
 
@@ -1189,14 +1346,20 @@ function checkCouponEligibility() {
     return 0;
 }
 
+// ===================== RENDER GIFT BOX (ONLY SHOWS DAYS 1 TO CURRENT DAY) =====================
+
 function renderGiftBox() {
     const container = document.getElementById('gift-box-container');
     if (!container) return;
     if (!giftBoxState) loadGiftBoxState();
+
     const currentDay  = getCurrentDay();
     const canOpen     = canOpenToday();
     const couponValue = checkCouponEligibility();
+    const daysRemaining = GIFT_CONFIG.CYCLE_DAYS - currentDay;
+    const daysOpened = giftBoxState.openedDays.length;
 
+    // Rewards for each day
     const rewards = [
         {day:1, icon:'🎯', desc:'5% OFF next order'},
         {day:2, icon:'🚚', desc:'FREE Delivery'},
@@ -1213,25 +1376,43 @@ function renderGiftBox() {
     let html = `<div class="gift-box-section">
         <div class="gift-box-header">
             <i class="fas fa-gift"></i>
-            <h3>🎁 Daily Gift Box - 10 Day Rewards!</h3>
+            <h3>🎁 Daily Gift Box</h3>
             <span class="gift-progress">Day ${currentDay}/10</span>
-        </div>
-        <div class="gift-offers-info" style="background:#fff3e0;border:2px dashed #ff9800;border-radius:12px;padding:12px;margin-bottom:14px;text-align:center">
-            <div style="font-size:0.9rem;color:#e65100;font-weight:700;margin-bottom:6px">📱 Open 1 box daily • Collect rewards!</div>
-            <div style="font-size:0.8rem;color:#666">💰 Spend ₹1000 = ₹50 coupon | ₹2000 = ₹100 coupon</div>
-        </div>
-        <div class="gift-box-grid">`;
+        </div>`;
 
-    for (let i = 1; i <= GIFT_CONFIG.CYCLE_DAYS; i++) {
+    // Tracking info box - shows progress and remaining days
+    html += `<div class="gift-tracking-info" style="background:linear-gradient(135deg,#fff3e0,#ffe0b2);border:2px dashed #ff9800;border-radius:12px;padding:14px;margin-bottom:14px;text-align:center">
+        <div style="font-size:1rem;color:#e65100;font-weight:700;margin-bottom:8px">
+            📅 Day ${currentDay} of 10 • ${daysRemaining} days remaining
+        </div>
+        <div style="font-size:0.85rem;color:#666;line-height:1.6">
+            ✅ ${daysOpened} days opened • ${canOpen ? '🎁 You can open today!' : '⏳ Come back tomorrow'}
+        </div>
+        <div style="font-size:0.8rem;color:#888;margin-top:6px">
+            💰 Total Spent: ₹${giftBoxState.totalSpent} | Need ₹${Math.max(0, GIFT_CONFIG.TIER1_SPEND - giftBoxState.totalSpent)} more for ₹50 coupon
+        </div>
+    </div>`;
+
+    // Only show grid for days 1 through current day (NOT all 10 days)
+    html += `<div class="gift-box-grid">`;
+
+    for (let i = 1; i <= currentDay; i++) {
         const isOpened = giftBoxState.openedDays.includes(i);
         const isToday  = i === currentDay;
-        const isPast   = i < currentDay && !isOpened;
+        const isPast   = i < currentDay && !isOpened; // missed days
         const reward = rewards[i-1];
+
         let statusClass = '', icon = '';
-        if (isOpened)            { statusClass = 'opened';       icon = '<i class="fas fa-check"></i>'; }
-        else if (isToday && canOpen) { statusClass = 'active pulse'; icon = '<i class="fas fa-gift"></i>'; }
-        else if (isPast)         { statusClass = 'missed';       icon = '<i class="fas fa-times"></i>'; }
-        else                     { statusClass = 'locked';       icon = '<i class="fas fa-lock"></i>'; }
+        if (isOpened) { 
+            statusClass = 'opened'; 
+        } else if (isToday && canOpen) { 
+            statusClass = 'active pulse'; 
+        } else if (isPast) { 
+            statusClass = 'missed'; 
+        } else { 
+            statusClass = 'locked'; 
+        }
+
         html += `<div class="gift-box-day ${statusClass}" data-day="${i}" title="${reward.desc}">
             <div class="gift-box-icon">${isOpened ? '✅' : reward.icon}</div>
             <span class="gift-day-num" style="font-size:0.6rem;font-weight:600">Day ${i}</span>
@@ -1240,23 +1421,31 @@ function renderGiftBox() {
     }
 
     html += `</div>`;
-    const progress = (giftBoxState.openedDays.length / GIFT_CONFIG.CYCLE_DAYS) * 100;
+
+    // Progress bar
+    const progress = (daysOpened / GIFT_CONFIG.CYCLE_DAYS) * 100;
     html += `<div class="gift-progress-bar"><div class="gift-progress-fill" style="width:${progress}%"></div></div>`;
+
+    // Status text
     html += `<div class="gift-status-text">${getGiftStatusText()}</div>`;
 
+    // Coupon section (only if eligible)
     if (couponValue) {
         html += `<div class="coupon-section">
             <div class="coupon-banner"><i class="fas fa-ticket-alt"></i><span>🎉 Congratulations! You unlocked free food worth ₹${couponValue}!</span></div>
             <button class="btn-claim-coupon" id="btn-claim-coupon"><i class="fas fa-gift"></i> Claim Your Free Food (up to ₹${couponValue})</button>
         </div>`;
     }
+
     html += `</div>`;
     container.innerHTML = html;
 
+    // Add click handlers for openable days
     container.querySelectorAll('.gift-box-day.active').forEach(day => {
         day.addEventListener('click', () => handleGiftBoxClick(parseInt(day.dataset.day)));
     });
 
+    // Coupon claim handler
     const claimBtn = container.querySelector('#btn-claim-coupon');
     if (claimBtn) {
         claimBtn.addEventListener('click', () => openCouponModal());
@@ -1264,25 +1453,27 @@ function renderGiftBox() {
 }
 
 function getGiftStatusText() {
-    const daysLeft    = GIFT_CONFIG.CYCLE_DAYS - giftBoxState.openedDays.length;
-    const spent       = giftBoxState.totalSpent;
+    const currentDay = getCurrentDay();
+    const daysRemaining = GIFT_CONFIG.CYCLE_DAYS - currentDay;
+    const daysOpened = giftBoxState.openedDays.length;
+    const spent = giftBoxState.totalSpent;
     const couponValue = checkCouponEligibility();
 
     if (couponValue) {
-        return `🎉 CONGRATULATIONS! You've earned a ₹${couponValue} FREE FOOD reward!\n\n📱 Open any box daily (Day 1-10) to collect rewards\n💰 Spend ₹1000 = ₹50 coupon | ₹2000 = ₹100 coupon`;
+        return `🎉 CONGRATULATIONS! You've earned a ₹${couponValue} FREE FOOD reward! Click "Claim" to select your free item.`;
     }
 
-    let status = `📅 Day ${getCurrentDay()}/10 • ${daysLeft} days remaining\n\n`;
+    let status = `📊 Progress: ${daysOpened}/10 days opened • ${daysRemaining} days left\n`;
 
     if (spent < GIFT_CONFIG.TIER1_SPEND) {
-        status += `💳 Spend ₹${GIFT_CONFIG.TIER1_SPEND - spent} more = ₹50 FREE food coupon\n`;
-        status += `💳 Spend ₹${GIFT_CONFIG.TIER2_SPEND - spent} more = ₹100 FREE food coupon`;
+        status += `💳 Spend ₹${GIFT_CONFIG.TIER1_SPEND - spent} more to unlock ₹50 coupon\n`;
+        status += `💳 Or spend ₹${GIFT_CONFIG.TIER2_SPEND - spent} more for ₹100 coupon`;
     } else if (spent < GIFT_CONFIG.TIER2_SPEND) {
-        status += `✅ ₹50 coupon UNLOCKED!\n`;
-        status += `💳 Spend ₹${GIFT_CONFIG.TIER2_SPEND - spent} more = ₹100 coupon (upgrade!)`;
+        status += `✅ ₹50 coupon UNLOCKED! Open all days to claim\n`;
+        status += `💳 Spend ₹${GIFT_CONFIG.TIER2_SPEND - spent} more to upgrade to ₹100`;
     } else {
         status += `✅ ₹100 coupon UNLOCKED!\n`;
-        status += `🎁 Open all 10 days to claim your reward!`;
+        status += `🎁 Open all remaining days to claim your reward!`;
     }
 
     return status;
@@ -1290,7 +1481,7 @@ function getGiftStatusText() {
 
 function handleGiftBoxClick(day) {
     if (!canOpenToday() || day !== getCurrentDay()) {
-        showToast(day < getCurrentDay() ? 'This day has passed!' : 'Come back tomorrow!');
+        showToast(day < getCurrentDay() ? 'This day has passed! Open today\'s box.' : 'Come back tomorrow!');
         return;
     }
     giftBoxState.openedDays.push(day);
@@ -1315,7 +1506,276 @@ function showGiftReward(day) {
     setTimeout(() => { if (modal.parentNode) modal.remove(); }, 3000);
 }
 
-// ===================== COUPON SYSTEM (ISOLATED) =====================
+// ===================== GIFT BOX LOGIN (REQUIRED BEFORE VIEWING) =====================
+
+function initGiftBoxWithLogin() {
+    // Gift box stays hidden until user logs in
+    const wrapper = document.getElementById('gift-box-wrapper');
+    if (wrapper) {
+        wrapper.classList.remove('show');
+        wrapper.style.display = 'none';
+        giftBoxVisible = false;
+    }
+    updateGiftBadge();
+}
+
+function toggleGiftBox() {
+    const userPhone = safeJSONParse('giftUserPhone', null);
+
+    // If not logged in, show phone login modal FIRST
+    if (!userPhone) { 
+        showGiftPhoneLoginModal(); 
+        return; 
+    }
+
+    // If logged in, toggle visibility
+    const wrapper = document.getElementById('gift-box-wrapper');
+    if (!wrapper) return;
+
+    giftBoxVisible = !giftBoxVisible;
+    if (giftBoxVisible) {
+        wrapper.classList.add('show');
+        wrapper.style.display = 'block';
+        setTimeout(() => wrapper.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+        renderGiftBox(); // Render with current day only
+    } else {
+        wrapper.classList.remove('show');
+        wrapper.style.display = 'none';
+    }
+    updateGiftBadge();
+}
+
+function showGiftPhoneLoginModal() {
+    const existing = document.getElementById('gift-phone-login-modal');
+    if (existing) existing.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'gift-phone-login-modal';
+    modal.className = 'gift-phone-login-modal-overlay';
+    modal.innerHTML = `
+        <div class="gift-phone-login-container">
+            <h2>🎁 Unlock Your Daily Gifts!</h2>
+            <p>Enter your phone number to check your rewards</p>
+            <input type="tel" id="gift-phone-input" maxlength="10" placeholder="10-digit number" inputmode="numeric">
+            <button id="gift-phone-submit">Check My Rewards</button>
+            <button id="gift-phone-cancel" style="width:100%;padding:12px;background:#f5f5f5;color:#666;border-radius:50px;font-weight:600;font-size:0.95rem;border:none;cursor:pointer;margin-top:-8px;"><i class="fas fa-times"></i> Cancel</button>
+            <p class="gift-info-text">💰 Spend ₹1000+ to unlock gifts • Spend ₹2000+ for bigger rewards!</p>
+        </div>
+    `;
+    document.body.appendChild(modal);
+
+    const input = modal.querySelector('#gift-phone-input');
+    const btn   = modal.querySelector('#gift-phone-submit');
+    const cancelBtn = modal.querySelector('#gift-phone-cancel');
+
+    cancelBtn.addEventListener('click', () => modal.remove());
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+
+    btn.addEventListener('click', () => {
+        const phone = input.value.trim();
+        if (!/^[6-9]\d{9}$/.test(phone)) {
+            showToast('Please enter valid 10-digit mobile number (start with 6-9)');
+            return;
+        }
+        btn.disabled = true;
+        btn.textContent = '🔍 Checking...';
+        verifyUserPhoneAndSetupGifts(phone, modal);
+    });
+
+    input.addEventListener('keypress', (e) => { if (e.key === 'Enter') btn.click(); });
+    setTimeout(() => input.focus(), 100);
+}
+
+async function verifyUserPhoneAndSetupGifts(phone, modal) {
+    const btn = modal.querySelector('#gift-phone-submit');
+    try {
+        let userData = null;
+
+        // Check Firebase first (database tracking)
+        const db = await (typeof window.initFirebase === 'function' ? window.initFirebase() : null);
+        if (db) {
+            try {
+                const { collection, query, where, getDocs } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
+                const q = query(collection(db, "orders"), where("customerMobile", "==", phone));
+                const snapshot = await getDocs(q);
+                let totalSpent = 0, customerName = '';
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    totalSpent += (data.totalAmount || 0);
+                    if (!customerName) customerName = data.customerName || '';
+                });
+                if (snapshot.size > 0) {
+                    userData = { name: customerName || 'Customer', totalSpent, eligible: totalSpent >= GIFT_CONFIG.TIER1_SPEND };
+                }
+            } catch(e) {
+                console.error('[Gift] Firebase query error:', e);
+                userData = checkLocalOrders(phone);
+            }
+        } else {
+            // Fallback to local storage
+            userData = checkLocalOrders(phone);
+        }
+
+        if (btn) { btn.disabled = false; btn.textContent = 'Check My Rewards'; }
+
+        if (userData && userData.totalSpent > 0) {
+            // Save user data
+            safeJSONSet('giftUserPhone', phone);
+            safeJSONSet('giftUserName', userData.name);
+            safeJSONSet('giftUserSpent', userData.totalSpent);
+
+            // Update gift box state with user's total spent
+            if (!giftBoxState) loadGiftBoxState();
+            giftBoxState.totalSpent = userData.totalSpent;
+            saveGiftBoxState();
+
+            modal.remove();
+            showRewardStatusCard(userData, phone);
+        } else {
+            showNotEligibleCard(modal, phone, userData);
+        }
+    } catch(e) {
+        console.error('[Gift] Verify error:', e);
+        if (btn) { btn.disabled = false; btn.textContent = 'Check My Rewards'; }
+
+        // Fallback to local check
+        const userData = checkLocalOrders(phone);
+        if (userData && userData.totalSpent > 0) {
+            safeJSONSet('giftUserPhone', phone);
+            safeJSONSet('giftUserName', userData.name);
+            safeJSONSet('giftUserSpent', userData.totalSpent);
+
+            if (!giftBoxState) loadGiftBoxState();
+            giftBoxState.totalSpent = userData.totalSpent;
+            saveGiftBoxState();
+
+            modal.remove();
+            showRewardStatusCard(userData, phone);
+        } else {
+            showNotEligibleCard(modal, phone, null);
+        }
+    }
+}
+
+function checkLocalOrders(phone) {
+    try {
+        const orders = safeJSONParse('sriKrishnaOrders', []);
+        const userOrders = orders.filter(o => o.customerMobile === phone);
+        if (!userOrders.length) return null;
+        const totalSpent = userOrders.reduce((s, o) => s + (o.totalAmount || 0), 0);
+        const name = userOrders[0].customerName || 'Customer';
+        return { name, totalSpent, eligible: totalSpent >= GIFT_CONFIG.TIER1_SPEND };
+    } catch { return null; }
+}
+
+function showRewardStatusCard(user, phone) {
+    const existing = document.getElementById('reward-status-card');
+    if (existing) existing.remove();
+
+    const isEligible = user.totalSpent >= GIFT_CONFIG.TIER1_SPEND;
+    const card = document.createElement('div');
+    card.id = 'reward-status-card';
+    card.className = 'reward-status-card-overlay';
+    card.innerHTML = `
+        <div class="reward-status-card">
+            <button class="reward-card-cancel" id="reward-card-cancel"><i class="fas fa-times"></i></button>
+            <div class="reward-card-icon">${isEligible ? '🎉' : '⏳'}</div>
+            <h3>${isEligible ? 'You Have Rewards!' : 'Almost There!'}</h3>
+            <p class="reward-card-name">Hi ${user.name}!</p>
+            <div class="reward-card-stats">
+                <div class="reward-stat">
+                    <span class="reward-stat-value">₹${user.totalSpent}</span>
+                    <span class="reward-stat-label">Total Spent</span>
+                </div>
+                <div class="reward-stat ${isEligible ? 'eligible' : ''}">
+                    <span class="reward-stat-value">${isEligible ? '✅' : `₹${Math.max(0, GIFT_CONFIG.TIER1_SPEND - user.totalSpent)}`}</span>
+                    <span class="reward-stat-label">${isEligible ? 'Eligible!' : 'More Needed'}</span>
+                </div>
+            </div>
+            <p class="reward-card-msg">${isEligible ? '🎁 You can claim your daily gift boxes now! Click below to view.' : `Spend ₹${Math.max(0, GIFT_CONFIG.TIER1_SPEND - user.totalSpent)} more to unlock gift rewards`}</p>
+            <button class="reward-card-open-btn" id="reward-open-gifts">
+                <i class="fas fa-gift"></i> ${isEligible ? 'Open Gift Box' : 'View Progress'}
+            </button>
+            <button class="reward-card-close-btn" id="reward-card-close">Close</button>
+        </div>
+    `;
+    document.body.appendChild(card);
+    document.body.style.overflow = 'hidden';
+
+    const closeCard = () => { card.remove(); document.body.style.overflow = ''; };
+    document.getElementById('reward-card-cancel').addEventListener('click', closeCard);
+    document.getElementById('reward-card-close').addEventListener('click', closeCard);
+    card.addEventListener('click', (e) => { if (e.target === card) closeCard(); });
+
+    document.getElementById('reward-open-gifts').addEventListener('click', () => {
+        closeCard();
+        // Now show the actual gift box
+        const wrapper = document.getElementById('gift-box-wrapper');
+        if (wrapper) {
+            giftBoxVisible = true;
+            wrapper.classList.add('show');
+            wrapper.style.display = 'block';
+            setTimeout(() => wrapper.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+            renderGiftBox(); // This will show only days 1-currentDay
+            updateGiftBadge();
+        }
+    });
+}
+
+function showNotEligibleCard(modal, phone, user) {
+    const btn = modal.querySelector('#gift-phone-submit');
+    if (btn) { btn.disabled = false; btn.textContent = 'Check My Rewards'; }
+    const existing = modal.querySelector('.not-eligible-msg');
+    if (existing) existing.remove();
+    const msg = document.createElement('div');
+    msg.className = 'not-eligible-msg';
+    msg.style.cssText = 'background:#fff3e0;border:1.5px solid #ff9800;border-radius:10px;padding:12px;margin-top:10px;font-size:0.88rem;color:#bf360c;font-weight:600;text-align:center;';
+    msg.innerHTML = user
+        ? `⚠️ Need ₹${Math.max(0, GIFT_CONFIG.TIER1_SPEND - user.totalSpent)} more to unlock gifts<br><small style="font-weight:400;color:#666">Current: ₹${user.totalSpent} of ₹${GIFT_CONFIG.TIER1_SPEND}</small>`
+        : `❌ Phone number not found in our records<br><small style="font-weight:400;color:#666">Try ordering with this number first</small>`;
+    modal.querySelector('.gift-phone-login-container').appendChild(msg);
+}
+
+function updateGiftBadge() {
+    const badge = document.getElementById('gift-badge');
+    const headerBadge = document.getElementById('gift-header-badge');
+
+    const userPhone = safeJSONParse('giftUserPhone', null);
+
+    if (!badge) return;
+
+    // If not logged in, show "!" to prompt login
+    if (!userPhone) {
+        badge.textContent = '!';
+        badge.style.background = '#dc3545';
+        if (headerBadge) {
+            headerBadge.textContent = '!';
+            headerBadge.style.display = 'flex';
+        }
+        return;
+    }
+
+    // Logged in - check status
+    if (!giftBoxState) loadGiftBoxState();
+    const canOpen = canOpenToday();
+
+    if (canOpen) {
+        badge.textContent = '1';
+        badge.style.background = '#dc3545';
+    } else if (checkCouponEligibility()) {
+        badge.textContent = '✓';
+        badge.style.background = '#28a745';
+    } else {
+        badge.textContent = getCurrentDay();
+        badge.style.background = '#6c757d';
+    }
+
+    if (headerBadge) {
+        headerBadge.style.display = canOpen ? 'flex' : 'none';
+    }
+}
+
+// ===================== COUPON SYSTEM (UNCHANGED) =====================
 
 function openCouponModal() {
     const couponValue = checkCouponEligibility();
@@ -1379,7 +1839,6 @@ function claimCouponItem(itemId, couponValue) {
     const item = MENU_ITEMS.find(i => i.id === itemId);
     if (!item) { showToast('Item not found'); return; }
 
-    // Add free item to cart
     const existing = cart.find(c => c.id === itemId);
     if (existing) {
         existing.quantity++;
@@ -1400,14 +1859,11 @@ function claimCouponItem(itemId, couponValue) {
     saveCart();
     updateCartDisplay();
 
-    // Mark coupon as claimed
     giftBoxState.couponClaimed = true;
     saveGiftBoxState();
 
-    // Show success modal with coupon code
     showCouponSuccess(item, couponValue);
 
-    // Reset gift box cycle after coupon claim
     setTimeout(() => {
         resetGiftBoxCycle();
     }, 500);
@@ -1454,7 +1910,6 @@ function showCouponSuccess(item, couponValue) {
 }
 
 function resetGiftBoxCycle() {
-    // Create fresh cycle - Day 1 to Day 10, everything resets
     giftBoxState = {
         cycleStartDate: new Date().toISOString(),
         openedDays:     [],
@@ -1463,15 +1918,10 @@ function resetGiftBoxCycle() {
         lastOpenedDate: null
     };
     saveGiftBoxState();
-
-    // Re-render gift box with new cycle
     renderGiftBox();
     updateGiftBadge();
-
-    // Show toast notification
     showToast('🎁 New 10-Day Gift Box cycle started! Day 1 begins now!');
-
     console.log('[GiftBox] Cycle reset! New cycle started. Day 1/10');
 }
 
-// ===================== END OF COUPON SYSTEM =====================
+// ===================== END UPDATED GIFT BOX SYSTEM =====================
