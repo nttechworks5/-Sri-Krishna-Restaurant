@@ -13,7 +13,7 @@ const MENU_ITEMS = Object.freeze([
     { id: 5,  name: "Vada",              price: 10,  category: "Tiffin",      image: "vada.webp", emoji: "🍩" },
     { id: 6,  name: "Dosa",              price: 20,  category: "Tiffin",      image: "dosa.webp", emoji: "🥞" },
     { id: 7,  name: "Plain Dosa",        price: 50,  category: "Tiffin",      image: "plain dosa .webp", emoji: "🥞" },
-    { id: 8,  name: "Set Dosa",          price: 50,  category: "Tiffin",      image: "set dosa.jpg", emoji: "🥞" },
+    { id: 8,  name: "Set Dosa",          price: 50,  category: "Tiffin",      image: "set dosa.webp", emoji: "🥞" },
     { id: 9,  name: "Masala Dosa",       price: 70,  category: "Tiffin",      image: "masal dosa.webp", emoji: "🥞" },
     { id: 10, name: "Poori",             price: 40,  category: "Tiffin",      image: "poori.webp", emoji: "🫓" },
     { id: 11, name: "Chicken Biryani",   price: 100, category: "Biryani",     image: "chicken-biryani.webp", emoji: "🍗" },
@@ -33,9 +33,9 @@ const MENU_ITEMS = Object.freeze([
     { id: 25, name: "Chicken Noodles",   price: 90,  category: "Noodles",     image: "chickennoodles.webp", emoji: "🍜" },
     { id: 26, name: "Veg Noodles",       price: 60,  category: "Noodles",     image: "veg noodles.webp", emoji: "🍜" },
     { id: 27, name: "Egg Noodles",       price: 80,  category: "Noodles",     image: "eggnoodles.webp", emoji: "🍜" },
-    { id: 28, name: "Chicken Semiya",    price: 90,  category: "Semiya",      image: "chickennoodles.webp", emoji: "🍝" },
-    { id: 29, name: "Egg Semiya",        price: 60,  category: "Semiya",      image: "eggnoodles.webp", emoji: "🍝" },
-    { id: 30, name: "Veg Semiya",        price: 60,  category: "Semiya",      image: "veg noodles.webp", emoji: "🍝" }
+    { id: 28, name: "Chicken Semiya",    price: 90,  category: "Semiya",      image: "chicken-semiya.webp", emoji: "🍝" },
+    { id: 29, name: "Egg Semiya",        price: 60,  category: "Semiya",      image: "egg-semiya.webp", emoji: "🍝" },
+    { id: 30, name: "Veg Semiya",        price: 60,  category: "Semiya",      image: "veg-semiya.webp", emoji: "🍝" }
 ]);
 
 const HOTEL_NAME = "Sri Krishna Hotel";
