@@ -1494,6 +1494,47 @@ img { max-width: 100%; display: block; height: auto; }
     display: none;
 }
 
+
+/* ===== HEADER GIFT BUTTON ===== */
+.gift-header-btn {
+    position: relative;
+    transition: all 0.2s;
+}
+
+.gift-header-btn:hover {
+    background: rgba(255,255,255,0.2) !important;
+    transform: scale(1.05);
+}
+
+.gift-header-btn:active {
+    transform: scale(0.95);
+}
+
+.gift-header-btn #gift-header-badge {
+    animation: pulse-badge 2s infinite;
+}
+
+@keyframes pulse-badge {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+}
+
+
+/* ===== OFFER GIFT BOX ===== */
+#offer-gift-box {
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+#offer-gift-box:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(230,81,0,0.3);
+}
+
+#offer-gift-box:active {
+    transform: scale(0.98);
+}
+
 /* ===== RESPONSIVE ===== */
 @media (min-width: 480px) {
   .menu-container { grid-template-columns: repeat(2, 1fr); }
@@ -1767,20 +1808,89 @@ img { max-width: 100%; display: block; height: auto; }
 .reward-card-close-btn:active { background: #e0e0e0; }
 
 
-/* ===== FREE DELIVERY BANNER ===== */
+/* ===== FREE DELIVERY BANNER - BORDER ONLY ===== */
 .free-delivery-banner {
-    background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
-    border: 1.5px solid #4caf50;
-    border-radius: 12px;
-    padding: 12px 14px;
-    margin: 10px 12px;
+    background: transparent;
+    border: 2.5px dashed #4caf50;
+    border-radius: 16px;
+    padding: 14px 16px;
+    margin: 12px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 10px;
+    gap: 12px;
     flex-wrap: wrap;
-    box-shadow: 0 2px 10px rgba(46,125,50,0.1);
-    animation: fadeIn 0.5s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.free-delivery-banner::before {
+    content: '📦';
+    position: absolute;
+    right: -10px;
+    top: -10px;
+    font-size: 4rem;
+    opacity: 0.06;
+    transform: rotate(-15deg);
+}
+
+.free-delivery-banner .fdb-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+
+.free-delivery-banner .fdb-icon {
+    font-size: 2rem;
+    flex-shrink: 0;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+}
+
+.free-delivery-banner .fdb-text {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.free-delivery-banner .fdb-text strong {
+    font-size: 0.95rem;
+    color: #2e7d32;
+    font-weight: 700;
+}
+
+.free-delivery-banner .fdb-text span {
+    font-size: 0.8rem;
+    color: #558b2f;
+    font-weight: 500;
+}
+
+.free-delivery-banner .fdb-check-btn {
+    padding: 8px 16px;
+    background: linear-gradient(135deg, #4caf50, #2e7d32);
+    color: #fff;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(46,125,50,0.2);
+    transition: all 0.2s;
+}
+
+.free-delivery-banner .fdb-check-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(46,125,50,0.3);
+}
+
+.free-delivery-banner .fdb-check-btn:active {
+    transform: scale(0.95);
+}
+
+.free-delivery-banner .fdb-check-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
 .fdb-left {
