@@ -1355,16 +1355,16 @@ function renderGiftBox() {
 
     // Rewards for each day
     const rewards = [
-        {day:1, icon:'🎯', desc:'5% OFF next order'},
-        {day:2, icon:'🚚', desc:'FREE Delivery'},
-        {day:3, icon:'💰', desc:'₹10 Cashback'},
-        {day:4, icon:'🥤', desc:'FREE Drink'},
-        {day:5, icon:'🎯', desc:'10% OFF'},
-        {day:6, icon:'🎁', desc:'Buy 1 Get 1'},
-        {day:7, icon:'🍰', desc:'FREE Dessert'},
-        {day:8, icon:'💰', desc:'₹20 OFF'},
-        {day:9, icon:'🎉', desc:'Special Discount'},
-        {day:10, icon:'🎊', desc:'MYSTERY BOX'}
+        {day:1, icon:'🔒', desc:'Locked'},
+        {day:2, icon:'🔒', desc:'Locked'},
+        {day:3, icon:'🔒', desc:'Locked'},
+        {day:4, icon:'🔒', desc:'Locked'},
+        {day:5, icon:'🔒', desc:'Locked'},
+        {day:6, icon:'🔒', desc:'Locked'},
+        {day:7, icon:'🔒', desc:'Locked'},
+        {day:8, icon:'🔒', desc:'Locked'},
+        {day:9, icon:'🔒', desc:'Locked'},
+        {day:10, icon:'🔒', desc:'Locked'}
     ];
 
     let html = `<div class="gift-box-section">
@@ -1442,11 +1442,24 @@ function renderGiftBox() {
         </div>`;
     }
 
-    // Regular coupon section (if eligible from spending)
-    if (couponValue && currentDay !== 1 && currentDay !== 10) {
+    // Spending-based coupon section (only if eligible)
+    if (couponValue > 0) {
         html += `<div class="coupon-section">
             <div class="coupon-banner"><i class="fas fa-ticket-alt"></i><span>🎉 Congratulations! You unlocked free food worth ₹${couponValue}!</span></div>
             <button class="btn-claim-coupon" id="btn-claim-coupon"><i class="fas fa-gift"></i> Claim Your Free Food (up to ₹${couponValue})</button>
+        </div>`;
+    } else {
+        // Show spending progress
+        const spent = giftBoxState.totalSpent;
+        const need50 = Math.max(0, GIFT_CONFIG.TIER1_SPEND - spent);
+        const need100 = Math.max(0, GIFT_CONFIG.TIER2_SPEND - spent);
+        html += `<div class="coupon-section" style="background:#f5f5f5;border-color:#ddd">
+            <div class="coupon-banner" style="background:linear-gradient(135deg,#9e9e9e,#757575)"><i class="fas fa-lock"></i><span>🔒 Spend More to Unlock Coupons</span></div>
+            <div style="padding:12px;text-align:center;font-size:0.9rem;color:#666;line-height:1.6">
+                <div>💰 Total Spent: <strong>₹${spent}</strong></div>
+                <div style="margin-top:8px">${spent >= GIFT_CONFIG.TIER1_SPEND ? '✅ ₹50 coupon ELIGIBLE! Open all 10 days to claim.' : `❌ Need ₹${need50} more for ₹50 coupon`}</div>
+                <div style="margin-top:4px">${spent >= GIFT_CONFIG.TIER2_SPEND ? '✅ ₹100 coupon ELIGIBLE! Open all 10 days to claim.' : `❌ Need ₹${need100} more for ₹100 coupon`}</div>
+            </div>
         </div>`;
     }
 
@@ -1458,29 +1471,7 @@ function renderGiftBox() {
         day.addEventListener('click', () => handleGiftBoxClick(parseInt(day.dataset.day)));
     });
 
-    // Day 1 Claim Rewards handler
-    const day1Btn = container.querySelector('#btn-claim-day1');
-    if (day1Btn) {
-        day1Btn.addEventListener('click', () => {
-            showToast('🎁 Day 1 Reward Claimed!');
-            handleGiftBoxClick(1);
-        });
-    }
-
-    // Day 10 Mystery Box handler
-    const mysteryBtn = container.querySelector('#btn-claim-mystery');
-    if (mysteryBtn) {
-        mysteryBtn.addEventListener('click', () => {
-            showToast('🎊 Mystery Box Opened!');
-            handleGiftBoxClick(10);
-            // Show special mystery reward
-            setTimeout(() => {
-                showGiftReward(10);
-            }, 300);
-        });
-    }
-
-    // Regular coupon claim handler
+    // Coupon claim handler
     const claimBtn = container.querySelector('#btn-claim-coupon');
     if (claimBtn) {
         claimBtn.addEventListener('click', () => openCouponModal());
@@ -1528,17 +1519,8 @@ function handleGiftBoxClick(day) {
 }
 
 function showGiftReward(day) {
-    const rewards = [
-        '5% off next order','Free delivery','Rs.10 cashback','Free drink',
-        '10% off','Buy 1 Get 1','Free dessert','Rs.20 off','Special discount','🎁 Mystery Box'
-    ];
-    const reward = rewards[day - 1] || 'Special surprise!';
-    const modal  = document.createElement('div');
-    modal.className = 'gift-reward-modal';
-    modal.innerHTML = `<div class="gift-reward-content"><div class="gift-reward-icon">🎁</div><h3>Day ${day} Reward!</h3><p class="gift-reward-text">${reward}</p><button class="btn-gift-ok"><i class="fas fa-check"></i> Awesome!</button></div>`;
-    document.body.appendChild(modal);
-    modal.querySelector('.btn-gift-ok').addEventListener('click', () => modal.remove());
-    setTimeout(() => { if (modal.parentNode) modal.remove(); }, 3000);
+    // No daily rewards - only spending-based coupons
+    showToast('Day ' + day + ' opened! Check your spending rewards below.');
 }
 
 // ===================== GIFT BOX LOGIN (REQUIRED BEFORE VIEWING) =====================
@@ -1814,7 +1796,19 @@ function updateGiftBadge() {
 
 function openCouponModal() {
     const couponValue = checkCouponEligibility();
-    if (!couponValue) { showToast('Not eligible yet!'); return; }
+    const allDaysOpened = giftBoxState.openedDays.length >= GIFT_CONFIG.CYCLE_DAYS;
+
+    if (!allDaysOpened) {
+        showToast('❌ Open all 10 days first! (' + giftBoxState.openedDays.length + '/10 opened)');
+        return;
+    }
+
+    if (!couponValue) {
+        const spent = giftBoxState.totalSpent;
+        const need50 = Math.max(0, GIFT_CONFIG.TIER1_SPEND - spent);
+        showToast('❌ Not eligible! Need ₹' + need50 + ' more spending for ₹50 coupon');
+        return;
+    }
 
     const eligibleItems = MENU_ITEMS.filter(item => item.price <= couponValue);
     if (!eligibleItems.length) { showToast('No eligible items found'); return; }
@@ -1874,13 +1868,21 @@ function claimCouponItem(itemId, couponValue) {
     const item = MENU_ITEMS.find(i => i.id === itemId);
     if (!item) { showToast('Item not found'); return; }
 
+    const userPhone = safeJSONParse('giftUserPhone', null);
+    const userName = safeJSONParse('giftUserName', 'Customer');
+    const totalSpent = giftBoxState.totalSpent;
+
+    // Generate coupon code
+    const couponCode = 'SKG' + Date.now().toString(36).toUpperCase().slice(-6);
+
+    // Add free item to cart
     const existing = cart.find(c => c.id === itemId);
     if (existing) {
         existing.quantity++;
     } else {
         cart.push({
             id: item.id,
-            name: item.name + ' (FREE)',
+            name: item.name + ' (FREE - ₹' + couponValue + ' Coupon)',
             originalName: item.name,
             price: 0,
             originalPrice: item.price,
@@ -1888,27 +1890,63 @@ function claimCouponItem(itemId, couponValue) {
             image: item.image,
             quantity: 1,
             isFree: true,
-            couponValue: couponValue
+            couponValue: couponValue,
+            couponCode: couponCode
         });
     }
     saveCart();
     updateCartDisplay();
 
+    // Send coupon notification to admin WhatsApp
+    sendCouponToAdminWhatsApp({
+        couponCode: couponCode,
+        couponValue: couponValue,
+        customerName: userName,
+        customerPhone: userPhone,
+        totalSpent: totalSpent,
+        freeItem: item.name,
+        freeItemPrice: item.price
+    });
+
     giftBoxState.couponClaimed = true;
     saveGiftBoxState();
 
-    showCouponSuccess(item, couponValue);
+    showCouponSuccess(item, couponValue, couponCode);
 
     setTimeout(() => {
         resetGiftBoxCycle();
     }, 500);
 }
 
-function showCouponSuccess(item, couponValue) {
+// Send coupon claim notification to admin WhatsApp
+function sendCouponToAdminWhatsApp(couponData) {
+    const msg = [
+        '*🎁 COUPON CLAIMED - Sri Krishna Hotel*',
+        '',
+        `*Coupon Code:* ${couponData.couponCode}`,
+        `*Coupon Value:* ₹${couponData.couponValue}`,
+        '',
+        `*Customer:* ${couponData.customerName}`,
+        `*Phone:* ${couponData.customerPhone || 'N/A'}`,
+        `*Total Spent:* ₹${couponData.totalSpent}`,
+        '',
+        `*Free Item:* ${couponData.freeItem}`,
+        `*Item Price:* ₹${couponData.freeItemPrice}`,
+        '',
+        '------------------',
+        '_Auto-generated coupon claim notification_'
+    ].join('
+');
+
+    const encodedMsg = encodeURIComponent(msg);
+    const waUrl = 'https://wa.me/' + ADMIN_WHATSAPP_NUMBER + '?text=' + encodedMsg;
+    window.open(waUrl, '_blank');
+    showToast('📲 Coupon sent to Admin WhatsApp!');
+}
+
+function showCouponSuccess(item, couponValue, couponCode) {
     const existing = document.getElementById('coupon-success-modal');
     if (existing) existing.remove();
-
-    const couponCode = 'SKG' + Date.now().toString(36).toUpperCase().slice(-6);
 
     const modal = document.createElement('div');
     modal.className = 'coupon-success-overlay';
@@ -1916,14 +1954,14 @@ function showCouponSuccess(item, couponValue) {
     modal.innerHTML = `
         <div class="coupon-success-modal">
             <div class="coupon-success-icon"><i class="fas fa-check"></i></div>
-            <h3>Coupon Claimed!</h3>
+            <h3>🎉 Coupon Claimed!</h3>
             <p style="margin-bottom:4px"><strong>${item.name}</strong> added FREE!</p>
             <p style="font-size:0.85rem;color:#666;margin-bottom:14px">Worth ₹${item.price} • ₹${couponValue} coupon used</p>
             <div class="coupon-code-box">
                 <span class="coupon-code">${couponCode}</span>
                 <button class="btn-copy-code" id="btn-copy-coupon-code"><i class="fas fa-copy"></i></button>
             </div>
-            <p class="coupon-hint">Show this code at the counter when collecting your order</p>
+            <p class="coupon-hint">✅ Admin notified via WhatsApp!<br>Show this code at the counter</p>
             <button class="btn-coupon-done" id="btn-coupon-done">Done</button>
         </div>
     `;
@@ -1941,7 +1979,7 @@ function showCouponSuccess(item, couponValue) {
         if (e.target === modal) { modal.remove(); document.body.style.overflow = ''; }
     });
 
-    showToast(`🎉 ${item.name} added FREE to your cart!`);
+    showToast(`🎉 ${item.name} added FREE! Admin notified!`);
 }
 
 function resetGiftBoxCycle() {
