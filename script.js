@@ -1361,15 +1361,15 @@ function renderGiftBox() {
 
     // Rewards for each day
     const rewards = [
-        {day:1, icon:'🎯', desc:'5% OFF next order'},
-        {day:2, icon:'🚚', desc:'FREE Delivery'},
-        {day:3, icon:'💰', desc:'₹10 Cashback'},
-        {day:4, icon:'🥤', desc:'FREE Drink'},
-        {day:5, icon:'🎯', desc:'10% OFF'},
-        {day:6, icon:'🎁', desc:'Buy 1 Get 1'},
-        {day:7, icon:'🍰', desc:'FREE Dessert'},
-        {day:8, icon:'💰', desc:'₹20 OFF'},
-        {day:9, icon:'🎉', desc:'Special Discount'},
+        {day:1, icon:'🎯', desc:''},
+        {day:2, icon:'🎁', desc:''},
+        {day:3, icon:'🎁', desc:''},
+        {day:4, icon:'🎁', desc:''},
+        {day:5, icon:'🎁', desc:''},
+        {day:6, icon:'🎁', desc:''},
+        {day:7, icon:'🎁', desc:''},
+        {day:8, icon:'🎁', desc:''},
+        {day:9, icon:'🎁', desc:''},
         {day:10, icon:'🎊', desc:'MYSTERY BOX'}
     ];
 
