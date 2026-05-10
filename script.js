@@ -6,15 +6,15 @@
 'use strict';
 
 const MENU_ITEMS = Object.freeze([
-    { id: 1,  name: "Chicken Rice",      price: 90,  category: "Rice",        image: "chickenrice.webp" },
-    { id: 2,  name: "Egg Rice",          price: 80,  category: "Rice",        image: "eggrice.webp" },
-    { id: 3,  name: "Veg Rice",          price: 70,  category: "Rice",        image: "vegrice.webp" },
-    { id: 4,  name: "Idly",              price: 10,  category: "Tiffin",      image: "idly .webp" },
-    { id: 5,  name: "Vada",              price: 10,  category: "Tiffin",      image: "vada.webp"},
-    { id: 6,  name: "Dosa",              price: 20,  category: "Tiffin",      image: "dosa.webp" },
-    { id: 7,  name: "Plain Dosa",        price: 50,  category: "Tiffin",      image: "plain dosa .webp" },
-    { id: 8,  name: "Set Dosa",          price: 50,  category: "Tiffin",      image: "set dosa.jpg" },
-    { id: 9,  name: "Masala Dosa",       price: 70,  category: "Tiffin",      image: "masal dosa.webp" },
+    { id: 1,  name: "Chicken Rice",      price: 90,  category: "Rice",        image: "chickenrice.webp", emoji: "🍛" },
+    { id: 2,  name: "Egg Rice",          price: 80,  category: "Rice",        image: "eggrice.webp", emoji: "🍳" },
+    { id: 3,  name: "Veg Rice",          price: 70,  category: "Rice",        image: "vegrice.webp", emoji: "🍚" },
+    { id: 4,  name: "Idly",              price: 10,  category: "Tiffin",      image: "idly .webp", emoji: "🥮" },
+    { id: 5,  name: "Vada",              price: 10,  category: "Tiffin",      image: "vada.webp", emoji: "🍩" },
+    { id: 6,  name: "Dosa",              price: 20,  category: "Tiffin",      image: "dosa.webp", emoji: "🥞" },
+    { id: 7,  name: "Plain Dosa",        price: 50,  category: "Tiffin",      image: "plain dosa .webp", emoji: "🥞" },
+    { id: 8,  name: "Set Dosa",          price: 50,  category: "Tiffin",      image: "set dosa.jpg", emoji: "🥞" },
+    { id: 9,  name: "Masala Dosa",       price: 70,  category: "Tiffin",      image: "masal dosa.webp", emoji: "🥞" },
     { id: 10, name: "Poori",             price: 40,  category: "Tiffin",      image: "poori.webp", emoji: "🫓" },
     { id: 11, name: "Chicken Biryani",   price: 100, category: "Biryani",     image: "chicken-biryani.webp", emoji: "🍗" },
     { id: 12, name: "Egg Biryani",       price: 80,  category: "Biryani",     image: "eggbiryani.webp", emoji: "🍳" },
@@ -95,10 +95,7 @@ function safeJSONSet(key, value) {
 function getTotal() { return cart.reduce((s, i) => s + i.price * i.quantity, 0); }
 
 function getMenuImageSrc(image) {
-    // If already a full URL (http/https), use as-is
-    if (/^https?:\/\//i.test(image)) return image;
-    // If it's a relative path or filename, try as-is (no img/ prefix)
-    return image;
+    return /^https?:\/\//i.test(image) ? image : `img/${image}`;
 }
 
 function getDistanceKm(lat1, lng1, lat2, lng2) {
@@ -128,7 +125,16 @@ function init() {
     idle(() => startHeroSlider());
     setTimeout(initGiftBoxWithLogin, 300);
     injectFreeDeliveryBanner();
-    // Gift box hidden by default - user must click gift button to login/view
+    // Show gift box by default if user is logged in
+    const userPhone = safeJSONParse('giftUserPhone', null);
+    if (userPhone) {
+        const wrapper = document.getElementById('gift-box-wrapper');
+        if (wrapper) {
+            wrapper.classList.add('show');
+            wrapper.style.display = 'block';
+            giftBoxVisible = true;
+        }
+    }
 }
 
 // ===================== FREE DELIVERY BANNER =====================
@@ -470,7 +476,7 @@ function renderMenu() {
         const eager = idx < 2;
         const imageSrc = getMenuImageSrc(item.image);
         const imgAttr = eager ? `src="${imageSrc}"` : `src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-src="${imageSrc}"`;
-        const onErr = `this.onerror=null;this.style.display='none';var p=this.parentElement;if(p){var e=p.querySelector('.img-emoji-fallback');if(e){e.style.display='flex';e.style.position='absolute';e.style.inset='0';e.style.alignItems='center';e.style.justifyContent='center';e.style.fontSize='3.5rem';e.style.background='linear-gradient(135deg,#fff3e0,#ffe0b2)';}}`;
+        const onErr = `this.onerror=null;this.style.display='none';this.parentElement.querySelector('.img-emoji-fallback').style.display='flex'`;
         parts.push(`<div class="product-card" data-id="${item.id}"><div class="product-image"><img ${imgAttr} alt="${item.name}" loading="${eager ? 'eager' : 'lazy'}" width="400" height="225" decoding="async" onerror="${onErr}" onload="this.classList.add('loaded')"><div class="img-emoji-fallback" style="display:none;position:absolute;inset:0;align-items:center;justify-content:center;font-size:3.5rem;background:linear-gradient(135deg,#fff3e0,#ffe0b2)">${item.emoji||'🍽️'}</div><span class="product-badge">${item.category}</span></div><div class="product-info"><h3 class="product-name">${item.name}</h3><p class="product-price">Rs.${item.price}</p><div class="product-actions"><div class="quantity-control"><button class="qty-btn minus" data-id="${item.id}" ${qty <= 0 ? 'disabled' : ''}>-</button><span class="qty-value">${qty}</span><button class="qty-btn plus" data-id="${item.id}">+</button></div><button class="btn-add-cart ${qty > 0 ? 'added' : ''}" data-id="${item.id}"><i class="fas ${qty > 0 ? 'fa-check' : 'fa-cart-plus'}"></i><span>${qty > 0 ? 'Added' : 'Add'}</span></button></div></div></div>`);
     });
     menuContainer.innerHTML = parts.join('');
@@ -1355,15 +1361,15 @@ function renderGiftBox() {
 
     // Rewards for each day
     const rewards = [
-        {day:1, icon:'🎯', desc:''},
-        {day:2, icon:'🎁', desc:''},
-        {day:3, icon:'🎁', desc:''},
-        {day:4, icon:'🎁', desc:''},
-        {day:5, icon:'🎁', desc:''},
-        {day:6, icon:'🎁', desc:''},
-        {day:7, icon:'🎁', desc:''},
-        {day:8, icon:'🎁', desc:''},
-        {day:9, icon:'🎁', desc:''},
+        {day:1, icon:'🎯', desc:'5% OFF next order'},
+        {day:2, icon:'🚚', desc:'FREE Delivery'},
+        {day:3, icon:'💰', desc:'₹10 Cashback'},
+        {day:4, icon:'🥤', desc:'FREE Drink'},
+        {day:5, icon:'🎯', desc:'10% OFF'},
+        {day:6, icon:'🎁', desc:'Buy 1 Get 1'},
+        {day:7, icon:'🍰', desc:'FREE Dessert'},
+        {day:8, icon:'💰', desc:'₹20 OFF'},
+        {day:9, icon:'🎉', desc:'Special Discount'},
         {day:10, icon:'🎊', desc:'MYSTERY BOX'}
     ];
 
