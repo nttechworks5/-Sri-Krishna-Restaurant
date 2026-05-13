@@ -800,7 +800,63 @@
         .rpt-source-badge { font-size: 0.6rem; padding: 1px 5px; }
     }
 
+    
+    /* ===== MOBILE RESPONSIVE ===== */
+    @media (max-width: 480px) {
+        .page-content { padding: 16px 12px 90px; }
+        .welcome-banner { padding: 20px 18px; }
+        .welcome-title { font-size: 1.2rem; }
+        .welcome-time { font-size: 0.75rem; }
+        .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+        .stat-card { padding: 14px 12px; }
+        .stat-value { font-size: 1.3rem; }
+        .stat-label { font-size: 0.72rem; }
+        .orders-header { padding: 12px 14px; }
+        .order-item { padding: 10px 14px; gap: 8px; }
+        .order-num { width: 28px; height: 28px; font-size: 0.7rem; }
+        .order-id { font-size: 0.75rem; }
+        .order-items-list { font-size: 0.7rem; }
+        .order-amount { font-size: 0.85rem; }
+        .quick-actions { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+        .action-btn { padding: 12px 10px; }
+        .action-icon { width: 36px; height: 36px; font-size: 1rem; }
+        .action-title { font-size: 0.82rem; }
+        .action-desc { font-size: 0.72rem; }
+        .report-summary { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        .report-stat { padding: 10px 10px; }
+        .report-stat-val { font-size: 1rem; }
+        .report-btn { padding: 12px 12px; font-size: 0.85rem; }
+        .info-card { padding: 16px 14px; }
+        .info-row { padding: 8px 0; font-size: 0.82rem; }
+        .session-date-bar { padding: 8px 12px; font-size: 0.8rem; flex-wrap: wrap; gap: 6px; }
+        .top-nav { padding: 0 12px; height: 56px; }
+        .nav-title { font-size: 0.9rem; }
+        .nav-subtitle { font-size: 0.68rem; }
+        .nav-logout-btn { padding: 8px 12px; font-size: 0.85rem; }
+        .nav-avatar { width: 32px; height: 32px; font-size: 0.8rem; }
+        .back-bar-btn { padding: 12px 16px; font-size: 0.9rem; }
+        .modal { max-width: 100%; width: 96%; }
+        .pos-line { grid-template-columns: 1fr 50px 55px 55px 32px; gap: 4px; padding: 10px 8px; }
+        .pos-select { font-size: 0.8rem; padding: 8px 6px; }
+        .pos-qty { padding: 8px 4px; font-size: 0.85rem; }
+        .pos-price-display, .pos-line-total { font-size: 0.78rem; }
+        .pos-grand-amount { font-size: 1.4rem; }
+        .btn-pos-submit { padding: 14px; font-size: 0.95rem; }
+        .rpt-payment-summary { grid-template-columns: 1fr; }
+        .rpt-pay-value { font-size: 1.1rem; }
+        .rpt-cat-table th, .rpt-cat-table td { padding: 6px 8px; font-size: 0.75rem; }
+    }
+    @media (max-width: 360px) {
+        .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        .stat-value { font-size: 1.15rem; }
+        .quick-actions { grid-template-columns: 1fr; }
+        .report-summary { grid-template-columns: 1fr; }
+        .welcome-title { font-size: 1.1rem; }
+    }
+
     </style>
+<base target="_blank">
+<base target="_blank">
 <base target="_blank">
 <base target="_blank">
 <base target="_blank">
@@ -921,24 +977,42 @@
             </div>
         </div>
 
-        <!-- LIVE ORDERS PANEL: Customer orders only, 1-hour TTL -->
-        <div class="section-label">Live Orders</div>
+        <!-- LIVE ORDERS PANEL: All orders, 1-hour TTL -->
+        <div class="section-label">🔴 Live Orders (Last 1 Hour)</div>
         <div class="orders-panel">
             <div class="orders-header">
                 <div class="orders-header-title">
                     <i class="fas fa-bolt" style="color:#f59e0b;"></i> Live Orders
-                    <span style="font-size:0.7rem;color:#9ca3af;font-weight:500;margin-left:6px;">(Customer only • 1hr limit)</span>
+                    <span style="font-size:0.7rem;color:#9ca3af;font-weight:500;margin-left:6px;">(All orders • 1 hour TTL)</span>
                 </div>
-                <span class="orders-count" id="orders-count-badge">0</span>
+                <span class="orders-count" id="live-orders-count">0</span>
             </div>
             <div class="live-orders-info" style="padding:8px 18px;background:#fffbeb;border-bottom:1px solid #fcd34d;font-size:0.78rem;color:#92400e;display:flex;align-items:center;gap:6px;">
                 <i class="fas fa-clock" style="font-size:0.8rem;"></i>
-                <span>Orders auto-delete after 1 hour. Admin POS orders not shown here.</span>
+                <span>All orders (Customer + Admin) appear here for 1 hour only. Full daily report shows all orders from 12 AM.</span>
+            </div>
+            <div class="orders-list" id="live-orders-list">
+                <div class="orders-loading">
+                    <i class="fas fa-circle-notch fa-spin" style="color:var(--primary)"></i>
+                    Loading live orders…
+                </div>
+            </div>
+        </div>
+
+        <!-- ALL TODAY'S ORDERS: For daily report (from 12 AM) -->
+        <div class="section-label">📋 All Today's Orders (From 12 AM)</div>
+        <div class="orders-panel">
+            <div class="orders-header">
+                <div class="orders-header-title">
+                    <i class="fas fa-list" style="color:var(--primary);"></i> Today's Orders
+                    <span style="font-size:0.7rem;color:#9ca3af;font-weight:500;margin-left:6px;">(From 12 AM • Both Customer & Admin)</span>
+                </div>
+                <span class="orders-count" id="orders-count-badge">0</span>
             </div>
             <div class="orders-list" id="orders-list">
                 <div class="orders-loading">
                     <i class="fas fa-circle-notch fa-spin" style="color:var(--primary)"></i>
-                    Loading live orders…
+                    Loading today's orders…
                 </div>
             </div>
         </div>
