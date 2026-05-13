@@ -1003,6 +1003,10 @@ function submitOrder() {
     if (submitBtn) submitBtn.disabled = true;
 
     const now = new Date();
+    // Build orderDate "YYYY-MM-DD" in local timezone (for dashboard daily filter)
+    const _d = String(now.getDate()).padStart(2,'0');
+    const _m = String(now.getMonth()+1).padStart(2,'0');
+    const _y = now.getFullYear();
     const order = {
         id: 'ORD' + Date.now(),
         customerName:  name,
@@ -1013,6 +1017,7 @@ function submitOrder() {
         paymentStatus: method === 'cash' ? 'Cash' : 'Paid (Online)',
         items:         [...cart],
         totalAmount,
+        orderDate:     `${_y}-${_m}-${_d}`,
         date:          now.toLocaleDateString('en-IN'),
         time:          now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
         timestamp:     now.getTime(),
