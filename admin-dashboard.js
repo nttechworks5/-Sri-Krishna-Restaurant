@@ -1,9 +1,9 @@
 // admin-dashboard.js — Sri Krishna Hotel Admin Panel
 // =====================================================
 // SAFETY RULES (read before editing):
-//   1. NEVER permanently delete any order from Firestore
-//   2. Archive = copy to archive_orders + mark status:"archived" on original
-//   3. Today filter is UI-ONLY — old data stays safe in database
+//   1. Daily 12 AM: PERMANENTLY DELETE previous day orders from Firestore
+//   2. End Day button: PERMANENTLY DELETE all today's orders
+//   3. Live Orders: UI-ONLY filter (1 hour TTL) — no database deletion
 //   4. orderDate field (YYYY-MM-DD) is used for all date filtering
 //   5. QR flow and manual order flow are NEVER touched here
 // =====================================================
@@ -72,6 +72,7 @@ function initDashboard(user) {
     startClock();
     loadTodayOrders();
     setupListeners();
+    startCleanupScheduler();
 }
 
 window._dashboardInit = initDashboard;
@@ -176,9 +177,10 @@ async function loadTodayOrders() {
 
         computeAndDisplayStats();
         renderOrdersList(_todayOrders);
+        renderLiveOrders(filterLiveOrders(_todayOrders));
         updateReportSummary();
 
-        console.log('[Dashboard] Today orders loaded:', _todayOrders.length);
+        console.log('[Dashboard] Today orders loaded:', _todayOrders.length, '| Live:', filterLiveOrders(_todayOrders).length);
 
     } catch (err) {
         console.error('[Dashboard] Load error:', err);
@@ -223,9 +225,10 @@ async function loadTodayOrdersFallback() {
         _todayOrders = allTodayDocs;
         computeAndDisplayStats();
         renderOrdersList(_todayOrders);
+        renderLiveOrders(filterLiveOrders(_todayOrders));
         updateReportSummary();
 
-        console.log('[Dashboard] Fallback loaded:', _todayOrders.length, 'orders for', TODAY);
+        console.log('[Dashboard] Fallback loaded:', _todayOrders.length, 'orders for', TODAY, '| Live:', filterLiveOrders(_todayOrders).length);
 
     } catch (err) {
         console.error('[Dashboard] Fallback load error:', err);
@@ -380,7 +383,6 @@ async function generatePDFReport() {
         });
 
         // ===== BUILD CATEGORY-WISE DATA =====
-        // Structure: { category: { items: { name: { price, qty, total } }, catTotal, catOrders } }
         const categoryMap = {};
         let totalRev = 0, totalCash = 0, totalUpi = 0;
 
@@ -396,19 +398,15 @@ async function generatePDFReport() {
                     const price = it.price || 0;
                     const qty = it.quantity || it.qty || 1;
                     const itemTotal = price * qty;
-
-                    // Find category from POS_MENU_ITEMS or default to 'Others'
                     const menuItem = POS_MENU_ITEMS.find(m => m.name === name);
                     const category = menuItem ? menuItem.category : 'Others';
 
                     if (!categoryMap[category]) {
                         categoryMap[category] = { items: {}, catTotal: 0, catOrders: 0 };
                     }
-
                     if (!categoryMap[category].items[name]) {
                         categoryMap[category].items[name] = { price, qty: 0, total: 0 };
                     }
-
                     categoryMap[category].items[name].qty += qty;
                     categoryMap[category].items[name].total += itemTotal;
                     categoryMap[category].catTotal += itemTotal;
@@ -417,7 +415,6 @@ async function generatePDFReport() {
             }
         });
 
-        // Category display order
         const catOrder = ['Rice','Tiffin','Biryani','Meals','Bread Items','Egg Items','Chicken','Noodles','Semiya','Others'];
         const sortedCats = Object.keys(categoryMap).sort((a,b) => {
             const ia = catOrder.indexOf(a);
@@ -425,11 +422,10 @@ async function generatePDFReport() {
             return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
         });
 
-        // ===== BUILD CATEGORY-WISE HTML =====
         let categoryHTML = '';
         let grandTotalQty = 0;
 
-        sortedCats.forEach((cat, catIdx) => {
+        sortedCats.forEach((cat) => {
             const catData = categoryMap[cat];
             const items = Object.entries(catData.items).sort((a,b) => b[1].qty - a[1].qty);
 
@@ -470,7 +466,6 @@ async function generatePDFReport() {
             </div>`;
         });
 
-        // ===== ORDER DETAILS TABLE (compact) =====
         let orderRows = _todayOrders.map((o, i) => {
             let timeStr = o.time || '—';
             if (o.createdAt?.seconds) {
@@ -493,7 +488,6 @@ async function generatePDFReport() {
             </tr>`;
         }).join('');
 
-        // ===== FINAL HTML =====
         const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
 <title>Daily Report — Sri Krishna Hotel — ${TODAY}</title>
 <style>
@@ -610,73 +604,60 @@ function sendWhatsAppReport() {
 }
 
 // ===================================================
-// ARCHIVE & RESET (SAFE — NO PERMANENT DELETE)
-// Step 1: Copy order to archive_orders collection
-// Step 2: Update original order status → "archived"
-//         (does NOT delete the original document)
-// Step 3: Refresh UI — archived orders are hidden from view
+// END DAY & RESET (PERMANENT DELETE)
+// Step 1: PERMANENTLY DELETE all today's orders from database
+// Step 2: Refresh UI
+// WARNING: This CANNOT be undone. Use only after day is complete.
 // ===================================================
 async function archiveAndReset() {
     closeResetModal();
 
     if (_todayOrders.length === 0) {
-        showToast('📋 No active orders today to archive', 'info');
+        showToast('📋 No active orders today to clear', 'info');
         return;
     }
 
     btnEndDay.disabled = true;
-    btnEndDay.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> <span>Archiving…</span>';
+    btnEndDay.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> <span>Deleting…</span>';
 
     try {
         const db  = window._adminDB;
         const api = window._firestoreAPI;
-        const { collection, addDoc, doc, updateDoc, serverTimestamp } = api;
+        const { deleteDoc, doc } = api;
 
-        let archived = 0, failed = 0;
+        let deleted = 0, failed = 0;
 
         for (const order of _todayOrders) {
             try {
                 const docId = order._docId;
 
-                // Step 1 — copy full order data to archive_orders
-                await addDoc(collection(db, 'archive_orders'), {
-                    ...order,
-                    _docId:      undefined,       // don't copy internal ref field
-                    archivedAt:  serverTimestamp(),
-                    archiveDate: TODAY,
-                    status:      'archived'
-                });
-
-                // Step 2 — mark original as archived (NOT deleted)
+                // PERMANENTLY DELETE from database
                 if (docId) {
-                    await updateDoc(doc(db, 'orders', docId), {
-                        status:     'archived',
-                        archivedAt: serverTimestamp()
-                    });
+                    await deleteDoc(doc(db, 'orders', docId));
                 }
 
-                archived++;
+                deleted++;
             } catch (e) {
-                console.error('[Archive] Failed for order:', order.id, e);
+                console.error('[Delete] Failed for order:', order.id, e);
                 failed++;
             }
         }
 
         if (failed > 0) {
-            showToast(`⚠️ ${archived} archived, ${failed} failed. Check Firestore.`, 'error');
+            showToast(`⚠️ ${deleted} deleted, ${failed} failed. Check Firestore.`, 'error');
         } else {
-            showToast(`✅ ${archived} orders archived safely. Day reset!`, 'success');
+            showToast(`🗑️ ${deleted} orders PERMANENTLY DELETED. Day reset!`, 'success');
         }
 
-        // Reload — archived orders filtered out from view automatically
+        // Reload — deleted orders gone from view
         await loadTodayOrders();
 
     } catch (err) {
-        console.error('[Archive] Critical error:', err);
-        showToast('❌ Archive failed. Data is safe. Try again.', 'error');
+        console.error('[Delete] Critical error:', err);
+        showToast('❌ Delete failed. Try again.', 'error');
     } finally {
         btnEndDay.disabled = false;
-        btnEndDay.innerHTML = '<i class="fas fa-archive"></i> <span>End Day<br><small>Archive & reset</small></span>';
+        btnEndDay.innerHTML = '<i class="fas fa-trash-alt"></i> <span>End Day<br><small>Delete & reset</small></span>';
     }
 }
 
@@ -777,6 +758,202 @@ window.adminDashboard = {
 
 console.log('[Dashboard] Ready | Date:', TODAY);
 
+
+// ===================================================
+// AUTO-CLEANUP SYSTEM
+// Rules:
+//   1. MIDNIGHT RESET: Every day at 12:00 AM - clear all previous day data
+//   2. LIVE ORDERS: IMMEDIATE delete if > 1 hour old (checked every minute)
+//   3. ARCHIVE DATA: Delete after 3 days
+// ===================================================
+
+const LIVE_ORDER_TTL_MS = 60 * 60 * 1000;        // 1 hour
+const ARCHIVE_MAX_AGE_DAYS = 3;                   // 3 days
+let _lastMidnightCheck = null;
+
+function getCutoffTimestamp(hoursAgo) {
+    return new Date(Date.now() - hoursAgo * 60 * 60 * 1000);
+}
+
+function getMidnightDate() {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d;
+}
+
+// ===== 1. DAILY MIDNIGHT RESET (12:00 AM) =====
+// Every day at midnight, PERMANENTLY DELETE previous day orders from database
+// and reset for fresh daily reporting
+async function checkMidnightReset() {
+    const now = new Date();
+
+    // Check if it's past midnight (00:00 - 00:05 window)
+    const hours = now.getHours();
+    const mins = now.getMinutes();
+
+    if (hours === 0 && mins < 5) {
+        // Check if we already did reset today
+        const todayKey = `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}`;
+        if (_lastMidnightCheck === todayKey) return;
+
+        console.log('[MidnightReset] 🌙 12:00 AM - Daily reset starting...');
+        _lastMidnightCheck = todayKey;
+
+        // PERMANENTLY DELETE all previous day orders from database
+        await deletePreviousDayOrders();
+
+        // Refresh dashboard
+        await loadTodayOrders();
+        showToast('🌙 New day started! Previous data cleared.', 'success');
+    }
+}
+
+async function deletePreviousDayOrders() {
+    try {
+        const db = window._adminDB;
+        const api = window._firestoreAPI;
+        if (!db || !api) return;
+        const { collection, getDocs, deleteDoc, doc } = api;
+
+        // Fetch ALL orders and PERMANENTLY DELETE those before today
+        const snap = await getDocs(collection(db, 'orders'));
+        let deleted = 0;
+
+        for (const docSnap of snap.docs) {
+            const data = docSnap.data();
+            // Skip today's orders (from 12 AM onwards) - keep only today
+            if (data.orderDate === TODAY) continue;
+
+            // PERMANENTLY DELETE from database
+            await deleteDoc(doc(db, 'orders', docSnap.id));
+            deleted++;
+        }
+
+        if (deleted > 0) {
+            console.log(`[MidnightReset] 🗑️ PERMANENTLY DELETED ${deleted} previous day orders`);
+        }
+    } catch (err) {
+        console.error('[MidnightReset] Error:', err);
+    }
+}
+
+// ===== 3. ARCHIVE CLEANUP (3 days) =====
+async function cleanupOldArchives() {
+    try {
+        const db = window._adminDB;
+        const api = window._firestoreAPI;
+        if (!db || !api) return;
+        const { collection, query, where, getDocs, deleteDoc, doc, Timestamp } = api;
+        const cutoff = getCutoffTimestamp(24 * ARCHIVE_MAX_AGE_DAYS);
+        const cutoffTimestamp = Timestamp.fromDate(cutoff);
+        const q = query(
+            collection(db, 'archive_orders'),
+            where('archivedAt', '<', cutoffTimestamp)
+        );
+        const snap = await getDocs(q);
+        let deleted = 0;
+        snap.forEach(docSnap => {
+            deleteDoc(doc(db, 'archive_orders', docSnap.id));
+            deleted++;
+        });
+        if (deleted > 0) console.log(`[ArchiveCleanup] Deleted ${deleted} archives >${ARCHIVE_MAX_AGE_DAYS}days`);
+    } catch (err) {
+        console.error('[ArchiveCleanup] Error:', err);
+    }
+}
+
+// ===== FILTER LIVE ORDERS FOR DISPLAY (1hr TTL) =====
+// Both Customer (WEB) and Admin (MANUAL) orders show for 1 hour only in Live Orders panel
+// After 1 hour, they are hidden from Live Orders but remain in database
+function filterLiveOrders(orders) {
+    const oneHourAgo = Date.now() - LIVE_ORDER_TTL_MS;
+    return orders.filter(o => {
+        const ts = o.createdAt?.seconds ? o.createdAt.seconds * 1000 : (o.timestamp || 0);
+        return ts >= oneHourAgo;
+    });
+}
+
+// ===== RENDER LIVE ORDERS =====
+function renderLiveOrders(orders) {
+    const liveList = document.getElementById('live-orders-list');
+    const liveCount = document.getElementById('live-orders-count');
+    if (!liveList) return;
+    if (liveCount) liveCount.textContent = orders.length;
+    if (!orders || orders.length === 0) {
+        liveList.innerHTML = `
+            <div class="orders-empty">
+                <i class="fas fa-bolt" style="color:#f59e0b"></i>
+                <p>No live orders</p>
+                <small>All orders appear here for 1 hour only (both Customer & Admin)</small>
+            </div>`;
+        return;
+    }
+    const frag = document.createDocumentFragment();
+    orders.forEach((order, idx) => {
+        const item = document.createElement('div');
+        item.className = 'order-item';
+        let timeStr = '—';
+        if (order.createdAt?.seconds) {
+            timeStr = new Date(order.createdAt.seconds * 1000)
+                .toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+        } else if (order.timestamp) {
+            timeStr = new Date(order.timestamp).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+        }
+        const pm = (order.paymentMethod || 'cash').toLowerCase();
+        const isUpi = pm === 'upi' || pm === 'qr' || pm === 'online' || pm === 'qr_pending';
+        const pmClass = isUpi ? 'payment-upi' : 'payment-cash';
+        const pmLabel = isUpi ? 'UPI' : 'Cash';
+        let itemsStr = '—';
+        if (Array.isArray(order.items) && order.items.length > 0) {
+            itemsStr = order.items.map(i => `${i.name || '?'} ×${i.quantity || i.qty || 1}`).join(', ');
+        }
+        const orderId = order.id || order.orderId || `#${String(idx + 1).padStart(3, '0')}`;
+        const minsAgo = order.createdAt?.seconds ? 
+            Math.floor((Date.now()/1000 - order.createdAt.seconds) / 60) : '?';
+        item.innerHTML = `
+            <div class="order-num" style="background:#fef3c7;color:#92400e">${String(idx + 1).padStart(2, '0')}</div>
+            <div class="order-details">
+                <div class="order-id">${orderId}</div>
+                <div class="order-items-list" title="${itemsStr}">${itemsStr}</div>
+                <div class="order-meta">
+                    <span class="order-source ${order.source === 'MANUAL' ? 'source-admin' : 'source-customer'}">${order.source === 'MANUAL' ? 'Admin' : 'Customer'}</span>
+                    <span class="order-time"><i class="fas fa-clock" style="font-size:.65rem"></i> ${timeStr}</span>
+                    <span class="order-payment ${pmClass}">${pmLabel}</span>
+                    <span class="order-time" style="color:#dc2626;font-weight:600">⏱️ ${minsAgo}m ago</span>
+                </div>
+            </div>
+            <div class="order-amount">${formatINR(order.totalAmount || 0)}</div>
+        `;
+        frag.appendChild(item);
+    });
+    liveList.innerHTML = '';
+    liveList.appendChild(frag);
+}
+
+// ===== SCHEDULER =====
+// Every minute: Check daily midnight reset (00:00-00:05 window)
+// Every hour: Check archive cleanup (3+ days old archives)
+// NOTE: Daily reset PERMANENTLY DELETES previous day orders from database
+function startCleanupScheduler() {
+    console.log('[Scheduler] Starting...');
+
+    // Immediate first run
+    cleanupOldArchives();
+    checkMidnightReset();
+
+    // Every minute: Check daily midnight reset (00:00-00:05 window)
+    // At midnight: PERMANENTLY DELETES all previous day orders
+    setInterval(() => {
+        checkMidnightReset();
+    }, 60 * 1000); // 1 minute
+
+    // Every hour: Archive cleanup (3+ days old archives)
+    setInterval(() => {
+        cleanupOldArchives();
+    }, 60 * 60 * 1000); // 1 hour
+
+    console.log('[Scheduler] Running: Daily reset at 12 AM (PERMANENT DELETE), Archive cleanup every 1hr');
+}
 
 // ===================================================
 // MANUAL BILL ENTRY (POS SYSTEM)
